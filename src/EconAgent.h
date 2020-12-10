@@ -4,11 +4,11 @@
 class EconAgent{
 public:
 	EconAgent();
-	double* k;
-	double* y;
-	double* l;
-	double* tfp;
-	int t;
+	double* k;		// capital stock (trillion USD)
+	double* y;		// economic output GDP (trillion USD)
+	double* l;		// population (million people)
+	double* tfp;	// total factor productivity
+	int t;			// time step
 	void allocate(int hrzn);
 	void nextStep();
 	void econagent_delete();

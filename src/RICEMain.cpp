@@ -11,6 +11,7 @@ int main(int argc, char* argv[])
 	// to be run
 	int nagents = 2;
 	int horizon = 2;
+	int delta_t = 1;
 
 	// here we create the RICE instance
 	// and the associated pointer

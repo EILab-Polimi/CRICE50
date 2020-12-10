@@ -6,9 +6,9 @@
 class Econ{
 public:
 	Econ();
-	int agents;
-	EconAgent* agents_ptr;
-	int t;
+	int agents;					// number of agents	
+	EconAgent* agents_ptr;		// pointer to agents
+	int t;						// time step
 	void allocate(int agents, int hrzn);
 	void nextStep();
 	void econ_delete();

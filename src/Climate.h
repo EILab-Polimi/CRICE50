@@ -4,9 +4,9 @@
 class Climate{
 public:
 	Climate();
-	double* tatm;
-	double* tocean;
-	int t;
+	double* tatm;		// atmospheric temperature (°C w.r.t 1900)
+	double* tocean;		// ocean temperature (°C w.r.t 1900)
+	int t;				// time step
 	void allocate(int hrzn);
 	void nextStep();
 	void climate_delete();

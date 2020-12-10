@@ -4,11 +4,11 @@
 class Carbon{
 public:
 	Carbon();
-	double* mat;
-	double* mup;
-	double* mlo;
-	double* forc;
-	int t;
+	double* mat;		// atmospheric carbon (GtC)
+	double* mup;		// upper strata carbon (GtC)
+	double* mlo;		// lower strata carbon (GtC)
+	double* forc;		// forcing
+	int t;				// time step
 	void allocate(int hrzn);
 	void nextStep();
 	void carbon_delete();

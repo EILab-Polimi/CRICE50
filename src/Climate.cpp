@@ -3,18 +3,18 @@
 #include <iostream>
 
 using namespace std;
-
+// constructor
 Climate::Climate(){
 
 }
-
+// allocates memory for the climate component
 void Climate::allocate(int hrzn){
 	tatm = new double[hrzn];
 	tocean = new double[hrzn];
 	t = 0;
 	return;
 }
-
+// simulates one time step
 void Climate::nextStep(){
 	tatm[t+1] = tatm[t] + 0.15;
 	cout << "Here the climate evolves to next step: " << t+1 << endl;
@@ -23,7 +23,7 @@ void Climate::nextStep(){
 	t++;
 	return;
 }
-
+// frees allocated memory
 void Climate::climate_delete(){
 	delete[] tatm;
 	delete[] tocean;
