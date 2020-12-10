@@ -10,8 +10,10 @@ int main(int argc, char* argv[])
 	// and fix the settings for the simulations 
 	// to be run
 	int nagents = 2;
-	int horizon = 2;
-	int delta_t = 1;
+	int horizon = 10;
+
+	// do we want to consider different delta t ?
+	// int delta_t = 1;
 
 	// here we create the RICE instance
 	// and the associated pointer

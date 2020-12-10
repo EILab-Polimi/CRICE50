@@ -9,10 +9,10 @@ EconAgent::EconAgent(){
 }
 // allocates the memory for an agent
 void EconAgent::allocate(int hrzn){
-	k = new double[hrzn];
-	y = new double[hrzn];
-	l = new double[hrzn];
-	tfp = new double[hrzn];
+	k = new double[hrzn + 1];
+	y = new double[hrzn + 1];
+	l = new double[hrzn + 1];
+	tfp = new double[hrzn + 1];
 	t = 0;
 	return;
 }

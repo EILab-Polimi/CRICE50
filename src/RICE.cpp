@@ -29,7 +29,7 @@ void RICE::allocate(int nag, int hrzn){
 // simulates one step of the model
 void RICE::nextStep(){
 	carbon.nextStep();
-	climate.nextStep();
+	climate.nextStep(carbon.forc[t]);
 	econ.nextStep();
 	t++;
 	return;

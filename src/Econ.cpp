@@ -13,8 +13,8 @@ void Econ::allocate(int nag, int hrzn){
 	agents = nag;
 	agents_ptr = new EconAgent[nag];
 	t = 0;
-	for (int ag=0; ag < nag; ag++){
-		agents_ptr[ag].allocate(hrzn);
+	for (int nag=0; nag < agents; nag++){
+		agents_ptr[nag].allocate(hrzn);
 	}
 	return;
 }
