@@ -8,6 +8,9 @@ RICE::RICE(){
 }
 // constructor with inputs 
 RICE::RICE(int nag, int hrzn){
+	carbon = new Carbon();
+	temp = new Temp();
+	econ = new Econ();
 	allocate(nag, hrzn);
 	return;
 }
@@ -15,17 +18,17 @@ RICE::RICE(int nag, int hrzn){
 void RICE::allocate(int nag, int hrzn){
 	agents = nag;
 	horizon = hrzn;
-	carbon.allocate(hrzn);
-	temp.allocate(hrzn);
-	econ.allocate(nag, hrzn);
+	carbon->allocate(hrzn);
+	temp->allocate(hrzn);
+	econ->allocate(nag, hrzn);
 	t = 0;
 	return;	
 }
 // simulates one step of the model
 void RICE::nextStep(){
-	carbon.nextStep();
-	temp.nextStep(carbon.forc[t]);
-	econ.nextStep();
+	carbon->nextStep();
+	temp->nextStep(carbon->forc[t]);
+	econ->nextStep();
 	t++;
 	return;
 }
@@ -39,8 +42,8 @@ void RICE::simulate(){
 }
 // frees allocated memory
 void RICE::RICE_delete(){
-	carbon.carbon_delete();
-	temp.temp_delete();
-	econ.econ_delete();
+	carbon->carbon_delete();
+	temp->temp_delete();
+	econ->econ_delete();
 	return;
 }
