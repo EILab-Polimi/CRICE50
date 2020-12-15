@@ -2,7 +2,7 @@
 #define RICE__H
 
 #include "./carbon/Carbon.h"
-#include "./climate/Climate.h"
+#include "./temp/Temp.h"
 #include "./economy/Econ.h"
 
 class RICE{
@@ -13,7 +13,7 @@ public:
 	int horizon;		// length of the horizon
 	int t;				// time instant
 	Carbon carbon;		// carbon component of the model
-	Climate climate;	// climate component of the model
+	Temp temp;	// climate component of the model
 	Econ econ;			// economic component of the model
 	void allocate(int nag, int hrzn);
 	void nextStep();

@@ -1,5 +1,5 @@
-#ifndef CLIMATE__H
-#define CLIMATE__H
+#ifndef TEMP__H
+#define TEMP__H
 
 struct params{
 	double sigma1;
@@ -8,9 +8,9 @@ struct params{
 	double heat_ocean;
 };
 
-class Climate{
+class Temp{
 public:
-	Climate();
+	Temp();
 	double* tatm;		// atmospheric temperature (°C w.r.t 1900)
 	double* tocean;		// ocean temperature (°C w.r.t 1900)
 	params params;
@@ -18,7 +18,7 @@ public:
 	void allocate(int hrzn);
 	void readParams();
 	void nextStep(double forc);
-	void climate_delete();
+	void temp_delete();
 };
 
 #endif

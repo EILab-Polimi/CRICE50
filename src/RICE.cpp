@@ -16,7 +16,7 @@ void RICE::allocate(int nag, int hrzn){
 	agents = nag;
 	horizon = hrzn;
 	carbon.allocate(hrzn);
-	climate.allocate(hrzn);
+	temp.allocate(hrzn);
 	econ.allocate(nag, hrzn);
 	t = 0;
 	return;	
@@ -24,7 +24,7 @@ void RICE::allocate(int nag, int hrzn){
 // simulates one step of the model
 void RICE::nextStep(){
 	carbon.nextStep();
-	climate.nextStep(carbon.forc[t]);
+	temp.nextStep(carbon.forc[t]);
 	econ.nextStep();
 	t++;
 	return;
@@ -40,7 +40,7 @@ void RICE::simulate(){
 // frees allocated memory
 void RICE::RICE_delete(){
 	carbon.carbon_delete();
-	climate.climate_delete();
+	temp.temp_delete();
 	econ.econ_delete();
 	return;
 }

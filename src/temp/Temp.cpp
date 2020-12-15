@@ -1,14 +1,14 @@
-#include "Climate.h"
+#include "Temp.h"
 
 #include <iostream>
 #include <fstream>
 using namespace std;
 // constructor
-Climate::Climate(){
+Temp::Temp(){
 
 }
 // allocates memory for the climate component
-void Climate::allocate(int hrzn){
+void Temp::allocate(int hrzn){
 	tatm = new double[hrzn + 1];
 	tocean = new double[hrzn + 1];
 	t = 0;
@@ -18,10 +18,10 @@ void Climate::allocate(int hrzn){
 // read parameters from text file
 // and stores them in the params struct
 // and setting initial conditions
-void Climate::readParams(){
+void Temp::readParams(){
 	fstream in;
 	string sJunk = "";
-	in.open("./settings/temperature_params.txt", ios_base::in);
+	in.open("./settings/temp_params.txt", ios_base::in);
 	if (!in){
 		cout << "The general settings file specified could not be found!" << endl;
 	    exit(1);
@@ -53,7 +53,7 @@ void Climate::readParams(){
 	in.close();
 }
 // simulates one time step
-void Climate::nextStep(double forc){
+void Temp::nextStep(double forc){
 	tatm[t+1] = tatm[t] +
 		params.sigma1 * (forc - params.lambda * tatm[t] +
 						 - params.sigma2 * (tatm[t] - tocean[t]));
@@ -63,7 +63,7 @@ void Climate::nextStep(double forc){
 	return;
 }
 // frees allocated memory
-void Climate::climate_delete(){
+void Temp::temp_delete(){
 	delete[] tatm;
 	delete[] tocean;
 	return;

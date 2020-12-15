@@ -1,0 +1,6 @@
+sigma1		0.88
+sigma2		0.07
+lambda		3.16
+heat_ocean	98.0
+tatm0		0.85
+tocean0		0.00
