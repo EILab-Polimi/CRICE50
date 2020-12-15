@@ -1,9 +1,9 @@
 #ifndef RICE__H
 #define RICE__H
 
-#include "Carbon.h"
-#include "Climate.h"
-#include "Econ.h"
+#include "./carbon/Carbon.h"
+#include "./climate/Climate.h"
+#include "./economy/Econ.h"
 
 class RICE{
 public:

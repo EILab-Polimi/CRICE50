@@ -1,10 +1,5 @@
 #include "RICE.h"
-#include "Carbon.h"
-#include "Climate.h"
-#include "Econ.h"
-
 #include <iostream>
-
 
 using namespace std;
 // constructor
