@@ -6,10 +6,21 @@ using namespace std;
 RICE::RICE(){
 	
 }
+// destructor
+RICE::~RICE(){
+	
+}
 // constructor with inputs 
-RICE::RICE(int nag, int hrzn){
-	carbon = new Carbon();
-	temp = new Temp();
+RICE::RICE(int nag, int hrzn, int carbontype){
+	switch (carbontype){
+		case 0:
+			carbon = new DICECarbon();
+			break;
+		case 1:
+			carbon = new WITCHCarbon();
+			break;
+	}
+	temp = new WITCHTemp();
 	econ = new Econ();
 	allocate(nag, hrzn);
 	return;
@@ -26,16 +37,16 @@ void RICE::allocate(int nag, int hrzn){
 }
 // simulates one step of the model
 void RICE::nextStep(){
-	carbon->nextStep();
-	temp->nextStep(carbon->forc[t]);
 	econ->nextStep();
+	carbon->nextStep(econ->e[t]);
+	temp->nextStep(carbon->forc[t]);
 	t++;
 	return;
 }
 // simulates all the horizon
 void RICE::simulate(){
 	for (int time=0 ; time < horizon; time++){
-		cout << "\tSimulation time step: " << t << endl;
+		cout << "\tSimulation time step " << t << ", year " << 2015+t*5 << endl;
 		nextStep();
 	} 
 	return;

@@ -1,7 +1,7 @@
 /*
 Here we will put authors and license
 */
-
+#include<stdlib.h>
 #include "RICE.h"
 
 int main(int argc, char* argv[])
@@ -9,6 +9,10 @@ int main(int argc, char* argv[])
 	// here we should be reading the input file
 	// and fix the settings for the simulations 
 	// to be run
+	int carbontype = 0;
+	if (argc > 1){
+		carbontype = atoi(argv[1]);		
+	}
 	int nagents = 2;
 	int horizon = 10;
 
@@ -17,7 +21,7 @@ int main(int argc, char* argv[])
 
 	// here we create the RICE instance
 	// and the associated pointer
-	RICE rice(nagents, horizon);
+	RICE rice(nagents, horizon, carbontype);
 	RICE* riceptr = &rice;
 
 	// simulate RICE

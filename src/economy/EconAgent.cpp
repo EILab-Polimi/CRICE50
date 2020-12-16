@@ -3,8 +3,12 @@
 #include <iostream>
 
 using namespace std;
-//constructor
+// constructor
 EconAgent::EconAgent(){
+
+}
+// destructor
+EconAgent::~EconAgent(){
 
 }
 // allocates the memory for an agent
@@ -13,12 +17,14 @@ void EconAgent::allocate(int hrzn){
 	y = new double[hrzn + 1];
 	l = new double[hrzn + 1];
 	tfp = new double[hrzn + 1];
+	e = new double[hrzn + 1];
 	t = 0;
 	return;
 }
 // simulates one time step
 void EconAgent::nextStep(){
-	cout << "Here an agent evolves to next step: " << t+1 << endl;
+	e[t] = 20.0 * max(0.0,min(1.0, 1.0 - ((double)t) / 5.0));
+	cout << "\t\tHere an agent evolves to the step " << t+1 << " emitting (GtCO2):" << e[t] << endl;
 	t++;
 	return;
 }
@@ -28,5 +34,6 @@ void EconAgent::econagent_delete(){
 	delete[] y;
 	delete[] l;
 	delete[] tfp;
+	delete[] e;
 	return;
 }

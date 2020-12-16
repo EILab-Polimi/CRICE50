@@ -8,7 +8,8 @@
 class RICE{
 public:
 	RICE();
-	RICE(int nag, int hrzn);
+	~RICE();
+	RICE(int nag, int hrzn, int carbontype);
 	int agents;			// number of economic agents interacting
 	int horizon;		// length of the horizon
 	int t;				// time instant

@@ -1,0 +1,11 @@
+b12		0.12
+b23		0.007
+mateq 	588
+mupeq	360
+mloeq	1720
+fco22x	3.6813
+fex0	0.5
+fex1	1.0
+mat0	851
+mup0	460
+mlo0	1740
