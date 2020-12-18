@@ -27,5 +27,5 @@ RICE50++: ./src/RICEMain.o ./src/RICE.o
 	${CXX} ${CXXFLAGS} ./src/economy/EconAgent.cpp -o ./src/economy/EconAgent.o
 
 clean: 
-	rm -rf *.o ./src/temp/*.o ./src/carbon/*.o ./src/economy/*.o ./src/*.o
+	rm -rf *.o ./src/climate/*.o ./src/carbon/*.o ./src/economy/*.o ./src/*.o
 	rm -rf RICE50++
