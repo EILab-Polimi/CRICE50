@@ -13,7 +13,7 @@ public:
 	int t;			// time step
 	void allocate(int hrzn);
 	void nextStep();
-	void econagent_delete();
+	void econAgentDelete();
 };
 
 #endif

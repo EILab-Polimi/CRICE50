@@ -107,7 +107,7 @@ void DICECarbon::nextStep(double e){
 	return;
 }
 // frees allocated memory
-void DICECarbon::carbon_delete(){
+void DICECarbon::carbonDelete(){
 	delete[] mat;
 	delete[] mup;
 	delete[] mlo;
@@ -144,7 +144,7 @@ void WITCHCarbon::nextStep(double e){
 	return;
 }
 // frees allocated memory
-void WITCHCarbon::carbon_delete(){
+void WITCHCarbon::carbonDelete(){
 	delete[] mat;
 	delete[] mup;
 	delete[] mlo;

@@ -1,58 +1,58 @@
-#ifndef TEMP__H
-#define TEMP__H
+#ifndef CLIMATE__H
+#define CLIMATE__H
 
-class Temp{
+class Climate{
 public:
-	Temp();
-	~Temp();
+	Climate();
+	~Climate();
 	double* tatm; // this is the element every temperature component needs to have to pass it to economy
 	virtual void allocate(int hzrn) = 0;
 	virtual void nextStep(double forc) = 0;
-	virtual void temp_delete() = 0;
+	virtual void climateDelete() = 0;
 };
 
 ////// WITCHTemp class
-struct paramsWITCHTemp{
+struct paramsWITCHClimate{
 	double sigma1;
 	double sigma2;
 	double lambda;
 	double heat_ocean;
 };
 
-class WITCHTemp: public Temp{
+class WITCHClimate: public Climate{
 public:
-	WITCHTemp();
-	~WITCHTemp();
+	WITCHClimate();
+	~WITCHClimate();
 	// double* tatm;		// atmospheric temperature (°C w.r.t 1900)
 	double* tocean;		// ocean temperature (°C w.r.t 1900)
-	paramsWITCHTemp params;
+	paramsWITCHClimate params;
 	int t;				// time step
 	void allocate(int hrzn);
 	void readParams();
 	void nextStep(double forc);
-	void temp_delete();
+	void climateDelete();
 };
 
 ////// DICETemp class
-struct paramsDICETemp{
+struct paramsDICEClimate{
 	double sigma1;
 	double sigma2;
 	double lambda;
 	double heat_ocean;
 };
 
-class DICETemp: public Temp{
+class DICEClimate: public Climate{
 public:
-	DICETemp();
-	~DICETemp();
+	DICEClimate();
+	~DICEClimate();
 	// double* tatm;		// atmospheric temperature (°C w.r.t 1900)
 	double* tocean;		// ocean temperature (°C w.r.t 1900)
-	paramsDICETemp params;
+	paramsDICEClimate params;
 	int t;				// time step
 	void allocate(int hrzn);
 	void readParams();
 	void nextStep(double forc);
-	void temp_delete();
+	void climateDelete();
 };
 
 #endif

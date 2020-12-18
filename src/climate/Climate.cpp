@@ -1,27 +1,27 @@
-#include "Temp.h"
+#include "Climate.h"
 
 #include <iostream>
 #include <fstream>
 using namespace std;
 // constructor
-Temp::Temp(){
+Climate::Climate(){
 
 }
 // destructor
-Temp::~Temp(){
+Climate::~Climate(){
 
 }
 
-////// DESCRIPTION OF THE WITCH TEMPERATURE MODEL //////
+////// DESCRIPTION OF THE WITCH ClimateERATURE MODEL //////
 // constructor
-WITCHTemp::WITCHTemp(){
+WITCHClimate::WITCHClimate(){
 
 }
 // destructor
-WITCHTemp::~WITCHTemp(){
+WITCHClimate::~WITCHClimate(){
 
 }// allocates memory for the climate component
-void WITCHTemp::allocate(int hrzn){
+void WITCHClimate::allocate(int hrzn){
 	tatm = new double[hrzn + 1];
 	tocean = new double[hrzn + 1];
 	t = 0;
@@ -31,10 +31,10 @@ void WITCHTemp::allocate(int hrzn){
 // read parameters from text file
 // and stores them in the params struct
 // and setting initial conditions
-void WITCHTemp::readParams(){
+void WITCHClimate::readParams(){
 	fstream in;
 	string sJunk = "";
-	in.open("./settings/temp_params.txt", ios_base::in);
+	in.open("./settings/Climate_params.txt", ios_base::in);
 	if (!in){
 		cout << "The general settings file specified could not be found!" << endl;
 	    exit(1);
@@ -66,7 +66,7 @@ void WITCHTemp::readParams(){
 	in.close();
 }
 // simulates one time step
-void WITCHTemp::nextStep(double forc){
+void WITCHClimate::nextStep(double forc){
 	tatm[t+1] = tatm[t] +
 		params.sigma1 * (forc - params.lambda * tatm[t] +
 						 - params.sigma2 * (tatm[t] - tocean[t]));
@@ -77,23 +77,23 @@ void WITCHTemp::nextStep(double forc){
 	return;
 }
 // frees allocated memory
-void WITCHTemp::temp_delete(){
+void WITCHClimate::climateDelete(){
 	delete[] tatm;
 	delete[] tocean;
 	return;
 }
 
 
-////// DESCRIPTION OF THE DICE TEMPERATURE MODEL //////
+////// DESCRIPTION OF THE DICE ClimateERATURE MODEL //////
 // constructor
-DICETemp::DICETemp(){
+DICEClimate::DICEClimate(){
 
 }
 // destructor
-DICETemp::~DICETemp(){
+DICEClimate::~DICEClimate(){
 
 }// allocates memory for the climate component
-void DICETemp::allocate(int hrzn){
+void DICEClimate::allocate(int hrzn){
 	tatm = new double[hrzn + 1];
 	tocean = new double[hrzn + 1];
 	t = 0;
@@ -103,10 +103,10 @@ void DICETemp::allocate(int hrzn){
 // read parameters from text file
 // and stores them in the params struct
 // and setting initial conditions
-void DICETemp::readParams(){
+void DICEClimate::readParams(){
 	fstream in;
 	string sJunk = "";
-	in.open("./settings/temp_params.txt", ios_base::in);
+	in.open("./settings/Climate_params.txt", ios_base::in);
 	if (!in){
 		cout << "The general settings file specified could not be found!" << endl;
 	    exit(1);
@@ -138,7 +138,7 @@ void DICETemp::readParams(){
 	in.close();
 }
 // simulates one time step
-void DICETemp::nextStep(double forc){
+void DICEClimate::nextStep(double forc){
 	tatm[t+1] = tatm[t] +
 		params.sigma1 * (forc - params.lambda * tatm[t] +
 						 - params.sigma2 * (tatm[t] - tocean[t]));
@@ -148,7 +148,7 @@ void DICETemp::nextStep(double forc){
 	return;
 }
 // frees allocated memory
-void DICETemp::temp_delete(){
+void DICEClimate::climateDelete(){
 	delete[] tatm;
 	delete[] tocean;
 	return;

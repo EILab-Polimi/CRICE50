@@ -20,7 +20,7 @@ RICE::RICE(int nag, int hrzn, int carbontype){
 			carbon = new WITCHCarbon();
 			break;
 	}
-	temp = new WITCHTemp();
+	climate = new WITCHClimate();
 	econ = new Econ();
 	allocate(nag, hrzn);
 	return;
@@ -30,7 +30,7 @@ void RICE::allocate(int nag, int hrzn){
 	agents = nag;
 	horizon = hrzn;
 	carbon->allocate(hrzn);
-	temp->allocate(hrzn);
+	climate->allocate(hrzn);
 	econ->allocate(nag, hrzn);
 	t = 0;
 	return;	
@@ -39,7 +39,7 @@ void RICE::allocate(int nag, int hrzn){
 void RICE::nextStep(){
 	econ->nextStep();
 	carbon->nextStep(econ->e[t]);
-	temp->nextStep(carbon->forc[t]);
+	climate->nextStep(carbon->forc[t]);
 	t++;
 	return;
 }
@@ -53,8 +53,8 @@ void RICE::simulate(){
 }
 // frees allocated memory
 void RICE::RICE_delete(){
-	carbon->carbon_delete();
-	temp->temp_delete();
-	econ->econ_delete();
+	carbon->carbonDelete();
+	climate->climateDelete();
+	econ->econDelete();
 	return;
 }

@@ -11,7 +11,7 @@ public:
 	double* forc; // (W/m2) increase w.r.t 1900 - this is the element every carbon component needs to have to pass it to temperature
 	virtual void allocate(int hrzn) = 0;
 	virtual void nextStep(double e) = 0;
-	virtual void carbon_delete() = 0;
+	virtual void carbonDelete() = 0;
 };
 
 ////// DICECarbon class
@@ -44,7 +44,7 @@ public:
 	void allocate(int hrzn);
 	void readParams();
 	void nextStep(double e);
-	void carbon_delete();
+	void carbonDelete();
 };
 
 ////// WITCHCarbon class
@@ -64,7 +64,7 @@ public:
 	int t;				// time step
 	void allocate(int hrzn);
 	void nextStep(double e);
-	void carbon_delete();
+	void carbonDelete();
 };
 
 // ////// FAIRCarbon class

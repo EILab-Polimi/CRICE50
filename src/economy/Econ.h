@@ -13,7 +13,7 @@ public:
 	double* e;
 	void allocate(int agents, int hrzn);
 	void nextStep();
-	void econ_delete();
+	void econDelete();
 };
 
 #endif

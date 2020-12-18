@@ -29,7 +29,7 @@ void EconAgent::nextStep(){
 	return;
 }
 // frees allocated memory
-void EconAgent::econagent_delete(){
+void EconAgent::econAgentDelete(){
 	delete[] k;
 	delete[] y;
 	delete[] l;

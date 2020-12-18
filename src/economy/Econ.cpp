@@ -34,9 +34,9 @@ void Econ::nextStep(){
 	return;
 }
 // frees allocated memory
-void Econ::econ_delete(){
+void Econ::econDelete(){
 	for (int nag=0; nag < agents; nag++){
-		agents_ptr[nag].econagent_delete();
+		agents_ptr[nag].econAgentDelete();
 	}
 	delete[] agents_ptr;
 	delete[] e;
