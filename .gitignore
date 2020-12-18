@@ -51,3 +51,8 @@ data/*
 *.out
 *.app
 
+# Mac
+.DS_Store
+
+# RICE50++
+RICE50++
