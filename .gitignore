@@ -1,0 +1,20 @@
+# gitignore file
+
+
+# Whitelist some files
+!.gitignore
+!README.md
+!CONTRIBUTING.md
+
+
+# Data files (for the moment)
+data/*
+*.R
+
+# Rsession files
+.Rhistory
+.Rapp.history
+.RData
+.Rproj.user/
+
+
