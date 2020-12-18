@@ -8,7 +8,6 @@
 
 
 # Data files (for the moment)
-data/*
 *.R
 
 # Rsession files
