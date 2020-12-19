@@ -1,8 +1,8 @@
 #include "EconAgent.h"
 #include "Econ.h"
 
-#include <iostream>
-
+#include<iostream>
+#include<fstream> 
 using namespace std;
 // constructor
 Econ::Econ(){
@@ -12,17 +12,40 @@ Econ::Econ(){
 Econ::~Econ(){
 
 }
+void Econ::readParams(){
+	fstream in;
+	string sJunk = "";
+	in.open("./settings/globalEconParams.txt", ios_base::in);
+	if (!in){
+		cout << "The general settings file specified could not be found!" << endl;
+	    exit(1);
+	}
+	while (sJunk!="nagents"){
+		in >>sJunk;
+	}
+	in >> agents;
+	while (sJunk!="elasmu"){
+		in >>sJunk;
+	}
+	in >> params.elasmu;
+	while (sJunk!="prstp"){
+		in >>sJunk;
+	}
+	in >> params.prstp;
+	while (sJunk!="ineqav"){
+		in >>sJunk;
+	}
+	in >> params.ineqav;
+}
+
 // allocates memory for the economic component
-void Econ::allocate(int nag, int hrzn){
-	agents = nag;
-	agents_ptr = new EconAgent[nag];
+void Econ::allocate(int hrzn){
+	readParams();
+	agents_ptr = new EconAgent[agents];
 	t = 0;
 	for (int nag=0; nag < agents; nag++){
 		agents_ptr[nag].allocate(hrzn);
 	}
-	params.elasmu = 1.45;
-	params.prstp = 0.015;
-	params.ineqav = 1.0;
 	e = new double[hrzn+1];
 	return;
 }

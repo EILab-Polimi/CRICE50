@@ -18,7 +18,8 @@ public:
 	int t;						// time step
 	EconParams params;
 	double* e;
-	void allocate(int agents, int hrzn);
+	void allocate(int hrzn);
+	void readParams();
 	void nextStep();
 	void econDelete();
 };

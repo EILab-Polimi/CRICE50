@@ -11,7 +11,7 @@ RICE::~RICE(){
 	
 }
 // constructor with inputs 
-RICE::RICE(int nag, int hrzn, int carbontype){
+RICE::RICE(int hrzn, int carbontype){
 	switch (carbontype){
 		case 0:
 			carbon = new DICECarbon();
@@ -22,16 +22,15 @@ RICE::RICE(int nag, int hrzn, int carbontype){
 	}
 	climate = new WITCHClimate();
 	econ = new Econ();
-	allocate(nag, hrzn);
+	allocate(hrzn);
 	return;
 }
 // allocates the memory for the different components
-void RICE::allocate(int nag, int hrzn){
-	agents = nag;
+void RICE::allocate(int hrzn){
 	horizon = hrzn;
 	carbon->allocate(hrzn);
 	climate->allocate(hrzn);
-	econ->allocate(nag, hrzn);
+	econ->allocate(hrzn);
 	t = 0;
 	return;	
 }

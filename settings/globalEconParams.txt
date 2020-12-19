@@ -1,0 +1,4 @@
+nagents		2
+elasmu		1.45
+prstp		0.015
+ineqav		1.00

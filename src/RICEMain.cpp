@@ -13,7 +13,6 @@ int main(int argc, char* argv[])
 	if (argc > 1){
 		carbontype = atoi(argv[1]);		
 	}
-	int nagents = 2;
 	int horizon = 10;
 
 	// do we want to consider different delta t ?
@@ -21,7 +20,7 @@ int main(int argc, char* argv[])
 
 	// here we create the RICE instance
 	// and the associated pointer
-	RICE rice(nagents, horizon, carbontype);
+	RICE rice(horizon, carbontype);
 	RICE* riceptr = &rice;
 
 	// simulate RICE
