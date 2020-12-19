@@ -3,6 +3,12 @@
 
 #include "EconAgent.h"
 
+struct EconParams{
+	double elasmu;
+	double prstp;
+	double ineqav;
+};
+
 class Econ{
 public:
 	Econ();
@@ -10,6 +16,7 @@ public:
 	int agents;					// number of agents	
 	EconAgent* agents_ptr;		// pointer to agents
 	int t;						// time step
+	EconParams params;
 	double* e;
 	void allocate(int agents, int hrzn);
 	void nextStep();

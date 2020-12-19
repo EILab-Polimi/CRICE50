@@ -20,6 +20,9 @@ void Econ::allocate(int nag, int hrzn){
 	for (int nag=0; nag < agents; nag++){
 		agents_ptr[nag].allocate(hrzn);
 	}
+	params.elasmu = 1.45;
+	params.prstp = 0.015;
+	params.ineqav = 1.0;
 	e = new double[hrzn+1];
 	return;
 }
