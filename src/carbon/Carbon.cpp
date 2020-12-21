@@ -101,7 +101,7 @@ void DICECarbon::nextStep(double e){
 	mlo[t+1] = mup[t] * params.b23 + mlo[t] * params.b33;
 	forc[t] = params.fco22x * ((log((mat[t]/588.000))/log(2))) + forcoth[t];
 	cout << "\t\tDICE carbon cycle evolves to next step: " << endl;
-	cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << t+1 << endl;
+	cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << endl;
 	t++;
 	return;
 }
@@ -131,13 +131,93 @@ WITCHCarbon::WITCHCarbon(int hrzn){
 	mup = new double[hrzn + 1];
 	mlo = new double[hrzn + 1];
 	forc = new double[hrzn + 1];
+	readParams();
 	t = 0;
+}
+// read parameters from text file
+// and stores them in the params struct
+// and setting initial conditions
+void WITCHCarbon::readParams(){
+	fstream in;
+	string sJunk = "";
+	in.open("./settings/WITCHcarbonParams.txt", ios_base::in);
+	if (!in){
+		cout << "The general settings file specified could not be found!" << endl;
+	    exit(1);
+	}
+	while (sJunk!="CO2toC"){
+		in >>sJunk;
+	}
+	in >> params.CO2toC;
+	while (sJunk!="at2at"){
+		in >>sJunk;
+	}
+	in >> params.at2at;
+	while (sJunk!="at2up"){
+		in >>sJunk;
+	}
+	in >> params.at2up;
+	while (sJunk!="up2at"){
+		in >>sJunk;
+	}
+	in >> params.up2at;
+	while (sJunk!="up2up"){
+		in >>sJunk;
+	}
+	in >> params.up2up;
+	while (sJunk!="up2lo"){
+		in >>sJunk;
+	}
+	in >> params.up2lo;
+	while (sJunk!="lo2up"){
+		in >>sJunk;
+	}
+	in >> params.lo2up;
+	while (sJunk!="lo2lo"){
+		in >>sJunk;
+	}
+	in >> params.lo2lo;
+	while (sJunk!="rfoth_a"){
+		in >>sJunk;
+	}
+	in >> params.rfoth_a;
+	while (sJunk!="rfoth_I"){
+		in >>sJunk;
+	}
+	in >> params.rfoth_I;
+	while (sJunk!="rfc_alpha"){
+		in >>sJunk;
+	}
+	in >> params.rfc_alpha;
+	while (sJunk!="rfc_beta"){
+		in >>sJunk;
+	}
+	in >> params.rfc_beta;
+	while (sJunk!="mat0"){
+		in >>sJunk;
+	}
+	in >> mat[0];
+	while (sJunk!="mup0"){
+		in >>sJunk;
+	}
+	in >> mup[0];
+	while (sJunk!="mlo0"){
+		in >>sJunk;
+	}
+	in >> mlo[0];
+	in.close();
 }
 // simulates next step
 void WITCHCarbon::nextStep(double e){
-	mat[t+1] = mat[t] + 20.0;
-	forc[t] = 3.0;
-	cout << "Here the WITCH carbon cycle evolves to next step: " << t+1 << endl;
+	mat[t+1] = mat[t] * params.at2at + mup[t] * params.up2at +
+		e * 5 * params.CO2toC;
+	mup[t+1] = mat[t] * params.at2up + mup[t] * params.up2up +
+		mlo[t] + params.lo2up;
+	mlo[t+1] = mlo[t] * params.lo2lo + mup[t] * params.up2lo;
+	forc[t] = params.rfoth_I + (1 + params.rfoth_a) * 
+		(params.rfc_alpha * (log(mat[t]) - log(params.rfc_beta)));
+	cout << "\t\tWITCH carbon cycle evolves to next step: " << endl;
+	cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << endl;
 	t++;
 	return;
 }

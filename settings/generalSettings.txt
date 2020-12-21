@@ -1,0 +1,8 @@
+horizon
+tstep
+carbonmodel
+climatemodel
+econmodel
+### additional settings
+ssp
+???

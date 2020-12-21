@@ -10,14 +10,14 @@ public:
 	virtual void econAgentDelete() = 0;
 };
 
-struct EconAgentParams{
+struct RICEEconAgentParams{
 	double gama;
 	double dk;
 	double dela0;
 	double deland;
 };
 
-struct EconAgentTraj{
+struct RICEEconAgentTraj{
 	double* pop;
 	double* tfp;
 	double* gdp;
@@ -38,6 +38,8 @@ public:
 	~RICEEconAgent();
 	RICEEconAgent(int hrzn);
 	int t;			// time step
+	RICEEconAgentParams params;
+	RICEEconAgentTraj traj;
 	void nextStep();
 	void econAgentDelete();
 };

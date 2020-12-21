@@ -48,8 +48,18 @@ public:
 
 ////// WITCHCarbon class
 struct paramsWITCHCarbon{
-	int param1;
-	int param2;
+	double CO2toC;
+	double at2at;
+	double at2up;
+	double up2at;
+	double up2up;
+	double up2lo;
+	double lo2up;
+	double lo2lo;
+	double rfoth_a;
+	double rfoth_I;
+	double rfc_alpha;
+	double rfc_beta;
 };
 
 class WITCHCarbon: public Carbon{
@@ -62,6 +72,7 @@ public:
 	double* mlo;		// lower strata carbon (GtC)
 	paramsWITCHCarbon params;
 	int t;				// time step
+	void readParams();
 	void nextStep(double e);
 	void carbonDelete();
 };
