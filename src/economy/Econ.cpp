@@ -3,6 +3,7 @@
 
 #include<iostream>
 #include<fstream> 
+
 using namespace std;
 // constructor
 Econ::Econ(){
@@ -39,21 +40,21 @@ void Econ::readParams(){
 }
 
 // allocates memory for the economic component
-void Econ::allocate(int hrzn){
+Econ::Econ(int hrzn){
 	readParams();
-	agents_ptr = new EconAgent[agents];
+	e = new double[hrzn+1];
+	agents_ptr = new EconAgent * [agents];
 	t = 0;
 	for (int nag=0; nag < agents; nag++){
-		agents_ptr[nag].allocate(hrzn);
+		agents_ptr[nag] = new RICEEconAgent(hrzn);
 	}
-	e = new double[hrzn+1];
 	return;
 }
 // simulates one step
 void Econ::nextStep(){
 	for (int ag=0; ag < agents; ag++){
-		agents_ptr[ag].nextStep();
-		e[t] += agents_ptr[ag].e[t];
+		agents_ptr[ag]->nextStep();
+		e[t] += agents_ptr[ag]->e[t];
 	}
 	cout << "\t\tHere the economy evolves to next step: " << t+1 << endl;
 	t++;
@@ -62,7 +63,8 @@ void Econ::nextStep(){
 // frees allocated memory
 void Econ::econDelete(){
 	for (int nag=0; nag < agents; nag++){
-		agents_ptr[nag].econAgentDelete();
+		agents_ptr[nag]->econAgentDelete();
+		delete agents_ptr[nag];
 	}
 	delete[] agents_ptr;
 	delete[] e;

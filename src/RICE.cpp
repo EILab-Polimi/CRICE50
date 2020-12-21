@@ -12,28 +12,29 @@ RICE::~RICE(){
 }
 // constructor with inputs 
 RICE::RICE(int hrzn, int carbontype){
+	horizon = hrzn;
 	switch (carbontype){
 		case 0:
-			carbon = new DICECarbon();
+			carbon = new DICECarbon(hrzn);
 			break;
 		case 1:
-			carbon = new WITCHCarbon();
+			carbon = new WITCHCarbon(hrzn);
 			break;
 	}
-	climate = new WITCHClimate();
-	econ = new Econ();
-	allocate(hrzn);
-	return;
-}
-// allocates the memory for the different components
-void RICE::allocate(int hrzn){
-	horizon = hrzn;
-	carbon->allocate(hrzn);
-	climate->allocate(hrzn);
-	econ->allocate(hrzn);
+	climate = new WITCHClimate(hrzn);
+	econ = new Econ(hrzn);
 	t = 0;
 	return;	
 }
+// // allocates the memory for the different components
+// void RICE::allocate(int hrzn){
+// 	horizon = hrzn;
+// 	carbon->allocate(hrzn);
+// 	climate->allocate(hrzn);
+// 	econ->allocate(hrzn);
+// 	t = 0;
+// 	return;	
+// }
 // simulates one step of the model
 void RICE::nextStep(){
 	econ->nextStep();

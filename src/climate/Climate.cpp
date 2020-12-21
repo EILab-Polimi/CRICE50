@@ -21,12 +21,11 @@ WITCHClimate::WITCHClimate(){
 WITCHClimate::~WITCHClimate(){
 
 }// allocates memory for the climate component
-void WITCHClimate::allocate(int hrzn){
+WITCHClimate::WITCHClimate(int hrzn){
 	tatm = new double[hrzn + 1];
 	tocean = new double[hrzn + 1];
 	t = 0;
 	readParams();
-	return;
 }
 // read parameters from text file
 // and stores them in the params struct
@@ -93,12 +92,11 @@ DICEClimate::DICEClimate(){
 DICEClimate::~DICEClimate(){
 
 }// allocates memory for the climate component
-void DICEClimate::allocate(int hrzn){
+DICEClimate::DICEClimate(int hrzn){
 	tatm = new double[hrzn + 1];
 	tocean = new double[hrzn + 1];
 	t = 0;
 	readParams();
-	return;
 }
 // read parameters from text file
 // and stores them in the params struct

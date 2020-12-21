@@ -22,7 +22,7 @@ DICECarbon::~DICECarbon(){
 
 }
 // allocates the carbon component
-void DICECarbon::allocate(int hrzn){
+DICECarbon::DICECarbon(int hrzn){
 	mat = new double[hrzn + 1];
 	mup = new double[hrzn + 1];
 	mlo = new double[hrzn + 1];
@@ -30,7 +30,6 @@ void DICECarbon::allocate(int hrzn){
 	forcoth = new double[hrzn + 1];
 	readParams();
 	t = 0;
-	return;
 }
 // read parameters from text file
 // and stores them in the params struct
@@ -127,13 +126,12 @@ WITCHCarbon::~WITCHCarbon(){
 
 }
 // allocates the carbon component
-void WITCHCarbon::allocate(int hrzn){
+WITCHCarbon::WITCHCarbon(int hrzn){
 	mat = new double[hrzn + 1];
 	mup = new double[hrzn + 1];
 	mlo = new double[hrzn + 1];
 	forc = new double[hrzn + 1];
 	t = 0;
-	return;
 }
 // simulates next step
 void WITCHCarbon::nextStep(double e){

@@ -9,7 +9,6 @@ public:
 	Carbon();
 	~Carbon();
 	double* forc; // (W/m2) increase w.r.t 1900 - this is the element every carbon component needs to have to pass it to temperature
-	virtual void allocate(int hrzn) = 0;
 	virtual void nextStep(double e) = 0;
 	virtual void carbonDelete() = 0;
 };
@@ -35,13 +34,13 @@ class DICECarbon: public Carbon{
 public:
 	DICECarbon();
 	~DICECarbon();
+	DICECarbon(int hrzn);
 	double* mat;		// atmospheric carbon (GtC)
 	double* mup;		// upper strata carbon (GtC)
 	double* mlo;		// lower strata carbon (GtC)
 	double* forcoth; 	// forcing of other GHG (W/m2) - increase w.r.t 1900
 	paramsDICECarbon params;
 	int t;				// time step
-	void allocate(int hrzn);
 	void readParams();
 	void nextStep(double e);
 	void carbonDelete();
@@ -57,12 +56,12 @@ class WITCHCarbon: public Carbon{
 public:
 	WITCHCarbon();
 	~WITCHCarbon();
+	WITCHCarbon(int hrzn);
 	double* mat;		// atmospheric carbon (GtC)
 	double* mup;		// upper strata carbon (GtC)
 	double* mlo;		// lower strata carbon (GtC)
 	paramsWITCHCarbon params;
 	int t;				// time step
-	void allocate(int hrzn);
 	void nextStep(double e);
 	void carbonDelete();
 };

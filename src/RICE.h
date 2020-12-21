@@ -16,7 +16,6 @@ public:
 	Carbon* carbon;		// carbon component of the model
 	Climate* climate;	// climate component of the model
 	Econ* econ;			// economic component of the model
-	void allocate(int hrzn);
 	void nextStep();
 	void simulate();
 	void RICE_delete();

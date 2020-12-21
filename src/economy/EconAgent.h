@@ -1,6 +1,15 @@
 #ifndef ECONAGENT__H
 #define ECONAGENT__H
 
+class EconAgent{
+public:
+	EconAgent();
+	virtual ~EconAgent() = 0;
+	double* e;		//emissions
+	virtual void nextStep() = 0;
+	virtual void econAgentDelete() = 0;
+};
+
 struct EconAgentParams{
 	double gama;
 	double dk;
@@ -23,13 +32,12 @@ struct EconAgentTraj{
 	double* abatecost;
 };
 
-class EconAgent{
+class RICEEconAgent: public EconAgent{
 public:
-	EconAgent();
-	~EconAgent();
-	double* e;		//emissions
+	RICEEconAgent();
+	~RICEEconAgent();
+	RICEEconAgent(int hrzn);
 	int t;			// time step
-	void allocate(int hrzn);
 	void nextStep();
 	void econAgentDelete();
 };

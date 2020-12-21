@@ -6,7 +6,6 @@ public:
 	Climate();
 	~Climate();
 	double* tatm; // this is the element every temperature component needs to have to pass it to economy
-	virtual void allocate(int hzrn) = 0;
 	virtual void nextStep(double forc) = 0;
 	virtual void climateDelete() = 0;
 };
@@ -23,11 +22,11 @@ class WITCHClimate: public Climate{
 public:
 	WITCHClimate();
 	~WITCHClimate();
+	WITCHClimate(int hrzn);
 	// double* tatm;		// atmospheric temperature (°C w.r.t 1900)
 	double* tocean;		// ocean temperature (°C w.r.t 1900)
 	paramsWITCHClimate params;
 	int t;				// time step
-	void allocate(int hrzn);
 	void readParams();
 	void nextStep(double forc);
 	void climateDelete();
@@ -45,11 +44,11 @@ class DICEClimate: public Climate{
 public:
 	DICEClimate();
 	~DICEClimate();
+	DICEClimate(int hrzn);
 	// double* tatm;		// atmospheric temperature (°C w.r.t 1900)
 	double* tocean;		// ocean temperature (°C w.r.t 1900)
 	paramsDICEClimate params;
 	int t;				// time step
-	void allocate(int hrzn);
 	void readParams();
 	void nextStep(double forc);
 	void climateDelete();

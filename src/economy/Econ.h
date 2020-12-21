@@ -13,12 +13,12 @@ class Econ{
 public:
 	Econ();
 	~Econ();
+	Econ(int hrzn);
 	int agents;					// number of agents	
-	EconAgent* agents_ptr;		// pointer to agents
+	EconAgent** agents_ptr;		// pointer to agents
 	int t;						// time step
 	EconParams params;
 	double* e;
-	void allocate(int hrzn);
 	void readParams();
 	void nextStep();
 	void econDelete();
