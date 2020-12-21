@@ -13,10 +13,6 @@ EconAgent::~EconAgent(){
 }
 // allocates the memory for an agent
 void EconAgent::allocate(int hrzn){
-	k = new double[hrzn + 1];
-	y = new double[hrzn + 1];
-	l = new double[hrzn + 1];
-	tfp = new double[hrzn + 1];
 	e = new double[hrzn + 1];
 	t = 0;
 	return;
@@ -30,10 +26,6 @@ void EconAgent::nextStep(){
 }
 // frees allocated memory
 void EconAgent::econAgentDelete(){
-	delete[] k;
-	delete[] y;
-	delete[] l;
-	delete[] tfp;
 	delete[] e;
 	return;
 }
