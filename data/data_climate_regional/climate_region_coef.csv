@@ -1,0 +1,17 @@
+"coef","n","value"
+"alpha_precip","north",82.2400183361933
+"alpha_precip","south",98.3570110601019
+"alpha_temp","north",9.90993657998704
+"alpha_temp","south",19.9563341208563
+"base_precip","north",82.4352273134165
+"base_precip","south",97.1287510644876
+"base_temp","north",10.6437229848913
+"base_temp","south",20.5810016970002
+"beta_precip","north",0.908108825212497
+"beta_precip","south",0.811842311964697
+"beta_temp","north",1.09613702394878
+"beta_temp","south",0.96193810964818
+"r2_precip","north",0.656842978540971
+"r2_precip","south",0.412739590347531
+"r2_temp","north",0.986167843379054
+"r2_temp","south",0.97774241826704
