@@ -6,15 +6,21 @@
 !README.md
 !CONTRIBUTING.md
 
-
-# Data files (for the moment)
-*.R
+# Temporary data
+data/temp/*
 
 # Rsession files
 .Rhistory
 .Rapp.history
 .RData
 .Rproj.user/
+
+# GAMS project file 
+*.gpr
+*.~gm
+*.lst
+*.lxi
+*.log
 
 # Cpp standard gtignore
 # Prerequisites
