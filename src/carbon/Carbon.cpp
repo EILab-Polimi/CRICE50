@@ -37,7 +37,7 @@ DICECarbon::DICECarbon(int hrzn){
 void DICECarbon::readParams(){
 	fstream in;
 	string sJunk = "";
-	in.open("./settings/DICECarbon_params.txt", ios_base::in);
+	in.open("./settings/DICEcarbonParams.txt", ios_base::in);
 	if (!in){
 		cout << "The general settings file specified could not be found!" << endl;
 	    exit(1);

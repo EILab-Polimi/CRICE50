@@ -33,7 +33,7 @@ WITCHClimate::WITCHClimate(int hrzn){
 void WITCHClimate::readParams(){
 	fstream in;
 	string sJunk = "";
-	in.open("./settings/WITCHClimate_params.txt", ios_base::in);
+	in.open("./settings/WITCHclimateParams.txt", ios_base::in);
 	if (!in){
 		cout << "The general settings file specified could not be found!" << endl;
 	    exit(1);
@@ -104,7 +104,7 @@ DICEClimate::DICEClimate(int hrzn){
 void DICEClimate::readParams(){
 	fstream in;
 	string sJunk = "";
-	in.open("./settings/Climate_params.txt", ios_base::in);
+	in.open("./settings/DICEclimateParams.txt", ios_base::in);
 	if (!in){
 		cout << "The general settings file specified could not be found!" << endl;
 	    exit(1);
