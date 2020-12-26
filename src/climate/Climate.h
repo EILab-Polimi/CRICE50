@@ -34,10 +34,11 @@ public:
 
 ////// DICETemp class
 struct paramsDICEClimate{
-	double sigma1;
-	double sigma2;
-	double lambda;
-	double heat_ocean;
+	double c1;
+	double c3;
+	double c4;
+	double fco22x;
+	double t2xco2;
 };
 
 class DICEClimate: public Climate{

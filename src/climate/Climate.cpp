@@ -109,22 +109,26 @@ void DICEClimate::readParams(){
 		cout << "The general settings file specified could not be found!" << endl;
 	    exit(1);
 	}
-	while (sJunk!="sigma1"){
+	while (sJunk!="c1"){
 		in >>sJunk;
 	}
-	in >> params.sigma1;
-	while (sJunk!="sigma2"){
+	in >> params.c1;
+	while (sJunk!="c3"){
 		in >>sJunk;
 	}
-	in >> params.sigma2;
-	while (sJunk!="lambda"){
+	in >> params.c3;
+	while (sJunk!="c4"){
 		in >>sJunk;
 	}
-	in >> params.lambda;
-	while (sJunk!="heat_ocean"){
+	in >> params.c4;
+	while (sJunk!="fco22x"){
 		in >>sJunk;
 	}
-	in >> params.heat_ocean;
+	in >> params.fco22x;
+	while (sJunk!="t2xco2"){
+		in >>sJunk;
+	}
+	in >> params.t2xco2;
 	while (sJunk!="tatm0"){
 		in >>sJunk;
 	}
@@ -138,11 +142,11 @@ void DICEClimate::readParams(){
 // simulates one time step
 void DICEClimate::nextStep(double forc){
 	tatm[t+1] = tatm[t] +
-		params.sigma1 * (forc - params.lambda * tatm[t] +
-						 - params.sigma2 * (tatm[t] - tocean[t]));
-	tocean[t+1] = tocean[t] + params.heat_ocean * (tatm[t] - tocean[t]);
-	cout << "Here the climate evolves to next step: tatm becomes " << tatm[t] << endl;
-	t++;
+		params.c1 * (forc - params.fco22x / params.t2xco2 * tatm[t] +
+						 - params.c3 * (tatm[t] - tocean[t]));
+	tocean[t+1] = tocean[t] + params.c4 * (tatm[t] - tocean[t]);
+	cout << "\t\tDICE climate evolves to next step:" << endl;
+	cout << "\t\t" << tatm[t] << "\t" << tocean[t] << endl;	t++;
 	return;
 }
 // frees allocated memory

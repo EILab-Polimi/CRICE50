@@ -21,7 +21,7 @@ RICE::RICE(int hrzn, int carbontype){
 			carbon = new WITCHCarbon(hrzn);
 			break;
 	}
-	climate = new WITCHClimate(hrzn);
+	climate = new DICEClimate(hrzn);
 	econ = new Econ(hrzn);
 	t = 0;
 	return;	

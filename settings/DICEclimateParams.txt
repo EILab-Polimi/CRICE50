@@ -1,5 +1,7 @@
-xi1
-xi2
-xi3
-lambda
-t2co2x
+c1	0.1005
+c3	0.088
+c4	0.025
+fco22x	3.6813
+t2xco2	3.1
+tatm0	0.85
+tocean0	0.0068
