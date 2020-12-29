@@ -3,6 +3,7 @@
 
 #include<math.h>
 #include<fstream>
+
 // Abstract Carbon class
 class Carbon{
 public:

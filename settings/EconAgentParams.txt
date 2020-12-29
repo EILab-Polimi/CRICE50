@@ -1,0 +1,4 @@
+gama	1.45
+dk		0.1
+dela0	0.5
+deland	0.001

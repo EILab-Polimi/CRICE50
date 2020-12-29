@@ -1,7 +1,6 @@
 #include "RICE.h"
 #include <iostream>
 
-using namespace std;
 // constructor
 RICE::RICE(){
 	
@@ -24,17 +23,7 @@ RICE::RICE(int hrzn, int carbontype){
 	climate = new DICEClimate(hrzn);
 	econ = new Econ(hrzn);
 	t = 0;
-	return;	
 }
-// // allocates the memory for the different components
-// void RICE::allocate(int hrzn){
-// 	horizon = hrzn;
-// 	carbon->allocate(hrzn);
-// 	climate->allocate(hrzn);
-// 	econ->allocate(hrzn);
-// 	t = 0;
-// 	return;	
-// }
 // simulates one step of the model
 void RICE::nextStep(){
 	econ->nextStep();
@@ -46,7 +35,7 @@ void RICE::nextStep(){
 // simulates all the horizon
 void RICE::simulate(){
 	for (int time=0 ; time < horizon; time++){
-		cout << "\tSimulation time step " << t << ", year " << 2015+t*5 << endl;
+		std::cout << "\tSimulation time step " << t << ", year " << 2015+t*5 << std::endl;
 		nextStep();
 	} 
 	return;

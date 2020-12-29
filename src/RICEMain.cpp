@@ -1,7 +1,7 @@
 /*
 Here we will put authors and license
 */
-#include<stdlib.h>
+
 #include "RICE.h"
 
 int main(int argc, char* argv[])

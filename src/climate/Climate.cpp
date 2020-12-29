@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <fstream>
-using namespace std;
+
 // constructor
 Climate::Climate(){
 
@@ -31,11 +31,11 @@ WITCHClimate::WITCHClimate(int hrzn){
 // and stores them in the params struct
 // and setting initial conditions
 void WITCHClimate::readParams(){
-	fstream in;
-	string sJunk = "";
-	in.open("./settings/WITCHclimateParams.txt", ios_base::in);
+	std::fstream in;
+	std::string sJunk = "";
+	in.open("./settings/WITCHclimateParams.txt", std::ios_base::in);
 	if (!in){
-		cout << "The general settings file specified could not be found!" << endl;
+		std::cout << "The general settings file specified could not be found!" << std::endl;
 	    exit(1);
 	}
 	while (sJunk!="sigma1"){
@@ -63,6 +63,7 @@ void WITCHClimate::readParams(){
 	}
 	in >> tocean[0];
 	in.close();
+	return;
 }
 // simulates one time step
 void WITCHClimate::nextStep(double forc){
@@ -70,8 +71,8 @@ void WITCHClimate::nextStep(double forc){
 		params.sigma1 * (forc - params.lambda * tatm[t] +
 						 - params.sigma2 * (tatm[t] - tocean[t]));
 	tocean[t+1] = tocean[t] + params.heat_ocean * (tatm[t] - tocean[t]);
-	cout << "\t\tWITCH climate evolves to next step:" << endl;
-	cout << "\t\t" << tatm[t] << "\t" << tocean[t] << endl;
+	std::cout << "\t\tWITCH climate evolves to next step:" << std::endl;
+	std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
 	t++;
 	return;
 }
@@ -102,11 +103,11 @@ DICEClimate::DICEClimate(int hrzn){
 // and stores them in the params struct
 // and setting initial conditions
 void DICEClimate::readParams(){
-	fstream in;
-	string sJunk = "";
-	in.open("./settings/DICEclimateParams.txt", ios_base::in);
+	std::fstream in;
+	std::string sJunk = "";
+	in.open("./settings/DICEclimateParams.txt", std::ios_base::in);
 	if (!in){
-		cout << "The general settings file specified could not be found!" << endl;
+		std::cout << "The general settings file specified could not be found!" << std::endl;
 	    exit(1);
 	}
 	while (sJunk!="c1"){
@@ -138,6 +139,7 @@ void DICEClimate::readParams(){
 	}
 	in >> tocean[0];
 	in.close();
+	return;
 }
 // simulates one time step
 void DICEClimate::nextStep(double forc){
@@ -145,8 +147,9 @@ void DICEClimate::nextStep(double forc){
 		params.c1 * (forc - params.fco22x / params.t2xco2 * tatm[t] +
 						 - params.c3 * (tatm[t] - tocean[t]));
 	tocean[t+1] = tocean[t] + params.c4 * (tatm[t] - tocean[t]);
-	cout << "\t\tDICE climate evolves to next step:" << endl;
-	cout << "\t\t" << tatm[t] << "\t" << tocean[t] << endl;	t++;
+	std::cout << "\t\tDICE climate evolves to next step:" << std::endl;
+	std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
+	t++;
 	return;
 }
 // frees allocated memory

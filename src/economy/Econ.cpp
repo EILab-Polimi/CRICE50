@@ -3,8 +3,8 @@
 
 #include<iostream>
 #include<fstream> 
+#include<string>
 
-using namespace std;
 // constructor
 Econ::Econ(){
 
@@ -13,12 +13,35 @@ Econ::Econ(){
 Econ::~Econ(){
 
 }
-void Econ::readParams(){
-	fstream in;
-	string sJunk = "";
-	in.open("./settings/globalEconParams.txt", ios_base::in);
+// allocates memory for the economic component
+Econ::Econ(int hrzn){
+	readParams();
+	e = new double[hrzn+1];
+	agents_ptr = new EconAgent * [agents];
+	t = 0;
+	std::fstream in;
+	std::string sJunk = "";
+	in.open("./settings/regionNAMES.txt", std::ios_base::in);
 	if (!in){
-		cout << "The general settings file specified could not be found!" << endl;
+		std::cout << "The general settings file specified could not be found!" << std::endl;
+	    exit(1);
+	}
+	for (int nag=0; nag < agents; nag++){
+		std::string name;
+		while (sJunk!=std::to_string(nag)){
+		in >>sJunk;
+		}
+		in >> name;
+		agents_ptr[nag] = new RICEEconAgent(hrzn, name);
+	}
+}
+// read general economic parameters
+void Econ::readParams(){
+	std::fstream in;
+	std::string sJunk = "";
+	in.open("./settings/globalEconParams.txt", std::ios_base::in);
+	if (!in){
+		std::cout << "The general settings file specified could not be found!" << std::endl;
 	    exit(1);
 	}
 	while (sJunk!="nagents"){
@@ -37,17 +60,7 @@ void Econ::readParams(){
 		in >>sJunk;
 	}
 	in >> params.ineqav;
-}
-
-// allocates memory for the economic component
-Econ::Econ(int hrzn){
-	readParams();
-	e = new double[hrzn+1];
-	agents_ptr = new EconAgent * [agents];
-	t = 0;
-	for (int nag=0; nag < agents; nag++){
-		agents_ptr[nag] = new RICEEconAgent(hrzn);
-	}
+	in.close();
 	return;
 }
 // simulates one step
@@ -56,7 +69,7 @@ void Econ::nextStep(){
 		agents_ptr[ag]->nextStep();
 		e[t] += agents_ptr[ag]->e[t];
 	}
-	cout << "\t\tHere the economy evolves to next step: " << t+1 << endl;
+	std::cout << "\t\tHere the economy evolves to next step: " << t+1 << std::endl;
 	t++;
 	return;
 }

@@ -1,0 +1,3 @@
+region NAMES
+0 	north
+1	south

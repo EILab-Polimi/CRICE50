@@ -1,5 +1,6 @@
 #ifndef ECONAGENT__H
 #define ECONAGENT__H
+#include<string>
 
 class EconAgent{
 public:
@@ -18,11 +19,11 @@ struct RICEEconAgentParams{
 };
 
 struct RICEEconAgentTraj{
-	double* pop;
-	double* tfp;
+	double** pop;
+	double** tfp;
+	double** gdpbase;
+	double** sigmabase;
 	double* gdp;
-	double* gdpbase;
-	double* eindbase;
 	double* eind;
 	double* k;
 	double* mx;
@@ -36,10 +37,13 @@ class RICEEconAgent: public EconAgent{
 public:
 	RICEEconAgent();
 	~RICEEconAgent();
-	RICEEconAgent(int hrzn);
+	RICEEconAgent(int hrzn, std::string regname);
 	int t;			// time step
+	std::string name;
 	RICEEconAgentParams params;
 	RICEEconAgentTraj traj;
+	void readParams();
+	void readBaseline(int hrzn);
 	void nextStep();
 	void econAgentDelete();
 };

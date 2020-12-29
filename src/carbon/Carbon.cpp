@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-using namespace std;
 // constructor
 Carbon::Carbon(){
 
@@ -35,11 +34,11 @@ DICECarbon::DICECarbon(int hrzn){
 // and stores them in the params struct
 // and setting initial conditions
 void DICECarbon::readParams(){
-	fstream in;
-	string sJunk = "";
-	in.open("./settings/DICEcarbonParams.txt", ios_base::in);
+	std::fstream in;
+	std::string sJunk = "";
+	in.open("./settings/DICEcarbonParams.txt", std::ios_base::in);
 	if (!in){
-		cout << "The general settings file specified could not be found!" << endl;
+		std::cout << "The general settings file specified could not be found!" << std::endl;
 	    exit(1);
 	}
 	while (sJunk!="b12"){
@@ -92,16 +91,17 @@ void DICECarbon::readParams(){
 	}
 	in >> mlo[0];
 	in.close();
+	return;
 }
 // simulates next step
 void DICECarbon::nextStep(double e){
-	forcoth[t] = params.fex0 + (params.fex1 - params.fex0) * min(t/18,1);
+	forcoth[t] = params.fex0 + (params.fex1 - params.fex0) * std::min(t/18,1);
 	mat[t+1] = mat[t] * params.b11 + mup[t] * params.b21 + e * (5/3.666);
 	mup[t+1] = mat[t] * params.b12 + mup[t] * params.b22 + mlo[t] * params.b32;
 	mlo[t+1] = mup[t] * params.b23 + mlo[t] * params.b33;
 	forc[t] = params.fco22x * ((log((mat[t]/588.000))/log(2))) + forcoth[t];
-	cout << "\t\tDICE carbon cycle evolves to next step: " << endl;
-	cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << endl;
+	std::cout << "\t\tDICE carbon cycle evolves to next step: " << std::endl;
+	std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
 	t++;
 	return;
 }
@@ -138,11 +138,11 @@ WITCHCarbon::WITCHCarbon(int hrzn){
 // and stores them in the params struct
 // and setting initial conditions
 void WITCHCarbon::readParams(){
-	fstream in;
-	string sJunk = "";
-	in.open("./settings/WITCHcarbonParams.txt", ios_base::in);
+	std::fstream in;
+	std::string sJunk = "";
+	in.open("./settings/WITCHcarbonParams.txt", std::ios_base::in);
 	if (!in){
-		cout << "The general settings file specified could not be found!" << endl;
+		std::cout << "The general settings file specified could not be found!" << std::endl;
 	    exit(1);
 	}
 	while (sJunk!="CO2toC"){
@@ -206,6 +206,7 @@ void WITCHCarbon::readParams(){
 	}
 	in >> mlo[0];
 	in.close();
+	return;
 }
 // simulates next step
 void WITCHCarbon::nextStep(double e){
@@ -216,8 +217,8 @@ void WITCHCarbon::nextStep(double e){
 	mlo[t+1] = mlo[t] * params.lo2lo + mup[t] * params.up2lo;
 	forc[t] = params.rfoth_I + (1 + params.rfoth_a) * 
 		(params.rfc_alpha * (log(mat[t]) - log(params.rfc_beta)));
-	cout << "\t\tWITCH carbon cycle evolves to next step: " << endl;
-	cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << endl;
+	std::cout << "\t\tWITCH carbon cycle evolves to next step: " << std::endl;
+	std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
 	t++;
 	return;
 }
