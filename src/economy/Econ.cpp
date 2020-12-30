@@ -23,7 +23,7 @@ Econ::Econ(int hrzn){
 	std::string sJunk = "";
 	in.open("./settings/regionNAMES.txt", std::ios_base::in);
 	if (!in){
-		std::cout << "The general settings file specified could not be found!" << std::endl;
+		std::cout << "The region names file specified could not be found!" << std::endl;
 	    exit(1);
 	}
 	for (int nag=0; nag < agents; nag++){
@@ -41,7 +41,7 @@ void Econ::readParams(){
 	std::string sJunk = "";
 	in.open("./settings/globalEconParams.txt", std::ios_base::in);
 	if (!in){
-		std::cout << "The general settings file specified could not be found!" << std::endl;
+		std::cout << "The general economic settings file specified could not be found!" << std::endl;
 	    exit(1);
 	}
 	while (sJunk!="nagents"){

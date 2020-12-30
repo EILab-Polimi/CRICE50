@@ -22,7 +22,7 @@ struct RICEEconAgentTraj{
 	double** pop;
 	double** tfp;
 	double** gdpbase;
-	double** sigmabase;
+	double** sigma;
 	double* gdp;
 	double* eind;
 	double* k;
@@ -31,6 +31,8 @@ struct RICEEconAgentTraj{
 	double* bx;
 	double* eland;
 	double* abatecost;
+	double* miu;
+	double* s;
 };
 
 class RICEEconAgent: public EconAgent{
