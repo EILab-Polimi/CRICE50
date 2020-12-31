@@ -4,8 +4,8 @@
 #include<fstream>
 #include<sstream>
 #include<string>
-#include <algorithm>
-
+#include<algorithm>
+#include<math.h>
 // constructor
 EconAgent::EconAgent(){
 
@@ -56,7 +56,13 @@ void RICEEconAgent::readParams(){
 		in >>sJunk;
 	}
 	in >> params.deland;
+	while (sJunk!="ssp"){
+		in >>sJunk;
+	}
+	in >> ssp;
 	in.close();
+	params.prstp = 0.015;
+	params.elasmu = 1.45;
 	return;
 }
 void RICEEconAgent::readBaseline(int hrzn){
@@ -173,6 +179,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	traj.gdp = new double[hrzn];
 	traj.eind = new double[hrzn];
 	traj.k = new double[hrzn];
+	//initialize k
 	in.open("./data/data_economy/k0.csv");
 	if (!in){
 		std::cout << "The k0 file could not be found!" << std::endl;
@@ -193,6 +200,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 		}
 	}
 	in.close();
+	//macc multiplier
 	traj.mx = new double[hrzn];
 	in.open("./data/data_macc/mx_multiplier.csv");
 	if (!in){
@@ -214,6 +222,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 		}
 	}
 	in.close();
+	//macc coefficients
 	traj.ax = new double[hrzn];
 	traj.bx = new double[hrzn];
 	in.open("./data/data_macc/macc_coeffs.csv");
@@ -241,6 +250,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 		}
 	}
 	in.close();
+	//land use emissions
 	traj.eland = new double[hrzn];
 	in.open("./data/data_land_use/etree_bau.csv");
 	if (!in){
@@ -263,32 +273,54 @@ void RICEEconAgent::readBaseline(int hrzn){
 	}
 	in.close();
 	traj.abatecost = new double[hrzn];
-	// in.open("./settings/EconAgentParams.txt", ios_base::in);
-	// if (!in){
-	// 	cout << "The general settings file specified could not be found!" << endl;
-	//     exit(1);
-	// }
-	// while (sJunk!="gama"){
-	// 	in >>sJunk;
-	// }
-	// in >> params.gama;
-	// while (sJunk!="dk"){
-	// 	in >>sJunk;
-	// }
-	// in >> params.dk;
-	// while (sJunk!="dela0"){
-	// 	in >>sJunk;
-	// }
-	// in >> params.dela0;
-	// while (sJunk!="deland"){
-	// 	in >>sJunk;
-	// }
-	// in >> params.deland;
+
+	traj.miu = new double[hrzn];
+	traj.s = new double[hrzn];
+	traj.i = new double[hrzn];
+	traj.ygross = new double[hrzn];
+	traj.ynet = new double[hrzn];
+	traj.y = new double[hrzn];
+	traj.damages = new double[hrzn];
+	traj.c = new double[hrzn];
+	traj.cpc = new double[hrzn];
+	traj.ri = new double[hrzn];
+	traj.cprice = new double[hrzn];
 	return;
 }
 // simulates one time step
 void RICEEconAgent::nextStep(){
-	e[t] = 20.0 * std::max(0.0,std::min(1.0, 1.0 - ((double)t) / 5.0));
+	// set decision variables
+	traj.miu[t] = 0.0;
+	traj.s[t] = 0.24;
+	// ygross
+	traj.ygross[t] = traj.tfp[ssp-1][t] * 
+		pow(traj.k[t], params.gama) * 
+		pow(traj.pop[ssp-1][t]/1000.0, 1 - params.gama);
+	// compute emissions
+	traj.eind[t] = traj.sigma[ssp-1][t] * 
+		traj.ygross[t] * (1 - traj.miu[t]);
+	e[t] = traj.eind[t] + traj.eland[t];
+	// compute damages
+	traj.damages[t] = 0.0;
+	// compute abatecost
+	traj.abatecost[t] = traj.mx[t] *
+		( (traj.ax[t] * pow(traj.miu[t],2) / 2) + 
+			(traj.bx[t] * pow(traj.miu[t],5) / 5)) / 1000.0;
+	traj.cprice[t] = traj.mx[t] *
+		( (traj.ax[t] * pow(traj.miu[t],2)) + 
+			(traj.bx[t] * pow(traj.miu[t],4)));
+	// compute variables for economic step transition
+	traj.ynet[t] = traj.ygross[t] - traj.damages[t];
+	traj.y[t] = traj.ynet[t] - traj.abatecost[t];
+	traj.i[t] = traj.s[t] * traj.y[t];
+	traj.c[t] = traj.y[t] - traj.i[t];
+	traj.cpc[t] = 1000 * traj.c[t] / traj.pop[ssp-1][t];
+	traj.k[t+1] = traj.k[t] * pow(1-params.dk, 5) + 5 * traj.i[t];
+	if (t >= 1){
+		traj.ri[t-1] = (1 + params.prstp) * 
+			pow(traj.cpc[t]/traj.cpc[t-1], params.elasmu/5) - 1;
+	}
+
 	std::cout << "\t\tHere the region " << name << " evolves to the step " << t+1 << " emitting (GtCO2):" << e[t] << std::endl;
 	t++;
 	return;
@@ -296,9 +328,32 @@ void RICEEconAgent::nextStep(){
 // frees allocated memory
 void RICEEconAgent::econAgentDelete(){
 	for (int ssp=0; ssp<5;ssp++){
+		delete[] traj.pop[ssp];
+		delete[] traj.tfp[ssp];
+		delete[] traj.gdpbase[ssp];
 		delete[] traj.sigma[ssp];
 	}
+	delete[] traj.pop;
+	delete[] traj.tfp;
+	delete[] traj.gdpbase;
 	delete[] traj.sigma;
+	delete[] traj.k;
+	delete[] traj.mx;
+	delete[] traj.ax;
+	delete[] traj.bx;
+	delete[] traj.eland;
+	delete[] traj.abatecost;
+	delete[] traj.miu;
+	delete[] traj.s;
+	delete[] traj.i;
+	delete[] traj.ygross;
+	delete[] traj.ynet;
+	delete[] traj.y;
+	delete[] traj.damages;
+	delete[] traj.c;
+	delete[] traj.cpc;
+	delete[] traj.ri;
+	delete[] traj.cprice;
 	delete[] e;
 	return;
 }

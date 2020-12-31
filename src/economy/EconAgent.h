@@ -16,6 +16,8 @@ struct RICEEconAgentParams{
 	double dk;
 	double dela0;
 	double deland;
+	double elasmu;
+	double prstp;
 };
 
 struct RICEEconAgentTraj{
@@ -33,6 +35,15 @@ struct RICEEconAgentTraj{
 	double* abatecost;
 	double* miu;
 	double* s;
+	double* i;
+	double* ygross;
+	double* ynet;
+	double* y;
+	double* damages;
+	double* c;
+	double* cpc;
+	double* ri;
+	double* cprice;
 };
 
 class RICEEconAgent: public EconAgent{
@@ -41,6 +52,7 @@ public:
 	~RICEEconAgent();
 	RICEEconAgent(int hrzn, std::string regname);
 	int t;			// time step
+	int ssp;
 	std::string name;
 	RICEEconAgentParams params;
 	RICEEconAgentTraj traj;
