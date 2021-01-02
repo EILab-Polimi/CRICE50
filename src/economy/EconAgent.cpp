@@ -289,9 +289,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 }
 // simulates one time step
 void RICEEconAgent::nextStep(){
-	// set decision variables
-	traj.miu[t] = 0.0;
-	traj.s[t] = 0.24;
+	nextAction();
 	// ygross
 	traj.ygross[t] = traj.tfp[ssp-1][t] * 
 		pow(traj.k[t], params.gama) * 
@@ -300,8 +298,7 @@ void RICEEconAgent::nextStep(){
 	traj.eind[t] = traj.sigma[ssp-1][t] * 
 		traj.ygross[t] * (1 - traj.miu[t]);
 	e[t] = traj.eind[t] + traj.eland[t];
-	// compute damages
-	traj.damages[t] = 0.0;
+	computeDamages();	
 	// compute abatecost
 	traj.abatecost[t] = traj.mx[t] *
 		( (traj.ax[t] * pow(traj.miu[t],2) / 2) + 
@@ -315,6 +312,7 @@ void RICEEconAgent::nextStep(){
 	traj.i[t] = traj.s[t] * traj.y[t];
 	traj.c[t] = traj.y[t] - traj.i[t];
 	traj.cpc[t] = 1000 * traj.c[t] / traj.pop[ssp-1][t];
+	// capital stock transition
 	traj.k[t+1] = traj.k[t] * pow(1-params.dk, 5) + 5 * traj.i[t];
 	if (t >= 1){
 		traj.ri[t-1] = (1 + params.prstp) * 
@@ -325,6 +323,18 @@ void RICEEconAgent::nextStep(){
 	t++;
 	return;
 }
+// take next action
+void RICEEconAgent::nextAction(){
+	// set decision variables
+	traj.miu[t] = std::min(1.0, 0.1 * (double) t);
+	traj.s[t] = 0.24;
+	return;	
+}
+void RICEEconAgent::computeDamages(){
+	traj.damages[t] = 0.0;
+	return;
+}
+
 // frees allocated memory
 void RICEEconAgent::econAgentDelete(){
 	for (int ssp=0; ssp<5;ssp++){

@@ -38,7 +38,7 @@ void DICECarbon::readParams(){
 	std::string sJunk = "";
 	in.open("./settings/DICEcarbonParams.txt", std::ios_base::in);
 	if (!in){
-		std::cout << "The general settings file specified could not be found!" << std::endl;
+		std::cout << "The DICE carbon settings file could not be found!" << std::endl;
 	    exit(1);
 	}
 	while (sJunk!="b12"){
@@ -142,7 +142,7 @@ void WITCHCarbon::readParams(){
 	std::string sJunk = "";
 	in.open("./settings/WITCHcarbonParams.txt", std::ios_base::in);
 	if (!in){
-		std::cout << "The general settings file specified could not be found!" << std::endl;
+		std::cout << "The WITCH carbon settings specified could not be found!" << std::endl;
 	    exit(1);
 	}
 	while (sJunk!="CO2toC"){

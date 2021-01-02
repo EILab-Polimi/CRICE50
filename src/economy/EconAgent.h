@@ -59,6 +59,8 @@ public:
 	void readParams();
 	void readBaseline(int hrzn);
 	void nextStep();
+	void computeDamages();
+	void nextAction();
 	void econAgentDelete();
 };
 

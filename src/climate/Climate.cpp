@@ -35,7 +35,7 @@ void WITCHClimate::readParams(){
 	std::string sJunk = "";
 	in.open("./settings/WITCHclimateParams.txt", std::ios_base::in);
 	if (!in){
-		std::cout << "The general settings file specified could not be found!" << std::endl;
+		std::cout << "The WITCH climate settings file could not be found!" << std::endl;
 	    exit(1);
 	}
 	while (sJunk!="sigma1"){
@@ -107,7 +107,7 @@ void DICEClimate::readParams(){
 	std::string sJunk = "";
 	in.open("./settings/DICEclimateParams.txt", std::ios_base::in);
 	if (!in){
-		std::cout << "The general settings file specified could not be found!" << std::endl;
+		std::cout << "The DICE climate settings file could not be found!" << std::endl;
 	    exit(1);
 	}
 	while (sJunk!="c1"){
