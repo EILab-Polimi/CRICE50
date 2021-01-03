@@ -61,8 +61,39 @@ void RICEEconAgent::readParams(){
 	}
 	in >> ssp;
 	in.close();
+	// THIS HAS TO BE FIXED
 	params.prstp = 0.015;
 	params.elasmu = 1.45;
+	std::string line;
+	in.open("./data/data_climate_regional/climate_region_coef.csv", std::ios_base::in);
+	if (!in){
+		std::cout << "The climate downscaling parameters could not be found!" << std::endl;
+	    exit(1);
+	}
+	while(std::getline(in, line)){
+		line.erase(std::remove(line.begin(), line.end(), '"'), line.end());
+		std::istringstream s(line);
+		std::string field;
+		std::string splitline[3];
+		int count = 0;
+		while (std::getline(s, field, ',')){
+			splitline[count] = field;
+			count++;
+		}
+		if (!splitline[1].compare(name)){
+			if (!(splitline[0]).compare("alpha_temp")){
+				params.alpha_tatm = stod(splitline[2]);
+			}
+			else if (!(splitline[0]).compare("beta_temp")){
+				params.beta_tatm = stod(splitline[2]);
+			}
+			else if (!(splitline[0]).compare("base_temp")){
+				params.base_tatm = stod(splitline[2]);
+			}			
+		}
+	}
+	in.close();
+	params.damage_type = 0;
 	return;
 }
 void RICEEconAgent::readBaseline(int hrzn){
@@ -288,9 +319,9 @@ void RICEEconAgent::readBaseline(int hrzn){
 	return;
 }
 // simulates one time step
-void RICEEconAgent::nextStep(){
+void RICEEconAgent::nextStep(double tatm){
 	nextAction();
-	// ygross
+	// compute ygross
 	traj.ygross[t] = traj.tfp[ssp-1][t] * 
 		pow(traj.k[t], params.gama) * 
 		pow(traj.pop[ssp-1][t]/1000.0, 1 - params.gama);
@@ -298,7 +329,7 @@ void RICEEconAgent::nextStep(){
 	traj.eind[t] = traj.sigma[ssp-1][t] * 
 		traj.ygross[t] * (1 - traj.miu[t]);
 	e[t] = traj.eind[t] + traj.eland[t];
-	computeDamages();	
+	computeDamages(tatm);	
 	// compute abatecost
 	traj.abatecost[t] = traj.mx[t] *
 		( (traj.ax[t] * pow(traj.miu[t],2) / 2) + 
@@ -312,7 +343,7 @@ void RICEEconAgent::nextStep(){
 	traj.i[t] = traj.s[t] * traj.y[t];
 	traj.c[t] = traj.y[t] - traj.i[t];
 	traj.cpc[t] = 1000 * traj.c[t] / traj.pop[ssp-1][t];
-	// capital stock transition
+	// capital stock step transition
 	traj.k[t+1] = traj.k[t] * pow(1-params.dk, 5) + 5 * traj.i[t];
 	if (t >= 1){
 		traj.ri[t-1] = (1 + params.prstp) * 
@@ -330,8 +361,20 @@ void RICEEconAgent::nextAction(){
 	traj.s[t] = 0.24;
 	return;	
 }
-void RICEEconAgent::computeDamages(){
-	traj.damages[t] = 0.0;
+void RICEEconAgent::computeDamages(double tatm){
+	double tatm_local = params.alpha_tatm + params.beta_tatm * tatm;
+	if (params.damage_type == 0){
+		traj.damages[t] = 0.0;		
+	}
+	else if (params.damage_type==1){
+		//BURKE - 4 types
+	}
+	else if (params.damage_type==2){
+		//DJO
+	}
+	else if (params.damage_type==3){
+		//KAHN
+	}
 	return;
 }
 

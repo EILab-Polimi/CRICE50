@@ -7,7 +7,7 @@ public:
 	EconAgent();
 	virtual ~EconAgent() = 0;
 	double* e;		//emissions
-	virtual void nextStep() = 0;
+	virtual void nextStep(double tatm) = 0;
 	virtual void econAgentDelete() = 0;
 };
 
@@ -18,6 +18,10 @@ struct RICEEconAgentParams{
 	double deland;
 	double elasmu;
 	double prstp;
+	double alpha_tatm;
+	double beta_tatm;
+	double base_tatm;
+	int damage_type;
 };
 
 struct RICEEconAgentTraj{
@@ -58,8 +62,8 @@ public:
 	RICEEconAgentTraj traj;
 	void readParams();
 	void readBaseline(int hrzn);
-	void nextStep();
-	void computeDamages();
+	void nextStep(double tatm);
+	void computeDamages(double tatm);
 	void nextAction();
 	void econAgentDelete();
 };

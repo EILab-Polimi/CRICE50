@@ -26,7 +26,7 @@ RICE::RICE(int hrzn, int carbontype){
 }
 // simulates one step of the model
 void RICE::nextStep(){
-	econ->nextStep();
+	econ->nextStep(climate->tatm[t]);
 	carbon->nextStep(econ->e[t]);
 	climate->nextStep(carbon->forc[t]);
 	t++;

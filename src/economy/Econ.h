@@ -20,7 +20,7 @@ public:
 	EconParams params;
 	double* e;
 	void readParams();
-	void nextStep();
+	void nextStep(double tatm);
 	void econDelete();
 };
 
