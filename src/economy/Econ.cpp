@@ -73,6 +73,22 @@ void Econ::nextStep(double* tatm){
 	t++;
 	return;
 }
+//writes header of file
+void Econ::writeHeader(std::fstream& output){
+	for (int ag=0; ag < agents; ag++){
+		agents_ptr[ag]->writeHeader(output);
+	}
+	t = 0;
+	return;
+}
+//writes steps to file
+void Econ::writeStep(std::fstream& output){
+	for (int ag=0; ag < agents; ag++){
+		agents_ptr[ag]->writeStep(output);
+	}
+	t++;
+	return;
+}
 // frees allocated memory
 void Econ::econDelete(){
 	for (int nag=0; nag < agents; nag++){

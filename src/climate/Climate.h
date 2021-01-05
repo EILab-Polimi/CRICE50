@@ -1,12 +1,16 @@
 #ifndef CLIMATE__H
 #define CLIMATE__H
 
+#include<fstream>
+
 class Climate{
 public:
 	Climate();
 	~Climate();
 	double* tatm; // this is the element every temperature component needs to have to pass it to economy
 	virtual void nextStep(double forc) = 0;
+	virtual void writeHeader(std::fstream& output) = 0;
+	virtual void writeStep(std::fstream& output) = 0;
 	virtual void climateDelete() = 0;
 };
 
@@ -29,6 +33,8 @@ public:
 	int t;				// time step
 	void readParams();
 	void nextStep(double forc);
+	void writeHeader(std::fstream& output);
+	void writeStep(std::fstream& output);
 	void climateDelete();
 };
 
@@ -52,6 +58,8 @@ public:
 	int t;				// time step
 	void readParams();
 	void nextStep(double forc);
+	void writeHeader(std::fstream& output);
+	void writeStep(std::fstream& output);
 	void climateDelete();
 };
 

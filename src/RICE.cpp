@@ -20,7 +20,7 @@ RICE::RICE(int hrzn, int carbontype){
 			carbon = new WITCHCarbon(hrzn);
 			break;
 	}
-	climate = new DICEClimate(hrzn);
+	climate = new WITCHClimate(hrzn);
 	econ = new Econ(hrzn);
 	t = 0;
 }
@@ -48,13 +48,16 @@ void RICE::writeSimulation(){
 		std::cout << "Error: file could not be opened" << std::endl;
     	exit(1);
     }
-	output << "YEAR/t";
-	// econ->writeHeader(output);
-	// carbon->writeHeader(output);
-	// climate->writeHeader(output);
-
-	for (int time=0 ; time < horizon; time++){
-		output << 2015+t*5 << std::endl;
+	output << "YEAR\t";
+	econ->writeHeader(output);
+	carbon->writeHeader(output);
+	climate->writeHeader(output);
+	output << std::endl;
+	for (int t=0 ; t < horizon; t++){
+		output << 2015+t*5 << "\t" ;
+		econ->writeStep(output);
+		carbon->writeStep(output);
+		climate->writeStep(output);
 		output << std::endl;
 	} 
 	output.close();

@@ -1,6 +1,7 @@
 #ifndef ECONAGENT__H
 #define ECONAGENT__H
 #include<string>
+#include<fstream>
 
 class EconAgent{
 public:
@@ -8,6 +9,8 @@ public:
 	virtual ~EconAgent() = 0;
 	double* e;		//emissions
 	virtual void nextStep(double* tatm) = 0;
+	virtual void writeHeader(std::fstream& output) = 0;
+	virtual void writeStep(std::fstream& output) = 0;
 	virtual void econAgentDelete() = 0;
 };
 
@@ -71,6 +74,8 @@ public:
 	void nextStep(double* tatm);
 	void computeDamages(double* tatm);
 	void nextAction();
+	void writeHeader(std::fstream& output);
+	void writeStep(std::fstream& output);
 	void econAgentDelete();
 };
 

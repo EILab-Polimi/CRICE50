@@ -237,6 +237,29 @@ void RICEEconAgent::readBaseline(int hrzn){
 		}
 	}
 	in.close();
+	traj.miu = new double[hrzn];
+	traj.s = new double[hrzn];
+	//initialize s
+	in.open("./data/data_economy/s0.csv");
+	if (!in){
+		std::cout << "The s0 file could not be found!" << std::endl;
+	    exit(1);
+	}
+	while(std::getline(in, line)){
+		line.erase(std::remove(line.begin(), line.end(), '"'), line.end());
+		std::istringstream s(line);
+		std::string field;
+		std::string splitline[2];
+		int count = 0;
+		while (std::getline(s, field, ',')){
+			splitline[count] = field;
+			count++;
+		}
+		if (!splitline[0].compare(name)){
+			traj.s[0] = stod(splitline[1]);
+		}
+	}
+	in.close();	
 	//macc multiplier
 	traj.mx = new double[hrzn];
 	in.open("./data/data_macc/mx_multiplier.csv");
@@ -310,9 +333,6 @@ void RICEEconAgent::readBaseline(int hrzn){
 	}
 	in.close();
 	traj.abatecost = new double[hrzn];
-
-	traj.miu = new double[hrzn];
-	traj.s = new double[hrzn];
 	traj.i = new double[hrzn];
 	traj.ygross = new double[hrzn];
 	traj.ynet = new double[hrzn];
@@ -333,6 +353,7 @@ void RICEEconAgent::nextStep(double* tatm){
 	traj.ygross[t] = traj.tfp[ssp-1][t] * 
 		pow(traj.k[t], params.gama) * 
 		pow(traj.pop[ssp-1][t]/1000.0, 1 - params.gama);
+	std::cout << traj.tfp[ssp-1][t] << "\t" << traj.k[t] << "\t" << traj.pop[ssp-1][t] << std::endl;
 	// compute emissions
 	traj.eind[t] = traj.sigma[ssp-1][t] * 
 		traj.ygross[t] * (1 - traj.miu[t]);
@@ -365,8 +386,10 @@ void RICEEconAgent::nextStep(double* tatm){
 // take next action
 void RICEEconAgent::nextAction(){
 	// set decision variables
+	double optlr_s = (params.dk + .004)/(params.dk + .004*params.elasmu + params.prstp)*params.gama;
 	traj.miu[t] = std::min(1.0, 0.1 * (double) t);
-	traj.s[t] = 0.24;
+	traj.miu[t] = 0.0;
+	traj.s[t] = traj.s[0] + std::min(1.0, t/58.0) * (optlr_s - traj.s[0]);
 	return;	
 }
 void RICEEconAgent::computeDamages(double* tatm){
@@ -454,7 +477,62 @@ void RICEEconAgent::computeDamages(double* tatm){
 	}
 	return;
 }
-
+// writes header
+void RICEEconAgent::writeHeader(std::fstream& output){
+	output << "POP" << name << "\t" <<
+		"TFP" << name << "\t" <<
+		"GDPBASE" << name << "\t" <<
+		"SIGMA" << name << "\t" <<
+		"MX" << name << "\t" <<
+		"AX" << name << "\t" <<
+		"BX" << name << "\t" <<
+		"ELAND" << name << "\t" <<
+		"K" << name << "\t" <<
+		"YGROSS" << name << "\t" <<
+		"MIU" << name << "\t" <<
+		"EIND" << name << "\t" <<
+		"E" << name << "\t" <<
+		"S" << name << "\t" <<
+		"I" << name << "\t" <<
+		"DAMAGES" << name << "\t" <<
+		"YNET" << name << "\t" <<
+		"ABATECOST" << name << "\t" <<
+		"Y" << name << "\t" <<
+		"C" << name << "\t" <<
+		"CPC" << name << "\t" <<
+		"RI" << name << "\t" <<
+		"CPRICE" << name << "\t" <<
+		"OMEGA" << name << "\t";
+	t = 0;
+}
+// writes timestep
+void RICEEconAgent::writeStep(std::fstream& output){
+	output << traj.pop[ssp-1][t] << "\t" <<
+		traj.tfp[ssp-1][t] << "\t" <<
+		traj.gdpbase[ssp-1][t] << "\t" <<
+		traj.sigma[ssp-1][t] << "\t" <<
+		traj.mx[t] << "\t" <<
+		traj.ax[t] << "\t" <<
+		traj.bx[t] << "\t" <<
+		traj.eland[t] << "\t" <<
+		traj.k[t] << "\t" <<
+		traj.ygross[t] << "\t" <<
+		traj.miu[t] << "\t" <<
+		traj.eind[t] << "\t" <<
+		e[t] << "\t" <<
+		traj.s[t] << "\t" <<
+		traj.i[t] << "\t" <<
+		traj.damages[t] << "\t" <<
+		traj.ynet[t] << "\t" <<
+		traj.abatecost[t] << "\t" <<
+		traj.y[t] << "\t" <<
+		traj.c[t] << "\t" <<
+		traj.cpc[t] << "\t" <<
+		traj.ri[t] << "\t" <<
+		traj.cprice[t] << "\t" <<
+		traj.omega[t] << "\t";
+	t++;
+}
 // frees allocated memory
 void RICEEconAgent::econAgentDelete(){
 	for (int ssp=0; ssp<5;ssp++){
@@ -464,6 +542,7 @@ void RICEEconAgent::econAgentDelete(){
 		delete[] traj.sigma[ssp];
 	}
 	delete[] traj.pop;
+	delete[] traj.eind;
 	delete[] traj.tfp;
 	delete[] traj.gdpbase;
 	delete[] traj.sigma;
@@ -485,5 +564,6 @@ void RICEEconAgent::econAgentDelete(){
 	delete[] traj.ri;
 	delete[] traj.cprice;
 	delete[] e;
+	delete[] traj.omega;
 	return;
 }

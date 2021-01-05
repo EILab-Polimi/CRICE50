@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 	// here we should be reading the input file
 	// and fix the settings for the simulations 
 	// to be run
-	int carbontype = 0;
+	int carbontype = 1;
 	if (argc > 1){
 		carbontype = atoi(argv[1]);		
 	}
@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
 
 	// simulate RICE
 	riceptr->simulate();
-
+	riceptr->writeSimulation();
 	// delete memory used by RICE 
 	riceptr->RICE_delete();
 

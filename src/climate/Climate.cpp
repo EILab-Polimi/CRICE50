@@ -76,6 +76,17 @@ void WITCHClimate::nextStep(double forc){
 	t++;
 	return;
 }
+void WITCHClimate::writeHeader(std::fstream& output){
+	output << "TATM" << "\t" <<
+		"TOCEAN" << "\t";
+	t = 0;
+}
+//writes step to output
+void WITCHClimate::writeStep(std::fstream& output){
+	output << tatm[t] << "\t" <<
+		tocean[t] << "\t" ;
+	t++;
+}
 // frees allocated memory
 void WITCHClimate::climateDelete(){
 	delete[] tatm;
@@ -151,6 +162,17 @@ void DICEClimate::nextStep(double forc){
 	std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
 	t++;
 	return;
+}
+void DICEClimate::writeHeader(std::fstream& output){
+	output << "TATM" << "\t" <<
+		"TOCEAN" << "\t";
+	t = 0;
+}
+//writes step to output
+void DICEClimate::writeStep(std::fstream& output){
+	output << tatm[t] << "\t" <<
+		tocean[t] << "\t" ;
+	t++;
 }
 // frees allocated memory
 void DICEClimate::climateDelete(){

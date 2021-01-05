@@ -11,6 +11,8 @@ public:
 	~Carbon();
 	double* forc; // (W/m2) increase w.r.t 1900 - this is the element every carbon component needs to have to pass it to temperature
 	virtual void nextStep(double e) = 0;
+	virtual void writeHeader(std::fstream& output) = 0;
+	virtual void writeStep(std::fstream& output) = 0;
 	virtual void carbonDelete() = 0;
 };
 
@@ -44,6 +46,8 @@ public:
 	int t;				// time step
 	void readParams();
 	void nextStep(double e);
+	void writeHeader(std::fstream& output);
+	void writeStep(std::fstream& output);
 	void carbonDelete();
 };
 
@@ -75,6 +79,8 @@ public:
 	int t;				// time step
 	void readParams();
 	void nextStep(double e);
+	void writeHeader(std::fstream& output);
+	void writeStep(std::fstream& output);
 	void carbonDelete();
 };
 

@@ -105,6 +105,24 @@ void DICECarbon::nextStep(double e){
 	t++;
 	return;
 }
+//writes header for output
+void DICECarbon::writeHeader(std::fstream& output){
+	output << "MAT" << "\t" <<
+		"MUP" << "\t" <<
+		"MLO" << "\t" <<
+		"FORC" << "\t" <<
+		"FORCOTH" << "\t" ;
+	t = 0;
+}
+//writes step to output
+void DICECarbon::writeStep(std::fstream& output){
+	output << mat[t] << "\t" <<
+		mup[t] << "\t" <<
+		mlo[t] << "\t" <<
+		forc[t] << "\t" <<
+		forcoth[t] << "\t" ;
+	t++;
+}
 // frees allocated memory
 void DICECarbon::carbonDelete(){
 	delete[] mat;
@@ -221,6 +239,22 @@ void WITCHCarbon::nextStep(double e){
 	std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
 	t++;
 	return;
+}
+//writes header for output
+void WITCHCarbon::writeHeader(std::fstream& output){
+	output << "MAT" << "\t" <<
+		"MUP" << "\t" <<
+		"MLO" << "\t" <<
+		"FORC" << "\t" ;
+	t = 0;
+}
+//writes step to output
+void WITCHCarbon::writeStep(std::fstream& output){
+	output << mat[t] << "\t" <<
+		mup[t] << "\t" <<
+		mlo[t] << "\t" <<
+		forc[t] << "\t" ;
+	t++;
 }
 // frees allocated memory
 void WITCHCarbon::carbonDelete(){

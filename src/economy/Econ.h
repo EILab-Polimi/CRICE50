@@ -2,7 +2,7 @@
 #define ECON__H
 
 #include "EconAgent.h"
-
+#include<fstream>
 struct EconParams{
 	double elasmu;
 	double prstp;
@@ -21,7 +21,8 @@ public:
 	double* e;
 	void readParams();
 	void nextStep(double* tatm);
-	// void writeHeader(std::fstream output);
+	void writeHeader(std::fstream& output);
+	void writeStep(std::fstream& output);	
 	void econDelete();
 };
 
