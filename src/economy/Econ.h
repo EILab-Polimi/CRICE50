@@ -20,7 +20,8 @@ public:
 	EconParams params;
 	double* e;
 	void readParams();
-	void nextStep(double tatm);
+	void nextStep(double* tatm);
+	// void writeHeader(std::fstream output);
 	void econDelete();
 };
 

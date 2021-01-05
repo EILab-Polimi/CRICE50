@@ -18,6 +18,7 @@ public:
 	Econ* econ;			// economic component of the model
 	void nextStep();
 	void simulate();
+	void writeSimulation();
 	void RICE_delete();
 };
 

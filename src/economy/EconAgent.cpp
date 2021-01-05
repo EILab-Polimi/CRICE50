@@ -28,6 +28,7 @@ RICEEconAgent::~RICEEconAgent(){
 RICEEconAgent::RICEEconAgent(int hrzn, std::string regname){
 	e = new double[hrzn + 1];
 	t = 0;
+	horizon = hrzn;
 	name = regname;
 	readParams();
 	readBaseline(hrzn);
@@ -94,6 +95,11 @@ void RICEEconAgent::readParams(){
 	}
 	in.close();
 	params.damage_type = 0;
+	params.beta_bhm = 0.0127184;
+	params.beta_bhm2 = -0.0004871;	
+	params.beta_djo = 0.0261;
+	// params.beta_djo = 0.0261 - 0.01655;
+	params.beta_k = -0.0586;
 	return;
 }
 void RICEEconAgent::readBaseline(int hrzn){
@@ -316,10 +322,12 @@ void RICEEconAgent::readBaseline(int hrzn){
 	traj.cpc = new double[hrzn];
 	traj.ri = new double[hrzn];
 	traj.cprice = new double[hrzn];
+	traj.omega = new double[hrzn];
+	traj.omega[0] = 0.0;
 	return;
 }
 // simulates one time step
-void RICEEconAgent::nextStep(double tatm){
+void RICEEconAgent::nextStep(double* tatm){
 	nextAction();
 	// compute ygross
 	traj.ygross[t] = traj.tfp[ssp-1][t] * 
@@ -361,19 +369,88 @@ void RICEEconAgent::nextAction(){
 	traj.s[t] = 0.24;
 	return;	
 }
-void RICEEconAgent::computeDamages(double tatm){
-	double tatm_local = params.alpha_tatm + params.beta_tatm * tatm;
+void RICEEconAgent::computeDamages(double* tatm){
+	double tatm_local = params.alpha_tatm + params.beta_tatm * tatm[t];
 	if (params.damage_type == 0){
 		traj.damages[t] = 0.0;		
 	}
 	else if (params.damage_type==1){
-		//BURKE - 4 types
+		//BURKE - 4 types (2 with rich_poor cutoff)
+		double bimpact = params.beta_bhm* tatm_local + 
+			params.beta_bhm2* pow(tatm_local,2)
+			- params.beta_bhm* params.base_tatm 
+			- params.beta_bhm2* pow(params.base_tatm,2);
+		double komega = pow((traj.k[t] * pow(1 - params.dk , 5) +
+			5 * traj.s[t] * traj.tfp[ssp-1][t] * pow(traj.k[t], params.gama) *
+			pow(traj.pop[ssp-1][t]/1000.0, 1.0 - params.gama) * (1.0 / 1.0 + traj.omega[t]))
+			/ traj.k[t], params.gama);
+		if (t < horizon - 1){
+			double basegrowthcap = pow((traj.gdpbase[ssp-1][t+1]/traj.pop[ssp-1][t+1])
+				/ (traj.gdpbase[ssp-1][t]/traj.pop[ssp-1][t]), 1.0/5.0) - 1;
+			traj.omega[t+1] = (1 + traj.omega[t]) * traj.tfp[ssp-1][t+1]/traj.tfp[ssp-1][t]
+				* pow(traj.pop[ssp-1][t+1]/traj.pop[ssp-1][t], 1 - params.gama)
+				* traj.pop[ssp-1][t]/traj.pop[ssp-1][t+1] * komega
+				/ pow(1 + basegrowthcap + bimpact, 5) - 1;
+		}
+		double damfrac = 1 - (1 / ( 1 + traj.omega[t]));
+		double ynet_estimated = std::min(std::max(traj.ygross[t] 
+			* (1 - damfrac), pow(10.0, -4.0) * traj.gdpbase[ssp-1][t]), 
+			2 * traj.gdpbase[ssp-1][t]);
+		traj.damages[t] = traj.ygross[t] - ynet_estimated;
 	}
 	else if (params.damage_type==2){
-		//DJO
+		//DJO with rich_poor cutoff
+		double djoimpact = params.beta_djo * 
+			(tatm_local - params.base_tatm); 
+		double komega = pow((traj.k[t] * pow(1 - params.dk , 5) +
+			5 * traj.s[t] * traj.tfp[ssp-1][t] * pow(traj.k[t], params.gama) *
+			pow(traj.pop[ssp-1][t]/1000.0, 1.0 - params.gama) * (1.0 / 1.0 + traj.omega[t]))
+			/ traj.k[t], params.gama);
+		if (t < horizon - 1){
+			double basegrowthcap = pow((traj.gdpbase[ssp-1][t+1]/traj.pop[ssp-1][t+1])
+				/ (traj.gdpbase[ssp-1][t]/traj.pop[ssp-1][t]), 1.0/5.0) - 1;
+			traj.omega[t+1] = (1 + traj.omega[t]) * traj.tfp[ssp-1][t+1]/traj.tfp[ssp-1][t]
+				* pow(traj.pop[ssp-1][t+1]/traj.pop[ssp-1][t], 1 - params.gama)
+				* traj.pop[ssp-1][t]/traj.pop[ssp-1][t+1] * komega
+				/ pow(1 + basegrowthcap + djoimpact, 5) - 1;
+		}
+		double damfrac = 1 - (1 / ( 1 + traj.omega[t]));
+		double ynet_estimated = std::min(std::max(traj.ygross[t] 
+			* (1 - damfrac), pow(10.0, -4.0) * traj.gdpbase[ssp-1][t]), 
+			2 * traj.gdpbase[ssp-1][t]);
+		traj.damages[t] = traj.ygross[t] - ynet_estimated;
 	}
 	else if (params.damage_type==3){
 		//KAHN
+		double tatm_mavg = 0.0;
+		for (int tidx=1; tidx<7; tidx++){
+			if (t-tidx < 6){
+				tatm_mavg += params.base_tatm;				
+			}
+			else{
+				tatm_mavg += tatm[t-tidx];								
+			}
+		}
+		tatm_mavg = tatm_mavg/6;
+		double kimpact = params.beta_k * 
+			(tatm_local - tatm_mavg); 
+		double komega = pow((traj.k[t] * pow(1 - params.dk , 5) +
+			5 * traj.s[t] * traj.tfp[ssp-1][t] * pow(traj.k[t], params.gama) *
+			pow(traj.pop[ssp-1][t]/1000.0, 1.0 - params.gama) * (1.0 / 1.0 + traj.omega[t]))
+			/ traj.k[t], params.gama);
+		if (t < horizon - 1){
+			double basegrowthcap = pow((traj.gdpbase[ssp-1][t+1]/traj.pop[ssp-1][t+1])
+				/ (traj.gdpbase[ssp-1][t]/traj.pop[ssp-1][t]), 1.0/5.0) - 1;
+			traj.omega[t+1] = (1 + traj.omega[t]) * traj.tfp[ssp-1][t+1]/traj.tfp[ssp-1][t]
+				* pow(traj.pop[ssp-1][t+1]/traj.pop[ssp-1][t], 1 - params.gama)
+				* traj.pop[ssp-1][t]/traj.pop[ssp-1][t+1] * komega
+				/ pow(1 + basegrowthcap + kimpact, 5) - 1;
+		}
+		double damfrac = 1 - (1 / ( 1 + traj.omega[t]));
+		double ynet_estimated = std::min(std::max(traj.ygross[t] 
+			* (1 - damfrac), pow(10.0, -4.0) * traj.gdpbase[ssp-1][t]), 
+			2 * traj.gdpbase[ssp-1][t]);
+		traj.damages[t] = traj.ygross[t] - ynet_estimated;	
 	}
 	return;
 }

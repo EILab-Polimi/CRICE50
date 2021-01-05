@@ -1,6 +1,6 @@
 #include "RICE.h"
-#include <iostream>
-
+#include<iostream>
+#include<fstream>
 // constructor
 RICE::RICE(){
 	
@@ -26,7 +26,7 @@ RICE::RICE(int hrzn, int carbontype){
 }
 // simulates one step of the model
 void RICE::nextStep(){
-	econ->nextStep(climate->tatm[t]);
+	econ->nextStep(climate->tatm);
 	carbon->nextStep(econ->e[t]);
 	climate->nextStep(carbon->forc[t]);
 	t++;
@@ -39,6 +39,26 @@ void RICE::simulate(){
 		nextStep();
 	} 
 	return;
+}
+// writes simulation trajectories to file
+void RICE::writeSimulation(){
+	std::fstream output;
+	output.open("./simulationOutput.txt", std::ios_base::out);
+	if (!output) {
+		std::cout << "Error: file could not be opened" << std::endl;
+    	exit(1);
+    }
+	output << "YEAR/t";
+	// econ->writeHeader(output);
+	// carbon->writeHeader(output);
+	// climate->writeHeader(output);
+
+	for (int time=0 ; time < horizon; time++){
+		output << 2015+t*5 << std::endl;
+		output << std::endl;
+	} 
+	output.close();
+	return;	
 }
 // frees allocated memory
 void RICE::RICE_delete(){

@@ -64,7 +64,7 @@ void Econ::readParams(){
 	return;
 }
 // simulates one step
-void Econ::nextStep(double tatm){
+void Econ::nextStep(double* tatm){
 	for (int ag=0; ag < agents; ag++){
 		agents_ptr[ag]->nextStep(tatm);
 		e[t] += agents_ptr[ag]->e[t];
