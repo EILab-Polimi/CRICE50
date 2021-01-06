@@ -7,7 +7,7 @@
 !CONTRIBUTING.md
 
 # Temporary data
-data/temp/*
+tools/data_temp/*
 
 # Rsession files
 .Rhistory
