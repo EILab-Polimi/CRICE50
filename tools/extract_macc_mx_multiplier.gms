@@ -19,7 +19,7 @@ $setglobal rootfolderpath "../../RICE50x-Auto"
 
 $setglobal datapath       "%rootfolderpath%/data_%region_id%"
 $setglobal inputpath      "%rootfolderpath%/input"
-$setglobal temppath       "../data/temp"
+$setglobal temppath        "data_temp/%region_id%"
 
 
 

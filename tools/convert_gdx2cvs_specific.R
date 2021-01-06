@@ -38,19 +38,82 @@ res <- suppressWarnings(lapply(pkgs,require_package))
 suppressWarnings(require_gdxtools())
 
 
-'%_%' <- function(a,b) paste0(a,b)
+'%&%' <- function(a,b) paste0(a,b)
 
 
 
 
-## ====== GENERAL SETTINGS =======
+## ====== General settings =======
 
 setwd((here()))
 
+
+# region code 
+regid <- "ed57"
+
+
+# Input directory
+in_riceproject_dir   <- "../RICE50x-Auto/data_"%&%regid
 # in_riceproject_dir <- "../RICEx-Main-Exp/RICExdata_ed57_t58"
-in_riceproject_dir <- "../RICE50x-Auto/data_norsou2"
-in_temp_dir <- "data/temp"
-dir.create(here("data"))
+
+
+# Temp gdx directory
+temp_dir <- "tools/data_temp/"%&%regid
+
+
+# output directory
+outid <- "data_"%&%regid
+
+
+# Create folders if missing
+dir.create(here(outid))
+dir.create(here(temp_dir%&%"/"))
+
+
+
+
+
+
+
+## ===== Functions ==========
+
+
+
+#' Launch passed gams file 
+#' 
+#' @param gamsfile 
+#' @param extra_flags extra flag to be passed in the command launcher 
+#' 
+launch_gams <- function(gamsfile, 
+                          extra_flags = ''){
+  
+
+  lst = paste0(str_sub(gamsfile,1,-5),'.lst')
+  
+  ## Execution launcher
+  res <-gams(str_glue('{gamsfile} output={lst} {extra_flags}')) 
+  
+  if(res!=0)  stop(paste('gams execution error with',gamsfile)) # check: 0 means "successful"
+  
+  if(file.exists(lst)) file.remove(lst)
+  
+  return(gamsfile)
+}
+
+
+
+
+## === Pre-process Gams files =====
+
+
+gamsfiles = Sys.glob('tools/*.gms')
+
+for(gamsfile in gamsfiles) {
+  
+  launch_gams(gamsfile, extra_flags = str_glue(" --region_id {regid} --rootfolderpath ../RICE50x-Auto --temppath {temp_dir}")) 
+  
+}
+
 
 
 
@@ -72,13 +135,13 @@ in_filename <- "data_baseline.gdx"
 out_dirname <- "data_baseline"
 
 # create output dir
-output_dir = here("data/"%_%out_dirname%_%"/")
+output_dir = here(outid%&%"/"%&%out_dirname%&%"/")
 dir.create(output_dir)
 temp_out = list()
 
 
 # Source gdx
-mygdx = gdx(here(in_riceproject_dir%_%"/"%_%in_filename))
+mygdx = gdx(here(in_riceproject_dir%&%"/"%&%in_filename))
 mygdx$parameters
 
 
@@ -109,7 +172,7 @@ for(par in names(temp_out)){
   # Test:   par = mygdx$parameters$name[1]
   
   mydf = temp_out[[par]]
-  write.csv(x = mydf, file = output_dir%_%"/"%_%par%_%".csv", row.names=FALSE)
+  write.csv(x = mydf, file = output_dir%&%"/"%&%par%&%".csv", row.names=FALSE)
   
 }
 
@@ -125,13 +188,13 @@ in_filename <- "data_baseline_emissions_calibrated.gdx"
 out_dirname <- "data_baseline"
 
 # create output dir
-output_dir = here("data/"%_%out_dirname%_%"/")
+output_dir = here(outid%&%"/"%&%out_dirname%&%"/")
 dir.create(output_dir)
 temp_out = list()
 
 
 # Source gdx
-mygdx = gdx(here(in_riceproject_dir%_%"/"%_%in_filename))
+mygdx = gdx(here(in_riceproject_dir%&%"/"%&%in_filename))
 mygdx$parameters
 
 
@@ -152,7 +215,7 @@ for(par in names(temp_out)){
   # Test:   par = mygdx$parameters$name[1]
   
   mydf = temp_out[[par]]
-  write.csv(x = mydf, file = output_dir%_%"/"%_%par%_%".csv", row.names=FALSE)
+  write.csv(x = mydf, file = output_dir%&%"/"%&%par%&%".csv", row.names=FALSE)
   
 }
 
@@ -167,17 +230,18 @@ for(par in names(temp_out)){
 #__________________________________________________________
 
 
+
 in_filename <-  "economy_extracted.gdx"
 out_dirname <- "data_baseline"
 
 # create output dir
-output_dir = here("data/"%_%out_dirname%_%"/")
+output_dir = here(outid%&%"/"%&%out_dirname%&%"/")
 dir.create(output_dir)
 temp_out = list()
 
 
 # Source gdx
-mygdx = gdx(here(in_temp_dir%_%"/"%_%in_filename))
+mygdx = gdx(here(temp_dir%&%"/"%&%in_filename))
 mygdx$parameters
 
 
@@ -203,7 +267,7 @@ for(par in names(temp_out)){
   # Test:   par = mygdx$parameters$name[1]
   
   mydf = temp_out[[par]]
-  write.csv(x = mydf, file = output_dir%_%"/"%_%par%_%".csv", row.names=FALSE)
+  write.csv(x = mydf, file = output_dir%&%"/"%&%par%&%".csv", row.names=FALSE)
   
 }
 
@@ -223,13 +287,13 @@ in_filename <-  "economy_extracted.gdx"
 out_dirname <-  "data_economy"
 
 # create output dir
-output_dir = here("data/"%_%out_dirname%_%"/")
+output_dir = here(outid%&%"/"%&%out_dirname%&%"/")
 dir.create(output_dir)
 temp_out = list()
 
 
 # Source gdx
-mygdx = gdx(here(in_temp_dir%_%"/"%_%in_filename))
+mygdx = gdx(here(temp_dir%&%"/"%&%in_filename))
 mygdx$parameters
 
 
@@ -250,7 +314,7 @@ for(par in names(temp_out)){
   # Test:   par = mygdx$parameters$name[1]
   
   mydf = temp_out[[par]]
-  write.csv(x = mydf, file = output_dir%_%"/"%_%par%_%".csv", row.names=FALSE)
+  write.csv(x = mydf, file = output_dir%&%"/"%&%par%&%".csv", row.names=FALSE)
   
 }
 
@@ -270,13 +334,13 @@ in_filename <-  "land_use_extracted.gdx"
 out_dirname <-  "data_land_use"
 
 # create output dir
-output_dir = here("data/"%_%out_dirname%_%"/")
+output_dir = here(outid%&%"/"%&%out_dirname%&%"/")
 dir.create(output_dir)
 temp_out = list()
 
 
 # Source gdx
-mygdx = gdx(here(in_temp_dir%_%"/"%_%in_filename))
+mygdx = gdx(here(temp_dir%&%"/"%&%in_filename))
 mygdx$parameters
 
 
@@ -297,7 +361,7 @@ for(par in names(temp_out)){
   # Test:   par = mygdx$parameters$name[1]
   
   mydf = temp_out[[par]]
-  write.csv(x = mydf, file = output_dir%_%"/"%_%par%_%".csv", row.names=FALSE)
+  write.csv(x = mydf, file = output_dir%&%"/"%&%par%&%".csv", row.names=FALSE)
   
 }
 
@@ -316,13 +380,13 @@ in_filename <- "data_mod_climate.gdx"
 out_dirname <- "data_climate_witch"
 
 # create output dir
-output_dir = here("data/"%_%out_dirname%_%"/")
+output_dir = here(outid%&%"/"%&%out_dirname%&%"/")
 dir.create(output_dir)
 temp_out = list()
 
 
 # Source gdx
-mygdx = gdx(here(in_riceproject_dir%_%"/"%_%in_filename))
+mygdx = gdx(here(in_riceproject_dir%&%"/"%&%in_filename))
 mygdx$parameters
 
 
@@ -375,7 +439,7 @@ for(par in names(temp_out)){
   # Test:   par = mygdx$parameters$name[1]
   
   mydf = temp_out[[par]]
-  write.csv(x = mydf, file = output_dir%_%"/"%_%par%_%".csv", row.names=FALSE)
+  write.csv(x = mydf, file = output_dir%&%"/"%&%par%&%".csv", row.names=FALSE)
   
 }
 
@@ -396,13 +460,13 @@ in_filename <- "data_ssp_iam.gdx"
 out_dirname <- "data_climate_witch"
 
 # create output dir
-output_dir = here("data/"%_%out_dirname%_%"/")
+output_dir = here(outid%&%"/"%&%out_dirname%&%"/")
 dir.create(output_dir)
 temp_out = list()
 
 
 # Source gdx
-mygdx = gdx(here(in_riceproject_dir%_%"/"%_%in_filename))
+mygdx = gdx(here(in_riceproject_dir%&%"/"%&%in_filename))
 mygdx$parameters
 
 
@@ -422,7 +486,7 @@ for(par in names(temp_out)){
   # Test:   par = mygdx$parameters$name[1]
   
   mydf = temp_out[[par]]
-  write.csv(x = mydf, file = output_dir%_%"/"%_%par%_%".csv", row.names=FALSE)
+  write.csv(x = mydf, file = output_dir%&%"/"%&%par%&%".csv", row.names=FALSE)
   
 }
 
@@ -439,13 +503,13 @@ in_filename <- "data_mod_climate_regional.gdx"
 out_dirname <- "data_climate_regional"
 
 # create output dir
-output_dir = here("data/"%_%out_dirname%_%"/")
+output_dir = here(outid%&%"/"%&%out_dirname%&%"/")
 dir.create(output_dir)
 temp_out = list()
 
 
 # Source gdx
-mygdx = gdx(here(in_riceproject_dir%_%"/"%_%in_filename))
+mygdx = gdx(here(in_riceproject_dir%&%"/"%&%in_filename))
 mygdx$parameters
 
 
@@ -466,7 +530,7 @@ for(par in names(temp_out)){
   # Test:   par = mygdx$parameters$name[1]
   
   mydf = temp_out[[par]]
-  write.csv(x = mydf, file = output_dir%_%"/"%_%par%_%".csv", row.names=FALSE)
+  write.csv(x = mydf, file = output_dir%&%"/"%&%par%&%".csv", row.names=FALSE)
   
 }
 
@@ -484,13 +548,13 @@ in_filename <- "data_macc_enerdata_co2perc_fit.gdx"
 out_dirname <- "data_macc"
 
 # create output dir
-output_dir = here("data/"%_%out_dirname%_%"/")
+output_dir = here(outid%&%"/"%&%out_dirname%&%"/")
 dir.create(output_dir)
 temp_out = list()
 
 
 # Source gdx
-mygdx = gdx(here(in_riceproject_dir%_%"/"%_%in_filename))
+mygdx = gdx(here(in_riceproject_dir%&%"/"%&%in_filename))
 mygdx$parameters
 
 
@@ -508,7 +572,7 @@ for(par in names(temp_out)){
   # Test:   par = mygdx$parameters$name[1]
   
   mydf = temp_out[[par]]
-  write.csv(x = mydf, file = output_dir%_%"/"%_%par%_%".csv", row.names=FALSE)
+  write.csv(x = mydf, file = output_dir%&%"/"%&%par%&%".csv", row.names=FALSE)
   
 }
 
@@ -525,13 +589,13 @@ in_filename <-  "mx_multiplier.gdx"
 out_dirname <- "data_macc"
 
 # create output dir
-output_dir = here("data/"%_%out_dirname%_%"/")
+output_dir = here(outid%&%"/"%&%out_dirname%&%"/")
 dir.create(output_dir)
 temp_out = list()
 
 
 # Source gdx
-mygdx = gdx(here(in_temp_dir%_%"/"%_%in_filename))
+mygdx = gdx(here(temp_dir%&%"/"%&%in_filename))
 mygdx$parameters
 
 
@@ -550,9 +614,16 @@ for(par in names(temp_out)){
   # Test:   par = mygdx$parameters$name[1]
   
   mydf = temp_out[[par]]
-  write.csv(x = mydf, file = output_dir%_%"/"%_%par%_%".csv", row.names=FALSE)
+  write.csv(x = mydf, file = output_dir%&%"/"%&%par%&%".csv", row.names=FALSE)
   
 }
 
 
 
+
+
+
+
+### If needed to delete all temp files 
+# tmplist <- Sys.glob(file.path("input/calibrations/temp", "*.gdx"))
+# for(tmp_file in tmplist) unlink(tmp_file)
