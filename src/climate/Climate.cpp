@@ -1,7 +1,8 @@
 #include "Climate.h"
 
-#include <iostream>
-#include <fstream>
+#include<iostream>
+#include<fstream>
+#include<sstream>
 
 // constructor
 Climate::Climate(){
@@ -32,43 +33,75 @@ WITCHClimate::WITCHClimate(int hrzn){
 // and setting initial conditions
 void WITCHClimate::readParams(){
 	std::fstream in;
-	std::string sJunk = "";
-	in.open("./settings/WITCHclimateParams.txt", std::ios_base::in);
-	if (!in){
-		std::cout << "The WITCH climate settings file could not be found!" << std::endl;
+	// std::string sJunk = "";
+	// in.open("./settings/WITCHclimateParams.txt", std::ios_base::in);
+	// if (!in){
+	// 	std::cout << "The WITCH climate settings file could not be found!" << std::endl;
+	//     exit(1);
+	// }
+	// while (sJunk!="sigma1"){
+	// 	in >>sJunk;
+	// }
+	// in >> params.sigma1;
+	// while (sJunk!="sigma2"){
+	// 	in >>sJunk;
+	// }
+	// in >> params.sigma2;
+	// while (sJunk!="lambda"){
+	// 	in >>sJunk;
+	// }
+	// in >> params.lambda;
+	// while (sJunk!="heat_ocean"){
+	// 	in >>sJunk;
+	// }
+	// in >> params.heat_ocean;
+	// while (sJunk!="tatm0"){
+	// 	in >>sJunk;
+	// }
+	// in >> tatm[0];
+	// while (sJunk!="tocean0"){
+	// 	in >>sJunk;
+	// }
+	// in >> tocean[0];
+	// in.close();
+	std::string line;
+	in.open("./data_ed57/data_climate_witch/tempc.csv");
+		if (!in){
+		std::cout << "The tempc file could not be found!" << std::endl;
 	    exit(1);
 	}
-	while (sJunk!="sigma1"){
-		in >>sJunk;
+	while(std::getline(in, line)){
+		line.erase(std::remove(line.begin(), line.end(), '"'), line.end());
+		std::istringstream s(line);
+		std::string field;
+		std::string splitline[2];
+		int count = 0;
+		while (std::getline(s, field, ',')){
+			splitline[count] = field;
+			count++;
+		}
+		if (!splitline[0].compare("heat_ocean")){
+			params.heat_ocean = stod(splitline[1]);
+		} 
+		else if (!splitline[0].compare("lambda")){
+			params.lambda = stod(splitline[1]);
+		} 
+		else if (!splitline[0].compare("sigma1")){
+			params.sigma1 = stod(splitline[1]);
+		} 
+		else if (!splitline[0].compare("sigma2")){
+			params.sigma2 = stod(splitline[1]);
+		} 
 	}
-	in >> params.sigma1;
-	while (sJunk!="sigma2"){
-		in >>sJunk;
-	}
-	in >> params.sigma2;
-	while (sJunk!="lambda"){
-		in >>sJunk;
-	}
-	in >> params.lambda;
-	while (sJunk!="heat_ocean"){
-		in >>sJunk;
-	}
-	in >> params.heat_ocean;
-	while (sJunk!="tatm0"){
-		in >>sJunk;
-	}
-	in >> tatm[0];
-	while (sJunk!="tocean0"){
-		in >>sJunk;
-	}
-	in >> tocean[0];
 	in.close();
+	tatm[0] = 0.85;
+	tocean[0] = 0.0068;
 	return;
 }
 // simulates one time step
 void WITCHClimate::nextStep(double forc){
 	tatm[t+1] = tatm[t] +
-		params.sigma1 * (forc - params.lambda * tatm[t] +
+		params.sigma1 * (forc - params.lambda * tatm[t]
 						 - params.sigma2 * (tatm[t] - tocean[t]));
 	tocean[t+1] = tocean[t] + params.heat_ocean * (tatm[t] - tocean[t]);
 	// std::cout << "\t\tWITCH climate evolves to next step:" << std::endl;

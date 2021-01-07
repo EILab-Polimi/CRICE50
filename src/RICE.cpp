@@ -15,12 +15,13 @@ RICE::RICE(int hrzn, int carbontype){
 	switch (carbontype){
 		case 0:
 			carbon = new DICECarbon(hrzn);
+			climate = new DICEClimate(hrzn);
 			break;
 		case 1:
 			carbon = new WITCHCarbon(hrzn);
+			climate = new WITCHClimate(hrzn);
 			break;
 	}
-	climate = new WITCHClimate(hrzn);
 	econ = new Econ(hrzn);
 	t = 0;
 }

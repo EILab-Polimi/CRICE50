@@ -28,7 +28,7 @@ Econ::Econ(int hrzn){
 		std::cout << "The k0 file could not be found!" << std::endl;
 	    exit(1);
 	}
-	while(std::getline(in, line)){
+	while(std::getline(in, line) && nag < agents){
 		line.erase(std::remove(line.begin(), line.end(), '"'), line.end());
 		std::istringstream s(line);
 		std::string field;
@@ -91,6 +91,7 @@ void Econ::nextStep(double* tatm){
 }
 //writes header of file
 void Econ::writeHeader(std::fstream& output){
+	output << "E\t";
 	for (int ag=0; ag < agents; ag++){
 		agents_ptr[ag]->writeHeader(output);
 	}
@@ -99,6 +100,7 @@ void Econ::writeHeader(std::fstream& output){
 }
 //writes steps to file
 void Econ::writeStep(std::fstream& output){
+	output << e[t] << "\t";
 	for (int ag=0; ag < agents; ag++){
 		agents_ptr[ag]->writeStep(output);
 	}
