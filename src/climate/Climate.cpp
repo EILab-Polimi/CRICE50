@@ -33,37 +33,6 @@ WITCHClimate::WITCHClimate(int hrzn){
 // and setting initial conditions
 void WITCHClimate::readParams(){
 	std::fstream in;
-	// std::string sJunk = "";
-	// in.open("./settings/WITCHclimateParams.txt", std::ios_base::in);
-	// if (!in){
-	// 	std::cout << "The WITCH climate settings file could not be found!" << std::endl;
-	//     exit(1);
-	// }
-	// while (sJunk!="sigma1"){
-	// 	in >>sJunk;
-	// }
-	// in >> params.sigma1;
-	// while (sJunk!="sigma2"){
-	// 	in >>sJunk;
-	// }
-	// in >> params.sigma2;
-	// while (sJunk!="lambda"){
-	// 	in >>sJunk;
-	// }
-	// in >> params.lambda;
-	// while (sJunk!="heat_ocean"){
-	// 	in >>sJunk;
-	// }
-	// in >> params.heat_ocean;
-	// while (sJunk!="tatm0"){
-	// 	in >>sJunk;
-	// }
-	// in >> tatm[0];
-	// while (sJunk!="tocean0"){
-	// 	in >>sJunk;
-	// }
-	// in >> tocean[0];
-	// in.close();
 	std::string line;
 	in.open("./data_ed57/data_climate_witch/tempc.csv");
 		if (!in){
