@@ -16,18 +16,21 @@ int main(int argc, char* argv[])
 	if (argc > 1){
 		carbontype = atoi(argv[1]);		
 	}
-	int horizon = 10;
+	int horizon = 57;
 
 	// do we want to consider different delta t ?
 	// int delta_t = 1;
 
 	// here we create the RICE instance
 	// and the associated pointer
+    std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
 	RICE rice(horizon, carbontype);
+    std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
 	RICE* riceptr = &rice;
 
 	// simulate RICE
 	riceptr->simulate();
+    std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
 	riceptr->writeSimulation();
 	// delete memory used by RICE 
 	riceptr->RICE_delete();

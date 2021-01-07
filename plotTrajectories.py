@@ -5,7 +5,7 @@ import seaborn as sns
 data = pd.read_csv("./simulationOutput.txt", sep='\t')
 #select field to plot
 field = ['Enorth','Esouth']
-field = ['GDPBASEsouth','TFPsouth','POPsouth','YGROSSsouth']
+field = ['GDPBASEchn','TFPchn','POPchn','YGROSSchn', 'Schn']
 print(data[field].describe)
 for el in field:
 	plt.plot(data['YEAR'], data[el], label=el)
