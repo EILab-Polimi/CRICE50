@@ -49,7 +49,7 @@ setwd((here()))
 
 
 # region code 
-regid <- "ed57"
+regid <- "norsou2" # "ed57"
 
 
 # Input directory
@@ -148,11 +148,6 @@ mygdx$parameters
 
 # ==== params =======
 
-# ykali 
-param <- "ssp_ykali"
-temp_out[[param]] <- mygdx[param] %>% mutate(t = as.numeric(t)) %>% rename(ssp = V1) %>% arrange(ssp,t,n) %>% mutate(ssp = tolower(ssp))
-
-
 # pop 
 param <- "ssp_l"
 temp_out[["ssp_pop"]] <- mygdx["ssp_l"] %>% mutate(t = as.numeric(t)) %>% rename(ssp = V1)  %>% arrange(ssp,t,n) %>% mutate(ssp = tolower(ssp))
@@ -247,6 +242,12 @@ mygdx$parameters
 
 
 # ====  params  ========
+
+
+# ykali 
+
+temp_out[["ssp_ykali"]] <- mygdx["ykali"]  %>% mutate(t = as.numeric(t)) %>% arrange(ssp,t,n)
+
 
 temp_out[["ssp_ykali_adj"]] <- mygdx["ykali_adj"]  %>% mutate(t = as.numeric(t)) %>% arrange(ssp,t,n)
 
