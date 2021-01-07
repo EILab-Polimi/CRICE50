@@ -164,7 +164,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	for (int ssp=0; ssp<5; ssp++){
 		traj.tfp[ssp] = new double[hrzn];
 	}
-	in.open("./data_ed57/data_baseline/ssp_tfp.csv");
+	in.open("./data_ed57/data_baseline/ssp_tfp_fix.csv");
 	if (!in){
 		std::cout << "The tfp settings file could not be found!" << std::endl;
 	    exit(1);
@@ -388,7 +388,7 @@ void RICEEconAgent::nextAction(){
 	double optlr_s = (params.dk + .004)/(params.dk + .004*params.elasmu + params.prstp)*params.gama;
 	traj.miu[t] = std::min(1.0, 0.1 * (double) t);
 	traj.miu[t] = 0.0;
-	traj.s[t] = traj.s[0] + std::min(1.0, t/58.0) * (optlr_s - traj.s[0]);
+	traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (optlr_s - traj.s[0]);
 	return;	
 }
 void RICEEconAgent::computeDamages(double* tatm){
