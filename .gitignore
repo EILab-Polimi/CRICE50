@@ -61,3 +61,6 @@ tools/data_temp/*
 
 # RICE50++
 RICE50++
+
+#simulationOutput.txt
+simulationOutput.txt
