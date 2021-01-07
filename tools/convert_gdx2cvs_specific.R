@@ -252,6 +252,9 @@ temp_out[["ssp_ykali"]] <- mygdx["ykali"]  %>% mutate(t = as.numeric(t)) %>% arr
 temp_out[["ssp_ykali_adj"]] <- mygdx["ykali_adj"]  %>% mutate(t = as.numeric(t)) %>% arrange(ssp,t,n)
 
 
+temp_out[["ssp_pop_adj"]] <- mygdx["pop_adj"]  %>% mutate(t = as.numeric(t)) %>% arrange(ssp,t,n)
+
+
 temp_out[["ssp_tfp"]] <- mygdx["tfp"]  %>% mutate(t = as.numeric(t)) %>% arrange(ssp,t,n)
 
 

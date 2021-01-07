@@ -35,6 +35,7 @@ $setglobal elasmu 1.45
 $setglobal gama 0.300
 
 
+$setglobal original_ssp 
 
 
 
@@ -109,6 +110,8 @@ parameter gdppc_kali(ssp,t,n) 'GDP per capita used for calibration [MER]';
 gdppc_kali(ssp,t,n) = ykali(ssp,t,n) / l(ssp,t,n) * 1e6;
 
 parameter basegrowthcap(ssp,t,n)          'GDPcap baseline growth factor';
+parameter pop(ssp,t,n);
+pop(ssp,t,n) = l(ssp,t,n);
 
 
 * Adjust population and GDP data until present to historical values maintaining GDP per capita growth
@@ -141,9 +144,12 @@ $endif.vd
 
 
 # Recompute actual quantities used:
-parameter ykali_adj(ssp,t,n) ;
+parameter 
+    ykali_adj(ssp,t,n) 
+    pop_adj(ssp,t,n)
+;
 ykali_adj(ssp,t,n) = gdppc_kali(ssp,t,n) * l(ssp,t,n) / 1e6;
-pop(ssp,t,n) = l(ssp,t,n);
+pop_adj(ssp,t,n) = l(ssp,t,n);
 
 * Conversion factors between PPP and MER
 $gdxin '%datapath%data_baseline.gdx'
@@ -297,4 +303,4 @@ loop(t,
 ##   OUTPUT
 #\____________________________________________________________________________
 
-execute_unload "%temppath%/economy_extracted.gdx" ykali, ykali_adj, pop, tfp, s0, k0, sigma, sigma_adj;
+execute_unload "%temppath%/economy_extracted.gdx" ykali, ykali_adj, pop, pop_adj, tfp, s0, k0, sigma, sigma_adj;
