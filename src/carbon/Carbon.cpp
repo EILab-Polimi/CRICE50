@@ -100,8 +100,8 @@ void DICECarbon::nextStep(double e){
 	mup[t+1] = mat[t] * params.b12 + mup[t] * params.b22 + mlo[t] * params.b32;
 	mlo[t+1] = mup[t] * params.b23 + mlo[t] * params.b33;
 	forc[t] = params.fco22x * ((log((mat[t]/588.000))/log(2))) + forcoth[t];
-	std::cout << "\t\tDICE carbon cycle evolves to next step: " << std::endl;
-	std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
+	// std::cout << "\t\tDICE carbon cycle evolves to next step: " << std::endl;
+	// std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
 	t++;
 	return;
 }
@@ -235,8 +235,8 @@ void WITCHCarbon::nextStep(double e){
 	mlo[t+1] = mlo[t] * params.lo2lo + mup[t] * params.up2lo;
 	forc[t] = params.rfoth_I + (1 + params.rfoth_a) * 
 		(params.rfc_alpha * (log(mat[t]) - log(params.rfc_beta)));
-	std::cout << "\t\tWITCH carbon cycle evolves to next step: " << std::endl;
-	std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
+	// std::cout << "\t\tWITCH carbon cycle evolves to next step: " << std::endl;
+	// std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
 	t++;
 	return;
 }

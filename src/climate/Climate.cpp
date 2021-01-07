@@ -71,8 +71,8 @@ void WITCHClimate::nextStep(double forc){
 		params.sigma1 * (forc - params.lambda * tatm[t] +
 						 - params.sigma2 * (tatm[t] - tocean[t]));
 	tocean[t+1] = tocean[t] + params.heat_ocean * (tatm[t] - tocean[t]);
-	std::cout << "\t\tWITCH climate evolves to next step:" << std::endl;
-	std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
+	// std::cout << "\t\tWITCH climate evolves to next step:" << std::endl;
+	// std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
 	t++;
 	return;
 }
@@ -158,8 +158,8 @@ void DICEClimate::nextStep(double forc){
 		params.c1 * (forc - params.fco22x / params.t2xco2 * tatm[t] +
 						 - params.c3 * (tatm[t] - tocean[t]));
 	tocean[t+1] = tocean[t] + params.c4 * (tatm[t] - tocean[t]);
-	std::cout << "\t\tDICE climate evolves to next step:" << std::endl;
-	std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
+	// std::cout << "\t\tDICE climate evolves to next step:" << std::endl;
+	// std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
 	t++;
 	return;
 }

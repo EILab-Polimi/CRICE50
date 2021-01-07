@@ -4,7 +4,7 @@
 #include<iostream>
 #include<fstream> 
 #include<string>
-
+#include<sstream>
 // constructor
 Econ::Econ(){
 
@@ -20,20 +20,36 @@ Econ::Econ(int hrzn){
 	agents_ptr = new EconAgent * [agents];
 	t = 0;
 	std::fstream in;
+	std::string line;
 	std::string sJunk = "";
-	in.open("./settings/regionNAMES.txt", std::ios_base::in);
+	int nag = 0;
+	in.open("./data_ed57/data_economy/k0.csv");
 	if (!in){
-		std::cout << "The region names file specified could not be found!" << std::endl;
+		std::cout << "The k0 file could not be found!" << std::endl;
 	    exit(1);
 	}
-	for (int nag=0; nag < agents; nag++){
-		std::string name;
-		while (sJunk!=std::to_string(nag)){
-		in >>sJunk;
+	while(std::getline(in, line)){
+		line.erase(std::remove(line.begin(), line.end(), '"'), line.end());
+		std::istringstream s(line);
+		std::string field;
+		std::string splitline[2];
+		int count = 0;
+		while (std::getline(s, field, ',')){
+			splitline[count] = field;
+			count++;
 		}
-		in >> name;
-		agents_ptr[nag] = new RICEEconAgent(hrzn, name);
+		if (splitline[0].compare("n")){
+			agents_ptr[nag] = new RICEEconAgent(hrzn, splitline[0]);
+			nag++;
+		}
 	}
+	// for (int nag=0; nag < agents; nag++){
+	// 	std::string name;
+	// 	while (sJunk!=std::to_string(nag)){
+	// 	in >>sJunk;
+	// 	}
+	// 	in >> name;
+	// }
 }
 // read general economic parameters
 void Econ::readParams(){
@@ -69,7 +85,7 @@ void Econ::nextStep(double* tatm){
 		agents_ptr[ag]->nextStep(tatm);
 		e[t] += agents_ptr[ag]->e[t];
 	}
-	std::cout << "\t\tHere the economy evolves to next step: " << t+1 << std::endl;
+	// std::cout << "\t\tHere the economy evolves to next step: " << t+1 << std::endl;
 	t++;
 	return;
 }

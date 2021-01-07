@@ -35,7 +35,7 @@ void RICE::nextStep(){
 // simulates all the horizon
 void RICE::simulate(){
 	for (int time=0 ; time < horizon; time++){
-		std::cout << "\tSimulation time step " << t << ", year " << 2015+t*5 << std::endl;
+		// std::cout << "\tSimulation time step " << t << ", year " << 2015+t*5 << std::endl;
 		nextStep();
 	} 
 	return;

@@ -66,7 +66,7 @@ void RICEEconAgent::readParams(){
 	params.prstp = 0.015;
 	params.elasmu = 1.45;
 	std::string line;
-	in.open("./data/data_climate_regional/climate_region_coef.csv", std::ios_base::in);
+	in.open("./data_ed57/data_climate_regional/climate_region_coef.csv", std::ios_base::in);
 	if (!in){
 		std::cout << "The climate downscaling parameters could not be found!" << std::endl;
 	    exit(1);
@@ -110,7 +110,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	for (int ssp=0; ssp<5; ssp++){
 		traj.sigma[ssp] = new double[hrzn];
 	}
-	in.open("./data/data_baseline/ssp_cintensity.csv");
+	in.open("./data_ed57/data_baseline/ssp_cintensity.csv");
 	if (!in){
 		std::cout << "The carbon intensity file specified could not be found!" << std::endl;
 	    exit(1);
@@ -137,7 +137,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	for (int ssp=0; ssp<5; ssp++){
 		traj.pop[ssp] = new double[hrzn];
 	}
-	in.open("./data/data_baseline/ssp_pop.csv");
+	in.open("./data_ed57/data_baseline/ssp_pop.csv");
 	if (!in){
 		std::cout << "The pop settings file specified could not be found!" << std::endl;
 	    exit(1);
@@ -164,7 +164,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	for (int ssp=0; ssp<5; ssp++){
 		traj.tfp[ssp] = new double[hrzn];
 	}
-	in.open("./data/data_baseline/ssp_tfp.csv");
+	in.open("./data_ed57/data_baseline/ssp_tfp.csv");
 	if (!in){
 		std::cout << "The tfp settings file could not be found!" << std::endl;
 	    exit(1);
@@ -191,7 +191,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	for (int ssp=0; ssp<5; ssp++){
 		traj.gdpbase[ssp] = new double[hrzn];
 	}
-	in.open("./data/data_baseline/ssp_ykali.csv");
+	in.open("./data_ed57/data_baseline/ssp_ykali.csv");
 	if (!in){
 		std::cout << "The gdpbase settings file could not be found!" << std::endl;
 	    exit(1);
@@ -217,7 +217,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	traj.eind = new double[hrzn];
 	traj.k = new double[hrzn];
 	//initialize k
-	in.open("./data/data_economy/k0.csv");
+	in.open("./data_ed57/data_economy/k0.csv");
 	if (!in){
 		std::cout << "The k0 file could not be found!" << std::endl;
 	    exit(1);
@@ -240,7 +240,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	traj.miu = new double[hrzn];
 	traj.s = new double[hrzn];
 	//initialize s
-	in.open("./data/data_economy/s0.csv");
+	in.open("./data_ed57/data_economy/s0.csv");
 	if (!in){
 		std::cout << "The s0 file could not be found!" << std::endl;
 	    exit(1);
@@ -262,7 +262,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	in.close();	
 	//macc multiplier
 	traj.mx = new double[hrzn];
-	in.open("./data/data_macc/mx_multiplier.csv");
+	in.open("./data_ed57/data_macc/mx_multiplier.csv");
 	if (!in){
 		std::cout << "The mx multiplier file could not be found!" << std::endl;
 	    exit(1);
@@ -285,7 +285,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	//macc coefficients
 	traj.ax = new double[hrzn];
 	traj.bx = new double[hrzn];
-	in.open("./data/data_macc/macc_coeffs.csv");
+	in.open("./data_ed57/data_macc/macc_coeffs.csv");
 	if (!in){
 		std::cout << "The macc coeffs file could not be found!" << std::endl;
 	    exit(1);
@@ -312,7 +312,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	in.close();
 	//land use emissions
 	traj.eland = new double[hrzn];
-	in.open("./data/data_land_use/etree_bau.csv");
+	in.open("./data_ed57/data_land_use/etree_bau.csv");
 	if (!in){
 		std::cout << "The land use file could not be found!" << std::endl;
 	    exit(1);
@@ -353,7 +353,6 @@ void RICEEconAgent::nextStep(double* tatm){
 	traj.ygross[t] = traj.tfp[ssp-1][t] * 
 		pow(traj.k[t], params.gama) * 
 		pow(traj.pop[ssp-1][t]/1000.0, 1 - params.gama);
-	std::cout << traj.tfp[ssp-1][t] << "\t" << traj.k[t] << "\t" << traj.pop[ssp-1][t] << std::endl;
 	// compute emissions
 	traj.eind[t] = traj.sigma[ssp-1][t] * 
 		traj.ygross[t] * (1 - traj.miu[t]);
@@ -379,7 +378,7 @@ void RICEEconAgent::nextStep(double* tatm){
 			pow(traj.cpc[t]/traj.cpc[t-1], params.elasmu/5) - 1;
 	}
 
-	std::cout << "\t\tHere the region " << name << " evolves to the step " << t+1 << " emitting (GtCO2):" << e[t] << std::endl;
+	// std::cout << "\t\tHere the region " << name << " evolves to the step " << t+1 << " emitting (GtCO2):" << e[t] << std::endl;
 	t++;
 	return;
 }
