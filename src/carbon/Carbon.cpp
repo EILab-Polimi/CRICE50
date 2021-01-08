@@ -2,7 +2,7 @@
 
 #include<iostream>
 #include<sstream>
-
+#include <algorithm>
 // constructor
 Carbon::Carbon(){
 
