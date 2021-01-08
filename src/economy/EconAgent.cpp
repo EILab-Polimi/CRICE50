@@ -164,7 +164,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	for (int ssp=0; ssp<5; ssp++){
 		traj.tfp[ssp] = new double[hrzn];
 	}
-	in.open("./data_ed57/data_baseline/ssp_tfp_fix.csv");
+	in.open("./data_ed57/data_baseline/ssp_tfp.csv");
 	if (!in){
 		std::cout << "The tfp settings file could not be found!" << std::endl;
 	    exit(1);

@@ -12,7 +12,7 @@ int main(int argc, char* argv[])
 	// to be run
 	clock_t start, end;
 	start = clock();
-	int carbontype = 0;
+	int carbontype = 1;
 	if (argc > 1){
 		carbontype = atoi(argv[1]);		
 	}

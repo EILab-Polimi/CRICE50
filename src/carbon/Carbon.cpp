@@ -158,8 +158,8 @@ WITCHCarbon::WITCHCarbon(int hrzn){
 // and setting initial conditions
 void WITCHCarbon::readParams(){
 	params.CO2toC = 12.0/44.0;
-	params.rfoth_a = 0.1996315;
-	params.rfoth_I = -0.01116899;
+	// params.rfoth_a = 0.1996315;
+	// params.rfoth_I = -0.01116899;
 	std::fstream in;
 	std::string line;
 	in.open("./data_ed57/data_climate_witch/cmphi.csv");
@@ -257,6 +257,29 @@ void WITCHCarbon::readParams(){
 				mlo[0] = stod(splitline[2]);
 			}
 		} 
+	}
+	in.close();
+	in.open("./data_ed57/data_climate_witch/oghg_coeff.csv");
+		if (!in){
+		std::cout << "The oghg_coeff file could not be found!" << std::endl;
+	    exit(1);
+	}
+	while(std::getline(in, line)){
+		line.erase(std::remove(line.begin(), line.end(), '"'), line.end());
+		std::istringstream s(line);
+		std::string field;
+		std::string splitline[2];
+		int count = 0;
+		while (std::getline(s, field, ',')){
+			splitline[count] = field;
+			count++;
+		}
+		if (!splitline[0].compare("intercept")){
+			params.rfoth_I = stod(splitline[1]);
+		}
+		else if (!splitline[0].compare("slope")){
+			params.rfoth_a = stod(splitline[1]);
+		}
 	}
 	in.close();
 	return;
