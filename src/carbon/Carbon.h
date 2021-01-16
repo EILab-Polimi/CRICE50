@@ -4,7 +4,8 @@
 #include<math.h>
 #include<fstream>
 
-// Abstract Carbon class
+// ====  Abstract Carbon class ========
+
 class Carbon{
 public:
 	Carbon();
@@ -16,7 +17,9 @@ public:
 	virtual void carbonDelete() = 0;
 };
 
-////// DICECarbon class
+
+// ====  DICE-Carbon module =======
+
 struct paramsDICECarbon{
 	float b11;
 	float b21;
@@ -51,7 +54,9 @@ public:
 	void carbonDelete();
 };
 
-////// WITCHCarbon class
+
+// ====  WITCH-Carbon module ======
+
 struct paramsWITCHCarbon{
 	double CO2toC;
 	double at2at;
@@ -84,7 +89,9 @@ public:
 	void carbonDelete();
 };
 
-// ////// FAIRCarbon class
+
+// ====   FAIR-Carbon module ========
+
 // struct paramsFAIRCarbon{
 // 	int param1;
 // 	int param2;

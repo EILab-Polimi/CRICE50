@@ -13,9 +13,9 @@ public:
 	int agents;			// number of economic agents interacting
 	int horizon;		// length of the horizon
 	int t;				// time instant
-	Carbon* carbon;		// carbon component of the model
-	Climate* climate;	// climate component of the model
-	Econ* econ;			// economic component of the model
+	Carbon* carbon;		// pointer to carbon module active in the model
+	Climate* climate;	// pointer to climate module active in the model
+	Econ* econ;			// pointer to economic module active in the model
 	void nextStep();
 	void simulate();
 	void writeSimulation();

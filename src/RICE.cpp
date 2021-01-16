@@ -12,6 +12,7 @@ RICE::~RICE(){
 // constructor with inputs 
 RICE::RICE(int hrzn, int carbontype){
 	horizon = hrzn;
+	// Module selection accoding to settings
 	switch (carbontype){
 		case 0:
 			carbon = new DICECarbon(hrzn);
@@ -43,17 +44,20 @@ void RICE::simulate(){
 }
 // writes simulation trajectories to file
 void RICE::writeSimulation(){
+	// === Open output file =====
 	std::fstream output;
 	output.open("./simulationOutput.txt", std::ios_base::out);
 	if (!output) {
 		std::cout << "Error: file could not be opened" << std::endl;
     	exit(1);
     }
+	// === Write header ======
 	output << "YEAR\t";
 	econ->writeHeader(output);
 	carbon->writeHeader(output);
 	climate->writeHeader(output);
 	output << std::endl;
+	//=== Write time-related output =====
 	for (int t=0 ; t < horizon; t++){
 		output << 2015+t*5 << "\t" ;
 		econ->writeStep(output);
