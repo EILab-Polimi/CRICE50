@@ -23,21 +23,24 @@ int main(int argc, char* argv[])
 
 	// here we create the RICE instance
 	// and the associated pointer
-    std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+    std::cout << "Loading input data: " << std::endl;
 	RICE rice(horizon, carbontype);
-    std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+    std::cout << "Simulating: " << std::endl;
 	RICE* riceptr = &rice;
 
 	// simulate RICE
 	riceptr->simulate();
-    std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+    std::cout << "Writing output data: " << std::endl;
 	riceptr->writeSimulation();
+    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+    std::cout << "Freeing memory: " << std::endl;
 	// delete memory used by RICE 
 	riceptr->RICE_delete();
-
 	// end
     end = clock();
-    std::cout << "time elapsed: " << ((end - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+    std::cout << "total time elapsed: " << ((end - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
 
 	return 0;
 }
