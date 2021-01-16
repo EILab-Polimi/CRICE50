@@ -3,6 +3,7 @@
 #include<iostream>
 #include<sstream>
 #include <algorithm>
+
 // constructor
 Carbon::Carbon(){
 
@@ -12,7 +13,9 @@ Carbon::~Carbon(){
 
 }
 
-////// DESCRIPTION OF THE DICE CARBON MODEL //////
+
+// =======  DICE-Carbon module =============
+
 // constructor
 DICECarbon::DICECarbon(){
 
@@ -23,13 +26,34 @@ DICECarbon::~DICECarbon(){
 }
 // allocates the carbon component
 DICECarbon::DICECarbon(int hrzn){
-	mat = new double[hrzn + 1];
-	mup = new double[hrzn + 1];
-	mlo = new double[hrzn + 1];
-	forc = new double[hrzn + 1];
-	forcoth = new double[hrzn + 1];
+	
+	mat = new double[hrzn + 1];  // Carbon concentration increase in Atmosphere [GtC from 1750]
+	mup = new double[hrzn + 1];  // Carbon concentration increase in Shallow Oceans [GtC from 1750]
+	mlo = new double[hrzn + 1];  // Carbon concentration increase in Lower Oceans [GtC from 1750]
+	forc = new double[hrzn + 1];  // Increase in Radiative Forcing [W/m2 from 1900]
+	forcoth = new double[hrzn + 1];  // Exogenous forcing from other greenhouse gases [W/m2]
+		
 	readParams();
 	t = 0;
+}
+// simulates next step
+void DICECarbon::nextStep(double e){
+
+	// OGHG Forcing
+	forcoth[t] = params.fex0 + (params.fex1 - params.fex0) * std::min((double)t/17.0,1.0);
+	// Carbon concentration increase in Atmosphere 
+	mat[t+1] = mat[t] * params.b11 + mup[t] * params.b21 + e * (5/3.666);
+	// Carbon concentration increase in Shallow Oceans 
+	mup[t+1] = mat[t] * params.b12 + mup[t] * params.b22 + mlo[t] * params.b32;
+	// Carbon concentration increase in Lower Oceans 
+	mlo[t+1] = mup[t] * params.b23 + mlo[t] * params.b33;
+	// Total radiative forcing
+	forc[t] = params.fco22x * ((log((mat[t]/588.000))/log(2))) + forcoth[t];
+
+	// std::cout << "\t\tDICE carbon cycle evolves to next step: " << std::endl;
+	// std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
+	t++;
+	return;
 }
 // read parameters from text file
 // and stores them in the params struct
@@ -94,19 +118,7 @@ void DICECarbon::readParams(){
 	in.close();
 	return;
 }
-// simulates next step
-void DICECarbon::nextStep(double e){
-	forcoth[t] = params.fex0 + (params.fex1 - params.fex0) * std::min((double)t/17.0,1.0);
-	mat[t+1] = mat[t] * params.b11 + mup[t] * params.b21 + e * (5/3.666);
-	mup[t+1] = mat[t] * params.b12 + mup[t] * params.b22 + mlo[t] * params.b32;
-	mlo[t+1] = mup[t] * params.b23 + mlo[t] * params.b33;
-	forc[t] = params.fco22x * ((log((mat[t]/588.000))/log(2))) + forcoth[t];
-	// std::cout << "\t\tDICE carbon cycle evolves to next step: " << std::endl;
-	// std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
-	t++;
-	return;
-}
-//writes header for output
+// Writes header for output
 void DICECarbon::writeHeader(std::fstream& output){
 	output << "MAT" << "\t" <<
 		"MUP" << "\t" <<
@@ -115,7 +127,7 @@ void DICECarbon::writeHeader(std::fstream& output){
 		"FORCOTH" << "\t" ;
 	t = 0;
 }
-//writes step to output
+// Writes step to output
 void DICECarbon::writeStep(std::fstream& output){
 	output << mat[t] << "\t" <<
 		mup[t] << "\t" <<
@@ -135,7 +147,12 @@ void DICECarbon::carbonDelete(){
 }
 
 
-////// DESCRIPTION OF THE WITCH CARBON MODEL //////
+
+
+
+// ====  WITCH-Carbon module =============
+
+
 // constructor
 WITCHCarbon::WITCHCarbon(){
 
@@ -146,12 +163,33 @@ WITCHCarbon::~WITCHCarbon(){
 }
 // allocates the carbon component
 WITCHCarbon::WITCHCarbon(int hrzn){
-	mat = new double[hrzn + 1];
-	mup = new double[hrzn + 1];
-	mlo = new double[hrzn + 1];
-	forc = new double[hrzn + 1];
+	mat = new double[hrzn + 1];  // Carbon concentration increase in Atmosphere [GtC from 1750]
+	mup = new double[hrzn + 1];  // Carbon concentration increase in Shallow Oceans [GtC from 1750]
+	mlo = new double[hrzn + 1];  // Carbon concentration increase in Lower Oceans [GtC from 1750]
+	forc = new double[hrzn + 1];  // Increase in Radiative Forcing [W/m2 from 1900]
 	readParams();
 	t = 0;
+}
+// simulates next step
+void WITCHCarbon::nextStep(double e){
+
+	// Carbon concentration increase in Atmosphere 
+	mat[t+1] = mat[t] * params.at2at + mup[t] * params.up2at +
+		e * 5 * params.CO2toC;
+	// Carbon concentration increase in Shallow Oceans 
+	mup[t+1] = mat[t] * params.at2up + mup[t] * params.up2up +
+		mlo[t] * params.lo2up;
+	// Carbon concentration increase in Lower Oceans 
+	mlo[t+1] = mlo[t] * params.lo2lo + mup[t] * params.up2lo;
+	// Total radiative forcing
+	forc[t] = params.rfoth_I + ( 1 + params.rfoth_a) * 
+		(params.rfc_alpha * (log(mat[t]) - log(params.rfc_beta)));
+
+
+	// std::cout << "\t\tWITCH carbon cycle evolves to next step: " << std::endl;
+	// std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
+	t++;
+	return;
 }
 // read parameters from text file
 // and stores them in the params struct
@@ -284,20 +322,6 @@ void WITCHCarbon::readParams(){
 	in.close();
 	return;
 }
-// simulates next step
-void WITCHCarbon::nextStep(double e){
-	mat[t+1] = mat[t] * params.at2at + mup[t] * params.up2at +
-		e * 5 * params.CO2toC;
-	mup[t+1] = mat[t] * params.at2up + mup[t] * params.up2up +
-		mlo[t] * params.lo2up;
-	mlo[t+1] = mlo[t] * params.lo2lo + mup[t] * params.up2lo;
-	forc[t] = params.rfoth_I + ( 1 + params.rfoth_a) * 
-		(params.rfc_alpha * (log(mat[t]) - log(params.rfc_beta)));
-	// std::cout << "\t\tWITCH carbon cycle evolves to next step: " << std::endl;
-	// std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
-	t++;
-	return;
-}
 //writes header for output
 void WITCHCarbon::writeHeader(std::fstream& output){
 	output << "MAT" << "\t" <<
@@ -322,3 +346,6 @@ void WITCHCarbon::carbonDelete(){
 	delete[] forc;
 	return;
 }
+
+
+// ====   FAIR-Carbon module ========

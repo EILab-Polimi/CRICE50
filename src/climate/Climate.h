@@ -3,18 +3,23 @@
 
 #include<fstream>
 
+
+// ====  Abstract Climate class ========
+
 class Climate{
 public:
 	Climate();
 	~Climate();
-	double* tatm; // this is the element every temperature component needs to have to pass it to economy
+	double* tatm;  // atmospheric temperature (°C w.r.t 1900)
 	virtual void nextStep(double forc) = 0;
 	virtual void writeHeader(std::fstream& output) = 0;
 	virtual void writeStep(std::fstream& output) = 0;
 	virtual void climateDelete() = 0;
 };
 
-////// WITCHTemp class
+
+// ====  WITCH-CO2-Climate module ========
+
 struct paramsWITCHClimate{
 	double sigma1;
 	double sigma2;
@@ -27,7 +32,6 @@ public:
 	WITCHClimate();
 	~WITCHClimate();
 	WITCHClimate(int hrzn);
-	// double* tatm;		// atmospheric temperature (°C w.r.t 1900)
 	double* tocean;		// ocean temperature (°C w.r.t 1900)
 	paramsWITCHClimate params;
 	int t;				// time step
@@ -38,7 +42,9 @@ public:
 	void climateDelete();
 };
 
-////// DICETemp class
+
+// ====  DICE-Climate module ========
+
 struct paramsDICEClimate{
 	double c1;
 	double c3;
@@ -52,7 +58,6 @@ public:
 	DICEClimate();
 	~DICEClimate();
 	DICEClimate(int hrzn);
-	// double* tatm;		// atmospheric temperature (°C w.r.t 1900)
 	double* tocean;		// ocean temperature (°C w.r.t 1900)
 	paramsDICEClimate params;
 	int t;				// time step
@@ -62,5 +67,6 @@ public:
 	void writeStep(std::fstream& output);
 	void climateDelete();
 };
+
 
 #endif

@@ -14,7 +14,9 @@ Climate::~Climate(){
 
 }
 
-////// DESCRIPTION OF THE WITCH ClimateERATURE MODEL //////
+
+// ====  WITCH-CO2-Climate module ========
+
 // constructor
 WITCHClimate::WITCHClimate(){
 
@@ -70,9 +72,13 @@ void WITCHClimate::readParams(){
 }
 // simulates one time step
 void WITCHClimate::nextStep(double forc){
+
+	// Global temperature increase from pre-industrial levels
 	tatm[t+1] = tatm[t] +
 		params.sigma1 * (forc - params.lambda * tatm[t]
 						 - params.sigma2 * (tatm[t] - tocean[t]));
+	
+	// Ocean temperature
 	tocean[t+1] = tocean[t] + params.heat_ocean * (tatm[t] - tocean[t]);
 	// std::cout << "\t\tWITCH climate evolves to next step:" << std::endl;
 	// std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
@@ -98,7 +104,9 @@ void WITCHClimate::climateDelete(){
 }
 
 
-////// DESCRIPTION OF THE DICE ClimateERATURE MODEL //////
+
+// ====  DICE-Climate module ========
+
 // constructor
 DICEClimate::DICEClimate(){
 
