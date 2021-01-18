@@ -5,7 +5,7 @@
 #include<fstream> 
 #include<string>
 #include<sstream>
-#include <algorithm>
+#include<algorithm>
 // constructor
 Econ::Econ(){
 
@@ -17,6 +17,7 @@ Econ::~Econ(){
 // allocates memory for the economic component
 Econ::Econ(int hrzn){
 	readParams();
+	RPCutoffMetric = 0;
 	e = new double[hrzn+1];
 	agents_ptr = new EconAgent * [agents];
 	t = 0;
@@ -82,8 +83,27 @@ void Econ::readParams(){
 }
 // simulates one step
 void Econ::nextStep(double* tatm){
+	// compute Rich Poor Cutoff
+	// get value for cutoff from every agent
+	double RPCutoffValues[agents];
 	for (int ag=0; ag < agents; ag++){
-		agents_ptr[ag]->nextStep(tatm);
+		RPCutoffValues[ag] = agents_ptr[ag]->getValueForRPCutoff();
+	}
+	// sort values
+	std::sort(RPCutoffValues,RPCutoffValues+agents);
+	double RPCutoff = 0.0;
+	if (RPCutoffMetric==0){ // mean
+		for (int ag=0; ag < agents; ag++){
+			RPCutoff += RPCutoffValues[ag];
+		}
+		RPCutoff = RPCutoff / agents;
+	}
+	else if (RPCutoff==1){ //median
+		RPCutoff = RPCutoffValues[agents/2];
+	}
+	// nextStep in each agent
+	for (int ag=0; ag < agents; ag++){
+		agents_ptr[ag]->nextStep(tatm, RPCutoff);
 		e[t] += agents_ptr[ag]->e[t];
 	}
 	// std::cout << "\t\tHere the economy evolves to next step: " << t+1 << std::endl;

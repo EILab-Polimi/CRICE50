@@ -42,8 +42,6 @@ int main(int argc, char* argv[])
     std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
     std::cout << "Simulating: " << std::endl;
 
-	RICE rice(horizon, carbontype);
-
 	RICE* riceptr = &rice;
     std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
 

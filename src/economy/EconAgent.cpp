@@ -30,6 +30,7 @@ RICEEconAgent::RICEEconAgent(int hrzn, std::string regname){
 	t = 0;
 	horizon = hrzn;
 	name = regname;
+	IndicatorRPCutoff = 0;
 	readParams();
 	readBaseline(hrzn);
 }
@@ -95,10 +96,20 @@ void RICEEconAgent::readParams(){
 	}
 	in.close();
 	params.damage_type = 0;
-	params.beta_bhm = 0.0127184;
-	params.beta_bhm2 = -0.0004871;	
-	params.beta_djo = 0.0261;
-	// params.beta_djo = 0.0261 - 0.01655;
+	params.beta_bhm_sr = 0.0127184;
+	params.beta_bhm_sr_2 = -0.0004871;	
+	params.beta_bhm_lr = -0.0037497;
+	params.beta_bhm_lr_2 = -0.0000955;
+	params.beta_bhm_srdp = 0.0254342;
+	params.beta_bhm_srdp_2 = -0.000772;
+	params.beta_bhm_srdr = 0.0088951;
+	params.beta_bhm_srdr_2 = -0.0003155;
+	params.beta_bhm_lrdp = -0.0186;
+	params.beta_bhm_lrdp_2 = 0.0001513;
+	params.beta_bhm_lrdr = -0.0026918;
+	params.beta_bhm_lrdr_2 = -0.000022;
+	params.beta_djo_r = 0.0261;
+	params.beta_djo_p = 0.0261 - 0.01655;
 	params.beta_k = -0.0586;
 	return;
 }
@@ -346,8 +357,20 @@ void RICEEconAgent::readBaseline(int hrzn){
 	traj.omega[0] = 0.0;
 	return;
 }
+// returns value for Rich Poor Cutoff
+double RICEEconAgent::getValueForRPCutoff(){
+	double RPCutoff = 0.0;
+	if (IndicatorRPCutoff == 0){ // statically based on GDP baseline
+		RPCutoff = traj.gdpbase[ssp-1][t];
+	}
+	if (IndicatorRPCutoff == 1){ // uses last value of GDP (dynamic)
+		RPCutoff = traj.y[t-1];
+	}
+	return RPCutoff;
+}
+
 // simulates one time step
-void RICEEconAgent::nextStep(double* tatm){
+void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 	nextAction();
 	// compute ygross
 	traj.ygross[t] = traj.tfp[ssp-1][t] * 
@@ -357,7 +380,7 @@ void RICEEconAgent::nextStep(double* tatm){
 	traj.eind[t] = traj.sigma[ssp-1][t] * 
 		traj.ygross[t] * (1 - traj.miu[t]);
 	e[t] = traj.eind[t] + traj.eland[t];
-	computeDamages(tatm);	
+	computeDamages(tatm, RPCutoff);	
 	// compute abatecost
 	traj.abatecost[t] = traj.mx[t] *
 		( (traj.ax[t] * pow(traj.miu[t],2) / 2) + 
@@ -391,17 +414,17 @@ void RICEEconAgent::nextAction(){
 	traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (optlr_s - traj.s[0]);
 	return;	
 }
-void RICEEconAgent::computeDamages(double* tatm){
+void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 	double tatm_local = params.alpha_tatm + params.beta_tatm * tatm[t];
 	if (params.damage_type == 0){
 		traj.damages[t] = 0.0;		
 	}
 	else if (params.damage_type==1){
-		//BURKE - 4 types (2 with rich_poor cutoff)
-		double bimpact = params.beta_bhm* tatm_local + 
-			params.beta_bhm2* pow(tatm_local,2)
-			- params.beta_bhm* params.base_tatm 
-			- params.beta_bhm2* pow(params.base_tatm,2);
+		//BURKE - SR
+		double bimpact = params.beta_bhm_sr* tatm_local + 
+			params.beta_bhm_sr_2* pow(tatm_local,2)
+			- params.beta_bhm_sr* params.base_tatm 
+			- params.beta_bhm_sr_2* pow(params.base_tatm,2);
 		double komega = pow((traj.k[t] * pow(1 - params.dk , 5) +
 			5 * traj.s[t] * traj.tfp[ssp-1][t] * pow(traj.k[t], params.gama) *
 			pow(traj.pop[ssp-1][t]/1000.0, 1.0 - params.gama) * (1.0 / 1.0 + traj.omega[t]))
@@ -421,9 +444,149 @@ void RICEEconAgent::computeDamages(double* tatm){
 		traj.damages[t] = traj.ygross[t] - ynet_estimated;
 	}
 	else if (params.damage_type==2){
+		//BURKE - LR
+		double bimpact = params.beta_bhm_lr* tatm_local + 
+			params.beta_bhm_lr_2* pow(tatm_local,2)
+			- params.beta_bhm_lr* params.base_tatm 
+			- params.beta_bhm_lr_2* pow(params.base_tatm,2);
+		double komega = pow((traj.k[t] * pow(1 - params.dk , 5) +
+			5 * traj.s[t] * traj.tfp[ssp-1][t] * pow(traj.k[t], params.gama) *
+			pow(traj.pop[ssp-1][t]/1000.0, 1.0 - params.gama) * (1.0 / 1.0 + traj.omega[t]))
+			/ traj.k[t], params.gama);
+		if (t < horizon - 1){
+			double basegrowthcap = pow((traj.gdpbase[ssp-1][t+1]/traj.pop[ssp-1][t+1])
+				/ (traj.gdpbase[ssp-1][t]/traj.pop[ssp-1][t]), 1.0/5.0) - 1;
+			traj.omega[t+1] = (1 + traj.omega[t]) * traj.tfp[ssp-1][t+1]/traj.tfp[ssp-1][t]
+				* pow(traj.pop[ssp-1][t+1]/traj.pop[ssp-1][t], 1 - params.gama)
+				* traj.pop[ssp-1][t]/traj.pop[ssp-1][t+1] * komega
+				/ pow(1 + basegrowthcap + bimpact, 5) - 1;
+		}
+		double damfrac = 1 - (1 / ( 1 + traj.omega[t]));
+		double ynet_estimated = std::min(std::max(traj.ygross[t] 
+			* (1 - damfrac), pow(10.0, -4.0) * traj.gdpbase[ssp-1][t]), 
+			2 * traj.gdpbase[ssp-1][t]);
+		traj.damages[t] = traj.ygross[t] - ynet_estimated;
+	}
+	else if (params.damage_type==3){
+		//BURKE - SR diff
+		double bimpact;
+		if (IndicatorRPCutoff==0){
+			if (RPCutoff > traj.gdpbase[ssp-1][t]){
+				bimpact = params.beta_bhm_srdp* tatm_local + 
+					params.beta_bhm_srdp_2* pow(tatm_local,2)
+					- params.beta_bhm_srdp* params.base_tatm 
+					- params.beta_bhm_srdp_2* pow(params.base_tatm,2);
+			}
+			else{
+				bimpact = params.beta_bhm_srdr* tatm_local + 
+					params.beta_bhm_srdr_2* pow(tatm_local,2)
+					- params.beta_bhm_srdr* params.base_tatm 
+					- params.beta_bhm_srdr_2* pow(params.base_tatm,2);
+			}
+		}
+		else if (IndicatorRPCutoff==1){
+			if (RPCutoff > traj.y[t-1]){
+				bimpact = params.beta_bhm_srdp* tatm_local + 
+					params.beta_bhm_srdp_2* pow(tatm_local,2)
+					- params.beta_bhm_srdp* params.base_tatm 
+					- params.beta_bhm_srdp_2* pow(params.base_tatm,2);
+			}
+			else{
+				bimpact = params.beta_bhm_srdr* tatm_local + 
+					params.beta_bhm_srdr_2* pow(tatm_local,2)
+					- params.beta_bhm_srdr* params.base_tatm 
+					- params.beta_bhm_srdr_2* pow(params.base_tatm,2);
+			}
+		}		double komega = pow((traj.k[t] * pow(1 - params.dk , 5) +
+			5 * traj.s[t] * traj.tfp[ssp-1][t] * pow(traj.k[t], params.gama) *
+			pow(traj.pop[ssp-1][t]/1000.0, 1.0 - params.gama) * (1.0 / 1.0 + traj.omega[t]))
+			/ traj.k[t], params.gama);
+		if (t < horizon - 1){
+			double basegrowthcap = pow((traj.gdpbase[ssp-1][t+1]/traj.pop[ssp-1][t+1])
+				/ (traj.gdpbase[ssp-1][t]/traj.pop[ssp-1][t]), 1.0/5.0) - 1;
+			traj.omega[t+1] = (1 + traj.omega[t]) * traj.tfp[ssp-1][t+1]/traj.tfp[ssp-1][t]
+				* pow(traj.pop[ssp-1][t+1]/traj.pop[ssp-1][t], 1 - params.gama)
+				* traj.pop[ssp-1][t]/traj.pop[ssp-1][t+1] * komega
+				/ pow(1 + basegrowthcap + bimpact, 5) - 1;
+		}
+		double damfrac = 1 - (1 / ( 1 + traj.omega[t]));
+		double ynet_estimated = std::min(std::max(traj.ygross[t] 
+			* (1 - damfrac), pow(10.0, -4.0) * traj.gdpbase[ssp-1][t]), 
+			2 * traj.gdpbase[ssp-1][t]);
+		traj.damages[t] = traj.ygross[t] - ynet_estimated;
+	}
+	else if (params.damage_type==4){
+		//BURKE - LR diff
+		double bimpact;
+		if (IndicatorRPCutoff==0){
+			if (RPCutoff > traj.gdpbase[ssp-1][t]){
+				bimpact = params.beta_bhm_lrdp* tatm_local + 
+					params.beta_bhm_lrdp_2* pow(tatm_local,2)
+					- params.beta_bhm_lrdp* params.base_tatm 
+					- params.beta_bhm_lrdp_2* pow(params.base_tatm,2);
+			}
+			else{
+				bimpact = params.beta_bhm_lrdr* tatm_local + 
+					params.beta_bhm_lrdr_2* pow(tatm_local,2)
+					- params.beta_bhm_lrdr* params.base_tatm 
+					- params.beta_bhm_lrdr_2* pow(params.base_tatm,2);
+			}
+		}
+		else if (IndicatorRPCutoff==1){
+			if (RPCutoff > traj.y[t-1]){
+				bimpact = params.beta_bhm_lrdp* tatm_local + 
+					params.beta_bhm_lrdp_2* pow(tatm_local,2)
+					- params.beta_bhm_lrdp* params.base_tatm 
+					- params.beta_bhm_lrdp_2* pow(params.base_tatm,2);
+			}
+			else{
+				bimpact = params.beta_bhm_lrdr* tatm_local + 
+					params.beta_bhm_lrdr_2* pow(tatm_local,2)
+					- params.beta_bhm_lrdr* params.base_tatm 
+					- params.beta_bhm_lrdr_2* pow(params.base_tatm,2);
+			}
+		}
+		double komega = pow((traj.k[t] * pow(1 - params.dk , 5) +
+			5 * traj.s[t] * traj.tfp[ssp-1][t] * pow(traj.k[t], params.gama) *
+			pow(traj.pop[ssp-1][t]/1000.0, 1.0 - params.gama) * (1.0 / 1.0 + traj.omega[t]))
+			/ traj.k[t], params.gama);
+		if (t < horizon - 1){
+			double basegrowthcap = pow((traj.gdpbase[ssp-1][t+1]/traj.pop[ssp-1][t+1])
+				/ (traj.gdpbase[ssp-1][t]/traj.pop[ssp-1][t]), 1.0/5.0) - 1;
+			traj.omega[t+1] = (1 + traj.omega[t]) * traj.tfp[ssp-1][t+1]/traj.tfp[ssp-1][t]
+				* pow(traj.pop[ssp-1][t+1]/traj.pop[ssp-1][t], 1 - params.gama)
+				* traj.pop[ssp-1][t]/traj.pop[ssp-1][t+1] * komega
+				/ pow(1 + basegrowthcap + bimpact, 5) - 1;
+		}
+		double damfrac = 1 - (1 / ( 1 + traj.omega[t]));
+		double ynet_estimated = std::min(std::max(traj.ygross[t] 
+			* (1 - damfrac), pow(10.0, -4.0) * traj.gdpbase[ssp-1][t]), 
+			2 * traj.gdpbase[ssp-1][t]);
+		traj.damages[t] = traj.ygross[t] - ynet_estimated;
+	}
+	else if (params.damage_type==5){
 		//DJO with rich_poor cutoff
-		double djoimpact = params.beta_djo * 
-			(tatm_local - params.base_tatm); 
+		double djoimpact;
+		if (IndicatorRPCutoff==0){
+			if (RPCutoff > traj.gdpbase[ssp-1][t]){
+				djoimpact = params.beta_djo_p * 
+					(tatm_local - params.base_tatm); 
+			}
+			else{
+				djoimpact = params.beta_djo_r * 
+					(tatm_local - params.base_tatm); 
+			}
+		}
+		else if (IndicatorRPCutoff==1){
+			if (RPCutoff > traj.y[t-1]){
+				djoimpact = params.beta_djo_p * 
+					(tatm_local - params.base_tatm); 
+			}
+			else{
+				djoimpact = params.beta_djo_r * 
+					(tatm_local - params.base_tatm); 
+			}			
+		}
 		double komega = pow((traj.k[t] * pow(1 - params.dk , 5) +
 			5 * traj.s[t] * traj.tfp[ssp-1][t] * pow(traj.k[t], params.gama) *
 			pow(traj.pop[ssp-1][t]/1000.0, 1.0 - params.gama) * (1.0 / 1.0 + traj.omega[t]))
@@ -442,7 +605,7 @@ void RICEEconAgent::computeDamages(double* tatm){
 			2 * traj.gdpbase[ssp-1][t]);
 		traj.damages[t] = traj.ygross[t] - ynet_estimated;
 	}
-	else if (params.damage_type==3){
+	else if (params.damage_type==6){
 		//KAHN
 		double tatm_mavg = 0.0;
 		for (int tidx=1; tidx<7; tidx++){
