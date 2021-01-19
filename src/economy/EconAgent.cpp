@@ -538,26 +538,28 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 					tatm_mavg += traj.tatm_local[t-tidx];								
 				}
 			}
-			tatm_mavg = tatm_mavg/6;
+			tatm_mavg = tatm_mavg/6.0;
 			traj.impact[t] = params.beta_k * 
 				(traj.tatm_local[t] - tatm_mavg); 
 		}
 		traj.komega[t] = pow((traj.k[t] * pow(1 - params.dk , 5) +
 			5 * traj.s[t] * traj.tfp[ssp-1][t] * pow(traj.k[t], params.gama) *
-			pow(traj.pop[ssp-1][t]/1000.0, 1.0 - params.gama) * (1.0 / 1.0 + traj.omega[t]))
+			pow(traj.pop[ssp-1][t]/1000.0, 1.0 - params.gama) * 1.0 / (1.0 + traj.omega[t]))
 			/ traj.k[t], params.gama);
 		if (t < horizon - 1){
 			traj.basegrowthcap[t] = pow((traj.gdpbase[ssp-1][t+1]/traj.pop[ssp-1][t+1])
 				/ (traj.gdpbase[ssp-1][t]/traj.pop[ssp-1][t]), 1.0/5.0) - 1;
-			traj.omega[t+1] = (1 + traj.omega[t]) * (traj.tfp[ssp-1][t+1]/traj.tfp[ssp-1][t])
-				* pow(traj.pop[ssp-1][t+1]/traj.pop[ssp-1][t], 1.0 - params.gama)
-				* traj.pop[ssp-1][t]/traj.pop[ssp-1][t+1] * traj.komega[t]
-				/ pow(1 + traj.basegrowthcap[t] + traj.impact[t], 5) - 1.0;
+			// EQ OMEGA
+			traj.omega[t+1] = (((1.0 + (traj.omega[t])) 
+				* (traj.tfp[ssp-1][t+1]/traj.tfp[ssp-1][t])
+				* pow(traj.pop[ssp-1][t+1]/traj.pop[ssp-1][t], 1.0 - params.gama) * traj.pop[ssp-1][t]/traj.pop[ssp-1][t+1] 
+				* traj.komega[t]
+				/ pow(1.0 + traj.basegrowthcap[t] + traj.impact[t], 5) ) - 1.0);
 		}
-		traj.damfrac[t] = 1 - (1 / ( 1 + traj.omega[t]));
+		traj.damfrac[t] = 1.0 - (1.0 / ( 1.0 + traj.omega[t]));
 		traj.ynet_estimated[t] = std::min(std::max(traj.ygross[t] 
 			* (1 - traj.damfrac[t]), pow(10.0, -4.0) * traj.gdpbase[ssp-1][t]), 
-			2 * traj.gdpbase[ssp-1][t]);
+			2.0 * traj.gdpbase[ssp-1][t]);
 		traj.damages[t] = traj.ygross[t] - traj.ynet_estimated[t];
 	}
 	return;
