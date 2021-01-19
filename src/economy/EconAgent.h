@@ -68,6 +68,12 @@ struct RICEEconAgentTraj{
 	double* ri;
 	double* cprice;
 	double* omega;
+	double* tatm_local;
+	double* damfrac;
+	double* komega;
+	double* basegrowthcap;
+	double* ynet_estimated;
+	double* impact;
 };
 
 class RICEEconAgent: public EconAgent{
