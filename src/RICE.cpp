@@ -52,6 +52,8 @@ void RICE::writeSimulation(){
     	exit(1);
     }
 	// === Write header ======
+	output.precision(10);
+	output << std::scientific;
 	output << "YEAR\t";
 	econ->writeHeader(output);
 	carbon->writeHeader(output);
