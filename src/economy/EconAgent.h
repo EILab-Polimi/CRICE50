@@ -8,6 +8,7 @@ public:
 	EconAgent();
 	virtual ~EconAgent() = 0;
 	double* e;		//emissions
+	int t; 			// time step
 	virtual double getValueForRPCutoff() = 0;
 	virtual void nextStep(double* tatm, double RPCutoff) = 0;
 	virtual void writeHeader(std::fstream& output) = 0;
@@ -25,7 +26,9 @@ struct RICEEconAgentParams{
 	double alpha_tatm;
 	double beta_tatm;
 	double base_tatm;
+	int indRPCutoff;	// gdp baseline or last value of gdp
 	int damage_type;
+	int temp_limit;
 	double beta_bhm_sr;
 	double beta_bhm_sr_2;
 	double beta_bhm_lr;
@@ -81,10 +84,8 @@ public:
 	RICEEconAgent();
 	~RICEEconAgent();
 	RICEEconAgent(int hrzn, std::string regname);
-	int t;			// time step
 	int horizon;
 	int ssp;
-	int IndicatorRPCutoff; // gdp baseline or last value of gdp
 	std::string name;
 	RICEEconAgentParams params;
 	RICEEconAgentTraj traj;

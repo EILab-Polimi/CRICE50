@@ -18,6 +18,7 @@ public:
 	Econ* econ;			// pointer to economic module active in the model
 	void nextStep();
 	void simulate();
+	void resetTidx();
 	void writeSimulation();
 	void RICE_delete();
 };

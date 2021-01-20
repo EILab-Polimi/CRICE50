@@ -10,7 +10,8 @@ class Climate{
 public:
 	Climate();
 	~Climate();
-	double* tatm;  // atmospheric temperature (°C w.r.t 1900)
+	double* tatm;  	// atmospheric temperature (°C w.r.t 1900)
+	int t;			// time step
 	virtual void nextStep(double forc) = 0;
 	virtual void writeHeader(std::fstream& output) = 0;
 	virtual void writeStep(std::fstream& output) = 0;
@@ -34,7 +35,6 @@ public:
 	WITCHClimate(int hrzn);
 	double* tocean;		// ocean temperature (°C w.r.t 1900)
 	paramsWITCHClimate params;
-	int t;				// time step
 	void readParams();
 	void nextStep(double forc);
 	void writeHeader(std::fstream& output);
@@ -60,7 +60,6 @@ public:
 	DICEClimate(int hrzn);
 	double* tocean;		// ocean temperature (°C w.r.t 1900)
 	paramsDICEClimate params;
-	int t;				// time step
 	void readParams();
 	void nextStep(double forc);
 	void writeHeader(std::fstream& output);

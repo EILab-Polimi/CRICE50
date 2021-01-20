@@ -36,11 +36,21 @@ void RICE::nextStep(){
 }
 // simulates all the horizon
 void RICE::simulate(){
+	resetTidx();
 	for (int time=0 ; time < horizon; time++){
 		// std::cout << "\tSimulation time step " << t << ", year " << 2015+t*5 << std::endl;
 		nextStep();
 	} 
 	return;
+}
+void RICE::resetTidx(){
+	t = 0;
+	econ->t = 0;
+	for (int ag=0; ag < econ->agents; ag++){
+		econ->agents_ptr[ag]->t = 0;
+	}
+	climate->t = 0;
+	carbon->t = 0;
 }
 // writes simulation trajectories to file
 void RICE::writeSimulation(){

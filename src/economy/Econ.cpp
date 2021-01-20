@@ -17,7 +17,6 @@ Econ::~Econ(){
 // allocates memory for the economic component
 Econ::Econ(int hrzn){
 	readParams();
-	RPCutoffMetric = 0;
 	e = new double[hrzn+1];
 	agents_ptr = new EconAgent * [agents];
 	t = 0;
@@ -45,13 +44,6 @@ Econ::Econ(int hrzn){
 			nag++;
 		}
 	}
-	// for (int nag=0; nag < agents; nag++){
-	// 	std::string name;
-	// 	while (sJunk!=std::to_string(nag)){
-	// 	in >>sJunk;
-	// 	}
-	// 	in >> name;
-	// }
 }
 // read general economic parameters
 void Econ::readParams(){
@@ -79,6 +71,7 @@ void Econ::readParams(){
 	}
 	in >> params.ineqav;
 	in.close();
+	params.RPCutoffMetric = 0;
 	return;
 }
 // simulates one step
@@ -92,13 +85,13 @@ void Econ::nextStep(double* tatm){
 	// sort values
 	std::sort(RPCutoffValues,RPCutoffValues+agents);
 	double RPCutoff = 0.0;
-	if (RPCutoffMetric==0){ // mean
+	if (params.RPCutoffMetric==0){ // mean
 		for (int ag=0; ag < agents; ag++){
 			RPCutoff += RPCutoffValues[ag];
 		}
 		RPCutoff = RPCutoff / agents;
 	}
-	else if (RPCutoff==1){ //median
+	else if (params.RPCutoffMetric==1){ //median
 		RPCutoff = RPCutoffValues[agents/2];
 	}
 	// nextStep in each agent

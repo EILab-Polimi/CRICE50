@@ -7,6 +7,7 @@ struct EconParams{
 	double elasmu;
 	double prstp;
 	double ineqav;
+	int RPCutoffMetric; // median or mean
 };
 
 class Econ{
@@ -15,7 +16,6 @@ public:
 	~Econ();
 	Econ(int hrzn);
 	int agents;					// number of agents	
-	int RPCutoffMetric;			// median or mean
 	EconAgent** agents_ptr;		// pointer to agents
 	int t;						// time step
 	EconParams params;

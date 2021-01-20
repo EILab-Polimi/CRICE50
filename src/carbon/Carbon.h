@@ -10,7 +10,8 @@ class Carbon{
 public:
 	Carbon();
 	~Carbon();
-	double* forc; // (W/m2) increase w.r.t 1900 - this is the element every carbon component needs to have to pass it to temperature
+	double* forc; 	// (W/m2) increase w.r.t 1900 - this is the element every carbon component needs to have to pass it to temperature
+	int t; 			// time step
 	virtual void nextStep(double e) = 0;
 	virtual void writeHeader(std::fstream& output) = 0;
 	virtual void writeStep(std::fstream& output) = 0;
@@ -46,7 +47,6 @@ public:
 	double* mlo;		// lower strata carbon (GtC)
 	double* forcoth; 	// forcing of other GHG (W/m2) - increase w.r.t 1900
 	paramsDICECarbon params;
-	int t;				// time step
 	void readParams();
 	void nextStep(double e);
 	void writeHeader(std::fstream& output);
@@ -81,7 +81,6 @@ public:
 	double* mup;		// upper strata carbon (GtC)
 	double* mlo;		// lower strata carbon (GtC)
 	paramsWITCHCarbon params;
-	int t;				// time step
 	void readParams();
 	void nextStep(double e);
 	void writeHeader(std::fstream& output);
