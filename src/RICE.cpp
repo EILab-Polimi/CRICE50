@@ -1,6 +1,8 @@
 #include "RICE.h"
-#include<iostream>
-#include<fstream>
+#include <iostream>
+#include <fstream>
+#include <string>
+
 // constructor
 RICE::RICE(){
 	
@@ -11,7 +13,29 @@ RICE::~RICE(){
 }
 // constructor with inputs 
 RICE::RICE(int hrzn, int carbontype){
-	horizon = hrzn;
+	// std::fstream in;
+	// std::string line;
+	// std::string sJunk = "";
+	// in.open("./settings/generalSettings.txt");
+	// if (!in){
+	// 	std::cout << "The RICE general file could not be found!" << std::endl;
+	//     exit(1);
+	// }
+	// while (sJunk!="horizon"){
+	// 	in >>sJunk;
+	// }
+	// in >> horizon;
+	// while (sJunk!="carbon_model"){
+	// 	in >>sJunk;
+	// }
+	// in >> line;
+	// while (sJunk!="climate_model"){
+	// 	in >>sJunk;
+	// }
+	// in >> line;
+	// std::cout << line << "\t"  << std::endl;
+
+	horizon=hrzn;
 	// Module selection accoding to settings
 	switch (carbontype){
 		case 0:

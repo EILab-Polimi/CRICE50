@@ -1,8 +1,4 @@
-horizon
-tstep
-carbonmodel
-climatemodel
-econmodel
-### additional settings
-ssp
-???
+horizon			57
+tstep			5
+carbon_model	WITCH		
+climate_model	WITCH
