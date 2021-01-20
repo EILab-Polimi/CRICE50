@@ -50,6 +50,7 @@ int main(int argc, char* argv[])
 
 	riceptr->simulate();
 
+	// for (int iter=0; iter<10; iter++){
  //    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
  //    std::cout << "Simulating: " << std::endl;
 
@@ -57,7 +58,7 @@ int main(int argc, char* argv[])
 
  //    riceptr->resetTidx();
 	// riceptr->simulate();
-
+	// }
     std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
     std::cout << "Writing output data: " << std::endl;
 

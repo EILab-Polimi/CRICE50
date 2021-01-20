@@ -95,6 +95,7 @@ void Econ::nextStep(double* tatm){
 		RPCutoff = RPCutoffValues[agents/2];
 	}
 	// nextStep in each agent
+	e[t] = 0.0;
 	for (int ag=0; ag < agents; ag++){
 		agents_ptr[ag]->nextStep(tatm, RPCutoff);
 		e[t] += agents_ptr[ag]->e[t];
