@@ -30,9 +30,6 @@ int main(int argc, char* argv[])
 	// do we want to consider different delta t ?
 	// int delta_t = 1;
 
-    std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
-
-
 	// ==== MODEL BUILD ==========	
 	// here we create the RICE instance
 	// and the associated pointer
@@ -43,26 +40,22 @@ int main(int argc, char* argv[])
     std::cout << "Simulating: " << std::endl;
 
 	RICE* riceptr = &rice;
-    std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
-
 
 	// ==== SIMULATION EXECUTION ==========
 
 	riceptr->simulate();
 
 	// for (int iter=0; iter<10; iter++){
- //    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
- //    std::cout << "Simulating: " << std::endl;
+	 //    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+	 //    std::cout << "Simulating: " << std::endl;
 
- //    std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+	 //    std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
 
- //    riceptr->resetTidx();
-	// riceptr->simulate();
+	 //    riceptr->resetTidx();
+		// riceptr->simulate();
 	// }
     std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
     std::cout << "Writing output data: " << std::endl;
-
-    std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
 
 	// ==== POST PROCESSING ==========
 
@@ -77,7 +70,5 @@ int main(int argc, char* argv[])
 	// end
     end = clock();
     std::cout << "total time elapsed: " << ((end - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
-    end = clock();
-    std::cout << "time elapsed: " << ((end - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
 	return 0;
 }
