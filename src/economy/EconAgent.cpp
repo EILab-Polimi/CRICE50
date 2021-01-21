@@ -1,11 +1,44 @@
 #include "EconAgent.h"
 
-#include<iostream>
-#include<fstream>
-#include<sstream>
-#include<string>
-#include<algorithm>
-#include<math.h>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <algorithm>
+#include <math.h>
+
+DamagesType stringToDamagesType(std::string input){
+	if (input == "NO") return NO;
+	if (input == "BURKESR") return BURKESR;
+	if (input == "BURKELR") return BURKELR;	
+	if (input == "BURKESR_DIFF") return BURKESR_DIFF;	
+	if (input == "BURKELR_DIFF") return BURKELR_DIFF;	
+	if (input == "DJO") return DJO;	
+	if (input == "KAHN") return KAHN;	
+	return DAMAGEERR;
+}
+RPCutoffIndType stringToRPCutoffIndType(std::string input){
+	if (input == "BASEGDP") return BASEGDP;
+	if (input == "GDP") return GDP;	
+	return RPINDERR;
+}
+TempLimit stringToTempLimit(std::string input){
+	if (input == "ON") return ON;
+	if (input == "OFF") return OFF;	
+	return TEMPLIMITERR;
+}
+ElandType stringToElandType(std::string input){
+	if (input == "BAU") return ELANDBAU;
+	if (input == "OPT") return ELANDOPT;	
+	return ELANDERR;
+}
+DecisionMakers stringToDecisionMakers(std::string input){
+	if (input == "BAU") return BAU;
+	if (input == "INPUT_STATIC") return INPUT_STATIC;	
+	if (input == "INPUT_POLICY") return INPUT_POLICY;	
+	return DMERR;
+}
+
 // constructor
 EconAgent::EconAgent(){
 
@@ -14,7 +47,6 @@ EconAgent::EconAgent(){
 EconAgent::~EconAgent(){
 
 }
-
 ////// DESCRIPTION OF THE RICE ECONOMIC AGENT //////
 // constructor
 RICEEconAgent::RICEEconAgent(){
@@ -36,6 +68,7 @@ RICEEconAgent::RICEEconAgent(int hrzn, std::string regname){
 void RICEEconAgent::readParams(){
 	std::fstream in;
 	std::string sJunk = "";
+	std::string line;
 	in.open("./settings/EconAgentParams.txt", std::ios_base::in);
 	if (!in){
 		std::cout << "The EconAgentParams settings file could not be found!" << std::endl;
@@ -62,6 +95,26 @@ void RICEEconAgent::readParams(){
 	}
 	in >> ssp;
 	ssp = ssp - 1; //correct ssp to account for 0 initialization
+	while (sJunk!="damages"){
+		in >>sJunk;
+	}
+	in >> line;
+	while (sJunk!="RPCutoffInd"){
+		in >>sJunk;
+	}
+	in >> line;
+	while (sJunk!="TempLimit"){
+		in >>sJunk;
+	}
+	in >> line;
+	while (sJunk!="Eland"){
+		in >>sJunk;
+	}
+	in >> line;
+	while (sJunk!="DecisionMakers"){
+		in >>sJunk;
+	}
+	in >> line;
 	in.close();
 	// THIS HAS TO BE FIXED
 	params.damage_type = 1;
@@ -81,8 +134,8 @@ void RICEEconAgent::readParams(){
 	}
 	in >> params.prstp;
 	in.close();
+
 	// READING FROM CSV FILE
-	std::string line;
 	in.open("./data_ed57/data_climate_regional/climate_region_coef.csv", std::ios_base::in);
 	if (!in){
 		std::cout << "The climate downscaling parameters could not be found!" << std::endl;
@@ -134,7 +187,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	//carbon intensity
 	traj.sigma = new double * [5];
 	for (int idxssp=0; idxssp<5; idxssp++){
-		traj.sigma[idxssp] = new double[hrzn];
+		traj.sigma[idxssp] = new double[hrzn + 1];
 	}
 	in.open("./data_ed57/data_baseline/ssp_cintensity.csv");
 	if (!in){
@@ -161,7 +214,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	//population
 	traj.pop = new double * [5];
 	for (int idxssp=0; idxssp<5; idxssp++){
-		traj.pop[idxssp] = new double[hrzn];
+		traj.pop[idxssp] = new double[hrzn + 1];
 	}
 	in.open("./data_ed57/data_baseline/ssp_pop.csv");
 	if (!in){
@@ -188,7 +241,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	//tfp
 	traj.tfp = new double * [5];
 	for (int idxssp=0; idxssp<5; idxssp++){
-		traj.tfp[idxssp] = new double[hrzn];
+		traj.tfp[idxssp] = new double[hrzn + 1];
 	}
 	in.open("./data_ed57/data_baseline/ssp_tfp.csv");
 	if (!in){
@@ -215,7 +268,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	//gdpbase
 	traj.gdpbase = new double * [5];
 	for (int idxssp=0; idxssp<5; idxssp++){
-		traj.gdpbase[idxssp] = new double[hrzn];
+		traj.gdpbase[idxssp] = new double[hrzn + 1];
 	}
 	in.open("./data_ed57/data_baseline/ssp_ykali.csv");
 	if (!in){
@@ -239,9 +292,9 @@ void RICEEconAgent::readBaseline(int hrzn){
 		}
 	}
 	in.close();
-	traj.gdp = new double[hrzn];
-	traj.eind = new double[hrzn];
-	traj.k = new double[hrzn];
+	traj.gdp = new double[hrzn + 1];
+	traj.eind = new double[hrzn + 1];
+	traj.k = new double[hrzn + 1];
 	//initialize k
 	in.open("./data_ed57/data_economy/k0.csv");
 	if (!in){
@@ -263,8 +316,8 @@ void RICEEconAgent::readBaseline(int hrzn){
 		}
 	}
 	in.close();
-	traj.miu = new double[hrzn];
-	traj.s = new double[hrzn];
+	traj.miu = new double[hrzn + 1];
+	traj.s = new double[hrzn + 1];
 	//initialize s
 	in.open("./data_ed57/data_economy/s0.csv");
 	if (!in){
@@ -287,7 +340,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	}
 	in.close();	
 	//macc multiplier
-	traj.mx = new double[hrzn];
+	traj.mx = new double[hrzn + 1];
 	in.open("./data_ed57/data_macc/mx_multiplier.csv");
 	if (!in){
 		std::cout << "The mx multiplier file could not be found!" << std::endl;
@@ -309,8 +362,8 @@ void RICEEconAgent::readBaseline(int hrzn){
 	}
 	in.close();
 	//macc coefficients
-	traj.ax = new double[hrzn];
-	traj.bx = new double[hrzn];
+	traj.ax = new double[hrzn + 1];
+	traj.bx = new double[hrzn + 1];
 	in.open("./data_ed57/data_macc/macc_coeffs.csv");
 	if (!in){
 		std::cout << "The macc coeffs file could not be found!" << std::endl;
@@ -337,7 +390,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	}
 	in.close();
 	//land use emissions
-	traj.eland = new double[hrzn];
+	traj.eland = new double[hrzn + 1];
 	in.open("./data_ed57/data_land_use/etree_bau.csv");
 	if (!in){
 		std::cout << "The land use file could not be found!" << std::endl;
@@ -358,23 +411,23 @@ void RICEEconAgent::readBaseline(int hrzn){
 		}
 	}
 	in.close();
-	traj.abatecost = new double[hrzn];
-	traj.i = new double[hrzn];
-	traj.ygross = new double[hrzn];
-	traj.ynet = new double[hrzn];
-	traj.y = new double[hrzn];
-	traj.damages = new double[hrzn];
-	traj.c = new double[hrzn];
-	traj.cpc = new double[hrzn];
-	traj.ri = new double[hrzn];
-	traj.cprice = new double[hrzn];
-	traj.omega = new double[hrzn];
-	traj.tatm_local = new double[hrzn];
-	traj.damfrac = new double[hrzn];
-	traj.komega = new double[hrzn];
-	traj.basegrowthcap = new double[hrzn];
-	traj.ynet_estimated = new double[hrzn];
-	traj.impact = new double[hrzn];
+	traj.abatecost = new double[hrzn + 1];
+	traj.i = new double[hrzn + 1];
+	traj.ygross = new double[hrzn + 1];
+	traj.ynet = new double[hrzn + 1];
+	traj.y = new double[hrzn + 1];
+	traj.damages = new double[hrzn + 1];
+	traj.c = new double[hrzn + 1];
+	traj.cpc = new double[hrzn + 1];
+	traj.ri = new double[hrzn + 1];
+	traj.cprice = new double[hrzn + 1];
+	traj.omega = new double[hrzn + 1];
+	traj.tatm_local = new double[hrzn + 1];
+	traj.damfrac = new double[hrzn + 1];
+	traj.komega = new double[hrzn + 1];
+	traj.basegrowthcap = new double[hrzn + 1];
+	traj.ynet_estimated = new double[hrzn + 1];
+	traj.impact = new double[hrzn + 1];
 	traj.omega[0] = 0.0;
 	return;
 }
@@ -417,9 +470,10 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 	traj.cpc[t] = 1000 * traj.c[t] / traj.pop[ssp][t];
 	// capital stock step transition
 	traj.k[t+1] = traj.k[t] * pow(1-params.dk, 5) + 5 * traj.i[t];
+	// THIS CAN BE IMPROVED
 	if (t >= 1){
 		traj.ri[t-1] = (1 + params.prstp) * 
-			pow(traj.cpc[t]/traj.cpc[t-1], params.elasmu/5) - 1;
+			pow(traj.cpc[t]/traj.cpc[t-1], params.elasmu/5.0) - 1;
 	}
 
 	// std::cout << "\t\tHere the region " << name << " evolves to the step " << t+1 << " emitting (GtCO2):" << e[t] << std::endl;

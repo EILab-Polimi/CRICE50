@@ -1,7 +1,15 @@
 #ifndef ECONAGENT__H
 #define ECONAGENT__H
-#include<string>
-#include<fstream>
+#include <string>
+#include <fstream>
+
+enum DamagesType {NO, BURKESR, BURKELR, 
+	BURKESR_DIFF, BURKELR_DIFF, 
+	DJO, KAHN, DAMAGEERR};
+enum RPCutoffIndType {BASEGDP, GDP, RPINDERR};
+enum TempLimit {ON, OFF, TEMPLIMITERR};
+enum ElandType {ELANDBAU, ELANDOPT, ELANDERR};
+enum DecisionMakers {BAU, INPUT_STATIC, INPUT_POLICY, DMERR};
 
 class EconAgent{
 public:
