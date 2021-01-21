@@ -7,8 +7,9 @@ settings for DICE carbon and climate models:
 
 		DICEcarbonParams.txt: DICE carbon module parameters from DICE2016
 		DICEclimateParams.txt: DICE climate module parameters from DICE2016
-Parameters for WITCH carbon and climate models are in the data_climate_witch folder:
+Parameters for WITCH carbon and climate models are in the folder:
 
+	data_climate_witch folder:
 		tempc.csv
 		cmphi.csv
 		rfc.csv
