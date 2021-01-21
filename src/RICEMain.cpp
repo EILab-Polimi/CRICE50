@@ -7,8 +7,8 @@
 TODO: Here we will put authors and license
 */
 #include "RICE.h"
-#include<iostream>
-#include<time.h>
+#include <iostream>
+#include <time.h>
 
 int main(int argc, char* argv[])
 {	
@@ -21,11 +21,11 @@ int main(int argc, char* argv[])
 	// and fix the settings for the simulations 
 	// to be run
 
-	int carbontype = 1;
-	if (argc > 1){
-		carbontype = atoi(argv[1]);		
-	}
-	int horizon = 57; // 57 timesteps mean from 2015 (0) to 2305 (57)
+	// int carbontype = 1;
+	// if (argc > 1){
+	// 	carbontype = atoi(argv[1]);		
+	// }
+	// int horizon = 57; // 57 timesteps mean from 2015 (0) to 2305 (57)
 
 	// do we want to consider different delta t ?
 	// int delta_t = 1;
@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
 	// and the associated pointer
 
     std::cout << "Loading input data: " << std::endl;
-	RICE rice(horizon, carbontype);
+	RICE rice;
     std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
     std::cout << "Simulating: " << std::endl;
 

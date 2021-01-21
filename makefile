@@ -5,7 +5,7 @@ CXXFLAGS = -c -O3 -Wall
 
 all: RICE50++
 
-RICE50++: ./src/RICEMain.o ./src/RICE.o 
+RICE50++: ./src/RICE.o ./src/RICEMain.o 
 	${CXX} ${ARGS} ./src/RICEMain.o ./src/RICE.o ./src/carbon/Carbon.o ./src/climate/Climate.o ./src/economy/Econ.o ./src/economy/EconAgent.o -o RICE50++
 
 ./src/RICEMain.o: ./src/RICEMain.cpp

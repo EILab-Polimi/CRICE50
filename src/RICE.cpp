@@ -3,52 +3,67 @@
 #include <fstream>
 #include <string>
 
-// constructor
+// convert input string to enum
+ModelType stringToModelType(std::string input){
+	if (input == "DICE") return DICE;
+	if (input == "WITCH") return WITCH;	
+	return ERR;
+}
+// constructor  
 RICE::RICE(){
-	
+	std::fstream in;
+	std::string line;
+	std::string sJunk = "";
+	in.open("./settings/generalSettings.txt");
+	if (!in){
+		std::cout << "The RICE general file could not be found!" << std::endl;
+	    exit(1);
+	}
+	while (sJunk!="horizon"){
+		in >>sJunk;
+	}
+	in >> horizon;
+	while (sJunk!="carbon_model"){
+		in >>sJunk;
+	}
+	in >> line;
+	carbon_model = stringToModelType(line);
+	while (sJunk!="climate_model"){
+		in >>sJunk;
+	}
+	in >> line;
+	climate_model = stringToModelType(line);
+
+	switch(carbon_model){
+		case WITCH:
+			std::cout << "WITCH carbon" << std::endl;
+			carbon = new WITCHCarbon(horizon);
+			break;
+		case DICE:
+			std::cout << "DICE carbon" << std::endl;
+			carbon = new DICECarbon(horizon);
+			break;
+		case ERR:
+			std::cerr << "insert an available ModelType for Carbon" << std::endl;
+	}
+	switch(climate_model){
+		case WITCH:
+			std::cout << "WITCH climate" << std::endl;
+			climate = new WITCHClimate(horizon);
+			break;
+		case DICE:
+			std::cout << "DICE climate" << std::endl;
+			climate = new DICEClimate(horizon);
+			break;
+		case ERR:
+			std::cerr << "insert an available ModelType for Climate" << std::endl;
+	}
+	econ = new Econ(horizon);
+	t = 0;
 }
 // destructor
 RICE::~RICE(){
 	
-}
-// constructor with inputs 
-RICE::RICE(int hrzn, int carbontype){
-	// std::fstream in;
-	// std::string line;
-	// std::string sJunk = "";
-	// in.open("./settings/generalSettings.txt");
-	// if (!in){
-	// 	std::cout << "The RICE general file could not be found!" << std::endl;
-	//     exit(1);
-	// }
-	// while (sJunk!="horizon"){
-	// 	in >>sJunk;
-	// }
-	// in >> horizon;
-	// while (sJunk!="carbon_model"){
-	// 	in >>sJunk;
-	// }
-	// in >> line;
-	// while (sJunk!="climate_model"){
-	// 	in >>sJunk;
-	// }
-	// in >> line;
-	// std::cout << line << "\t"  << std::endl;
-
-	horizon=hrzn;
-	// Module selection accoding to settings
-	switch (carbontype){
-		case 0:
-			carbon = new DICECarbon(hrzn);
-			climate = new DICEClimate(hrzn);
-			break;
-		case 1:
-			carbon = new WITCHCarbon(hrzn);
-			climate = new WITCHClimate(hrzn);
-			break;
-	}
-	econ = new Econ(hrzn);
-	t = 0;
 }
 // simulates one step of the model
 void RICE::nextStep(){
