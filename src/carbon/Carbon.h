@@ -1,8 +1,8 @@
 #ifndef CARBON__H
 #define CARBON__H
 
-#include<math.h>
-#include<fstream>
+#include <math.h>
+#include <fstream>
 
 // ====  Abstract Carbon class ========
 

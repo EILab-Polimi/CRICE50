@@ -1,7 +1,7 @@
 #include "Carbon.h"
 
-#include<iostream>
-#include<sstream>
+#include <iostream>
+#include <sstream>
 #include <algorithm>
 
 // constructor
@@ -196,8 +196,6 @@ void WITCHCarbon::nextStep(double e){
 // and setting initial conditions
 void WITCHCarbon::readParams(){
 	params.CO2toC = 12.0/44.0;
-	// params.rfoth_a = 0.1996315;
-	// params.rfoth_I = -0.01116899;
 	std::fstream in;
 	std::string line;
 	in.open("./data_ed57/data_climate_witch/cmphi.csv");

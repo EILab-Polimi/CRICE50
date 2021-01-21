@@ -2,7 +2,8 @@
 #define ECON__H
 
 #include "EconAgent.h"
-#include<fstream>
+#include <fstream>
+
 struct EconParams{
 	double elasmu;
 	double prstp;

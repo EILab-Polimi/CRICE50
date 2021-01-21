@@ -1,11 +1,11 @@
 #include "EconAgent.h"
 #include "Econ.h"
 
-#include<iostream>
-#include<fstream> 
-#include<string>
-#include<sstream>
-#include<algorithm>
+#include <iostream>
+#include <fstream> 
+#include <string>
+#include <sstream>
+#include <algorithm>
 // constructor
 Econ::Econ(){
 
