@@ -31,12 +31,18 @@ struct RICEEconAgentParams{
 	double deland;
 	double elasmu;
 	double prstp;
+	double optlr_s;
 	double alpha_tatm;
 	double beta_tatm;
 	double base_tatm;
-	int indRPCutoff;	// gdp baseline or last value of gdp
+	// int indRPCutoff;	// gdp baseline or last value of gdp
 	int damage_type;
 	int temp_limit;
+	DamagesType damagesType;
+	RPCutoffIndType indRPCutoff;
+	TempLimit tempLimit;
+	ElandType elandType;
+	DecisionMakers DMType;
 	double beta_bhm_sr;
 	double beta_bhm_sr_2;
 	double beta_bhm_lr;

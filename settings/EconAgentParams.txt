@@ -2,9 +2,9 @@ gama			0.3
 dk				0.1
 dela0			0.5
 deland			0.001
-ssp				2
-damages			BURKESR
-RPCutoffInd		BASEGDP
-TempLimit		ON
-Eland			BAU
-DecisionMakers	BAU
+ssp				2			(1/2/3/4/5)
+damages			BURKESR		(BURKESR / BURKELR / BURKESR_DIFF / BURKELR_DIFF / DJO / KAHN)
+RPCutoffInd		BASEGDP		(BASEGDP / GDP)
+TempLimit		OFF			(ON / OFF)
+Eland			BAU			(BAU / OPT)
+DecisionMakers	BAU			(BAU / INPUT_STATIC / INPUT_POLICY)

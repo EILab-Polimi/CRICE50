@@ -99,27 +99,31 @@ void RICEEconAgent::readParams(){
 		in >>sJunk;
 	}
 	in >> line;
+	params.damagesType = stringToDamagesType(line);	
 	while (sJunk!="RPCutoffInd"){
 		in >>sJunk;
 	}
 	in >> line;
+	params.indRPCutoff = stringToRPCutoffIndType(line);	
 	while (sJunk!="TempLimit"){
 		in >>sJunk;
 	}
 	in >> line;
+	params.tempLimit = stringToTempLimit(line);	
 	while (sJunk!="Eland"){
 		in >>sJunk;
 	}
 	in >> line;
+	params.elandType = stringToElandType(line);
 	while (sJunk!="DecisionMakers"){
 		in >>sJunk;
 	}
 	in >> line;
+	params.DMType = stringToDecisionMakers(line);
 	in.close();
 	// THIS HAS TO BE FIXED
 	params.damage_type = 1;
-	params.temp_limit = 0;
-	params.indRPCutoff = 0;
+
 	in.open("./settings/globalEconParams.txt", std::ios_base::in);
 	if (!in){
 		std::cout << "The Econ settings file could not be found!" << std::endl;
@@ -134,6 +138,7 @@ void RICEEconAgent::readParams(){
 	}
 	in >> params.prstp;
 	in.close();
+	params.optlr_s = (params.dk + .004)/(params.dk + .004*params.elasmu + params.prstp)*params.gama;
 
 	// READING FROM CSV FILE
 	in.open("./data_ed57/data_climate_regional/climate_region_coef.csv", std::ios_base::in);
@@ -391,7 +396,16 @@ void RICEEconAgent::readBaseline(int hrzn){
 	in.close();
 	//land use emissions
 	traj.eland = new double[hrzn + 1];
-	in.open("./data_ed57/data_land_use/etree_bau.csv");
+	switch (params.elandType){
+		case ELANDBAU:
+			in.open("./data_ed57/data_land_use/etree_bau.csv");
+			break;
+		case ELANDOPT:
+			in.open("./data_ed57/data_land_use/etree_opt.csv");
+			break;
+		case ELANDERR:
+			std::cerr << "Please insert an available option for ELAND" << std::endl;
+	}
 	if (!in){
 		std::cout << "The land use file could not be found!" << std::endl;
 	    exit(1);
@@ -433,14 +447,15 @@ void RICEEconAgent::readBaseline(int hrzn){
 }
 // returns value for Rich Poor Cutoff
 double RICEEconAgent::getValueForRPCutoff(){
-	double RPCutoff = 0.0;
-	if (params.indRPCutoff == 0){ // statically based on GDP baseline
-		RPCutoff = traj.gdpbase[ssp][t];
+	switch (params.indRPCutoff){
+		case BASEGDP:
+			return traj.gdpbase[ssp][t];
+		case GDP:
+			return traj.y[t-1];
+		case RPINDERR:
+			std::cerr << "Please insert a valid option for RPCutoff" << std::endl;
+			exit(1);
 	}
-	if (params.indRPCutoff == 1){ // uses last value of GDP (dynamic)
-		RPCutoff = traj.y[t-1];
-	}
-	return RPCutoff;
 }
 
 // simulates one time step
@@ -483,42 +498,58 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 // take next action
 void RICEEconAgent::nextAction(){
 	// set decision variables
-	double optlr_s = (params.dk + .004)/(params.dk + .004*params.elasmu + params.prstp)*params.gama;
-	traj.miu[t] = std::min(1.0, 0.1 * (double) t);
-	traj.miu[t] = 0.0;
-	traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (optlr_s - traj.s[0]);
+	switch (params.DMType){
+		case BAU:
+			traj.miu[t] = std::min(1.0, 0.1 * (double) t);
+			traj.miu[t] = 0.0;
+			traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
+			break;
+		case INPUT_STATIC:
+			std::cerr << "not developed yet" << std::endl;
+			exit(1);
+			break;
+		case INPUT_POLICY:
+			std::cerr << "not developed yet" << std::endl;
+			exit(1);
+			break;
+		case DMERR:
+			std::cerr << "Please insert an available option for DMType" << std::endl;
+	}
+	if (t >= horizon - 10){
+		traj.s[t] = params.optlr_s; 
+	}
 	return;	
 }
 void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 	// eventually consider 30°C limit
-	if (params.temp_limit==1){
-		traj.tatm_local[t] = std::min(30.0,params.alpha_tatm + params.beta_tatm * tatm[t]);
+	if (params.tempLimit == ON){
+		traj.tatm_local[t] = std::min(30.0, params.alpha_tatm + params.beta_tatm * tatm[t]);
 	}
 	else{
 		traj.tatm_local[t] = params.alpha_tatm + params.beta_tatm * tatm[t];	
 	}
-	if (params.damage_type == 0){
+	if (params.damagesType == NO){
 		traj.damages[t] = 0.0;	
 		traj.damfrac[t] = 0.0;	
 	}
 	else{
-		if (params.damage_type==1){
+		if (params.damage_type == BURKESR){
 			//BURKE - SR
 			traj.impact[t] = params.beta_bhm_sr* traj.tatm_local[t] + 
 				params.beta_bhm_sr_2* pow(traj.tatm_local[t],2)
 				- params.beta_bhm_sr* params.base_tatm 
 				- params.beta_bhm_sr_2* pow(params.base_tatm,2);
 		}	
-		else if (params.damage_type==2){
+		else if (params.damage_type == BURKELR){
 			//BURKE - LR
 			traj.impact[t] = params.beta_bhm_lr* traj.tatm_local[t] + 
 				params.beta_bhm_lr_2* pow(traj.tatm_local[t],2)
 				- params.beta_bhm_lr* params.base_tatm 
 				- params.beta_bhm_lr_2* pow(params.base_tatm,2);
 		}
-		else if (params.damage_type==3){
+		else if (params.damage_type == BURKESR_DIFF){
 			//BURKE - SR diff
-			if (params.indRPCutoff==0){
+			if (params.indRPCutoff == BASEGDP){
 				if (RPCutoff > traj.gdpbase[ssp][t]){
 					traj.impact[t] = params.beta_bhm_srdp* traj.tatm_local[t] + 
 						params.beta_bhm_srdp_2* pow(traj.tatm_local[t],2)
@@ -532,7 +563,7 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 						- params.beta_bhm_srdr_2* pow(params.base_tatm,2);
 				}
 			}
-			else if (params.indRPCutoff==1){
+			else if (params.indRPCutoff == GDP){
 				if (RPCutoff > traj.y[t-1]){
 					traj.impact[t] = params.beta_bhm_srdp* traj.tatm_local[t] + 
 						params.beta_bhm_srdp_2* pow(traj.tatm_local[t],2)
@@ -547,9 +578,9 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 				}
 			}
 		}
-		else if (params.damage_type==4){
+		else if (params.damage_type == BURKELR_DIFF){
 			//BURKE - LR diff
-			if (params.indRPCutoff==0){
+			if (params.indRPCutoff == BASEGDP){
 				if (RPCutoff > traj.gdpbase[ssp][t]){
 					traj.impact[t] = params.beta_bhm_lrdp* traj.tatm_local[t] + 
 						params.beta_bhm_lrdp_2* pow(traj.tatm_local[t],2)
@@ -563,7 +594,7 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 						- params.beta_bhm_lrdr_2* pow(params.base_tatm,2);
 				}
 			}
-			else if (params.indRPCutoff==1){
+			else if (params.indRPCutoff == GDP){
 				if (RPCutoff > traj.y[t-1]){
 					traj.impact[t] = params.beta_bhm_lrdp* traj.tatm_local[t] + 
 						params.beta_bhm_lrdp_2* pow(traj.tatm_local[t],2)
@@ -578,9 +609,9 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 				}
 			}
 		}
-		else if (params.damage_type==5){
+		else if (params.damage_type == DJO){
 			//DJO
-			if (params.indRPCutoff==0){
+			if (params.indRPCutoff == BASEGDP){
 				if (RPCutoff > traj.gdpbase[ssp][t]){
 					traj.impact[t] = params.beta_djo_p * 
 						(traj.tatm_local[t] - params.base_tatm); 
@@ -590,7 +621,7 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 						(traj.tatm_local[t] - params.base_tatm); 
 				}
 			}
-			else if (params.indRPCutoff==1){
+			else if (params.indRPCutoff == GDP){
 				if (RPCutoff > traj.y[t-1]){
 					traj.impact[t] = params.beta_djo_p * 
 						(traj.tatm_local[t] - params.base_tatm); 
@@ -601,7 +632,7 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 				}			
 			}
 		}
-		else if (params.damage_type==6){
+		else if (params.damage_type == KAHN){
 			//KAHN
 			double tatm_mavg = 0.0;
 			for (int tidx=1; tidx<7; tidx++){
