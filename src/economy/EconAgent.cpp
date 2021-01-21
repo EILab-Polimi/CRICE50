@@ -81,6 +81,7 @@ void RICEEconAgent::readParams(){
 	}
 	in >> params.prstp;
 	in.close();
+	// READING FROM CSV FILE
 	std::string line;
 	in.open("./data_ed57/data_climate_regional/climate_region_coef.csv", std::ios_base::in);
 	if (!in){

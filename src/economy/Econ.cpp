@@ -6,6 +6,12 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+
+RPMetricType stringToRPMetricType(std::string input){
+	if (input == "MEAN") return MEAN;
+	if (input == "MEDIAN") return MEDIAN;	
+	return METRICERR;
+}
 // constructor
 Econ::Econ(){
 
@@ -49,6 +55,7 @@ Econ::Econ(int hrzn){
 void Econ::readParams(){
 	std::fstream in;
 	std::string sJunk = "";
+	std::string line;
 	in.open("./settings/globalEconParams.txt", std::ios_base::in);
 	if (!in){
 		std::cout << "The general economic settings file specified could not be found!" << std::endl;
@@ -70,8 +77,13 @@ void Econ::readParams(){
 		in >>sJunk;
 	}
 	in >> params.ineqav;
+	while (sJunk!="RPCutoffMetric"){
+		in >>sJunk;
+	}
+	in >> line;
+	std::cout << line << std::endl;
+	params.RPCutoffMetric = stringToRPMetricType(line);
 	in.close();
-	params.RPCutoffMetric = 0;
 	return;
 }
 // simulates one step
@@ -85,14 +97,18 @@ void Econ::nextStep(double* tatm){
 	// sort values
 	std::sort(RPCutoffValues,RPCutoffValues+agents);
 	double RPCutoff = 0.0;
-	if (params.RPCutoffMetric==0){ // mean
-		for (int ag=0; ag < agents; ag++){
-			RPCutoff += RPCutoffValues[ag];
-		}
-		RPCutoff = RPCutoff / agents;
-	}
-	else if (params.RPCutoffMetric==1){ //median
-		RPCutoff = RPCutoffValues[agents/2];
+	switch (params.RPCutoffMetric){
+		case MEAN:
+			for (int ag=0; ag < agents; ag++){
+				RPCutoff += RPCutoffValues[ag];
+			}
+			RPCutoff = RPCutoff / agents;
+			break;
+		case MEDIAN:
+			RPCutoff = RPCutoffValues[agents/2];
+			break;
+		case METRICERR:
+			std::cerr << "Please insert an available metric for RPCutoff" << std::endl;
 	}
 	// nextStep in each agent
 	e[t] = 0.0;

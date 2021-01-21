@@ -4,11 +4,13 @@
 #include "EconAgent.h"
 #include <fstream>
 
+enum RPMetricType{ MEDIAN, MEAN, METRICERR};
+
 struct EconParams{
 	double elasmu;
 	double prstp;
 	double ineqav;
-	int RPCutoffMetric; // median or mean
+	RPMetricType RPCutoffMetric; // median or mean
 };
 
 class Econ{
