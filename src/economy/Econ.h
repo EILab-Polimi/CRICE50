@@ -23,6 +23,7 @@ public:
 	int t;						// time step
 	EconParams params;
 	double* e;
+	double utility;
 	void readParams();
 	void nextStep(double* tatm);
 	void writeHeader(std::fstream& output);

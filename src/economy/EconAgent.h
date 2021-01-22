@@ -16,6 +16,7 @@ public:
 	EconAgent();
 	virtual ~EconAgent() = 0;
 	double* e;		//emissions
+	double utility;
 	int t; 			// time step
 	virtual double getValueForRPCutoff() = 0;
 	virtual void nextStep(double* tatm, double RPCutoff) = 0;
@@ -85,6 +86,8 @@ struct RICEEconAgentTraj{
 	double* cpc;
 	double* ri;
 	double* cprice;
+	double* periodu;
+	double* cemutotper;
 	double* omega;
 	double* tatm_local;
 	double* damfrac;

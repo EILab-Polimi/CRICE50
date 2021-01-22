@@ -213,18 +213,19 @@ void RICEEconAgent::readBaseline(int hrzn){
 		std::istringstream s(line);
 		std::string field;
 		std::string splitline[4];
+		std::string idxssp;
 		int count = 0;
 		while (std::getline(s, field, ',')){
 			splitline[count] = field;
 			count++;
 		}
 		if (!splitline[2].compare(name) && stoi(splitline[1])<=hrzn){
-			char idxssp = splitline[0].back();
-			char* idxsspp = &idxssp;
-			traj.sigma[atoi(idxsspp)-1][stoi(splitline[1])-1] = stod(splitline[3]);
+			idxssp = splitline[0][3];
+			traj.sigma[stoi(idxssp)-1][stoi(splitline[1])-1] = stod(splitline[3]);
 		}
 	}
 	in.close();
+
 	//population
 	traj.pop = new double * [5];
 	for (int idxssp=0; idxssp<5; idxssp++){
@@ -240,15 +241,15 @@ void RICEEconAgent::readBaseline(int hrzn){
 		std::istringstream s(line);
 		std::string field;
 		std::string splitline[4];
+		std::string idxssp;
 		int count = 0;
 		while (std::getline(s, field, ',')){
 			splitline[count] = field;
 			count++;
 		}
 		if (!splitline[2].compare(name) && stoi(splitline[1])<=hrzn){
-			char idxssp = splitline[0].back();
-			char* idxsspp = &idxssp;
-			traj.pop[atoi(idxsspp)-1][stoi(splitline[1])-1] = stod(splitline[3]);
+			idxssp = splitline[0][3];
+			traj.pop[stoi(idxssp)-1][stoi(splitline[1])-1] = stod(splitline[3]);
 		}
 	}
 	in.close();
@@ -267,15 +268,15 @@ void RICEEconAgent::readBaseline(int hrzn){
 		std::istringstream s(line);
 		std::string field;
 		std::string splitline[4];
+		std::string idxssp;
 		int count = 0;
 		while (std::getline(s, field, ',')){
 			splitline[count] = field;
 			count++;
 		}
 		if (!splitline[2].compare(name) && stoi(splitline[1])<=hrzn){
-			char idxssp = splitline[0].back();
-			char* idxsspp = &idxssp;
-			traj.tfp[atoi(idxsspp)-1][stoi(splitline[1])-1] = stod(splitline[3]);
+			idxssp = splitline[0][3];
+			traj.tfp[stoi(idxssp)-1][stoi(splitline[1])-1] = stod(splitline[3]);
 		}
 	}
 	in.close();
@@ -294,18 +295,19 @@ void RICEEconAgent::readBaseline(int hrzn){
 		std::istringstream s(line);
 		std::string field;
 		std::string splitline[4];
+		std::string idxssp;
 		int count = 0;
 		while (std::getline(s, field, ',')){
 			splitline[count] = field;
 			count++;
 		}
 		if (!splitline[2].compare(name) && stoi(splitline[1])<=hrzn){
-			char idxssp = splitline[0].back();
-			char* idxsspp = &idxssp;
-			traj.gdpbase[atoi(idxsspp)-1][stoi(splitline[1])-1] = stod(splitline[3]);
+			idxssp = splitline[0][3];
+			traj.gdpbase[stoi(idxssp)-1][stoi(splitline[1])-1] = stod(splitline[3]);
 		}
 	}
 	in.close();
+
 	traj.gdp = new double[hrzn + 1];
 	traj.eind = new double[hrzn + 1];
 	traj.k = new double[hrzn + 1];
@@ -452,14 +454,16 @@ void RICEEconAgent::readBaseline(int hrzn){
 	traj.cpc = new double[hrzn + 1];
 	traj.ri = new double[hrzn + 1];
 	traj.cprice = new double[hrzn + 1];
+	traj.periodu = new double[hrzn + 1];
+	traj.cemutotper = new double[hrzn + 1];	
 	traj.omega = new double[hrzn + 1];
+	traj.omega[0] = 0.0;
 	traj.tatm_local = new double[hrzn + 1];
 	traj.damfrac = new double[hrzn + 1];
 	traj.komega = new double[hrzn + 1];
 	traj.basegrowthcap = new double[hrzn + 1];
 	traj.ynet_estimated = new double[hrzn + 1];
 	traj.impact = new double[hrzn + 1];
-	traj.omega[0] = 0.0;
 	return;
 }
 // returns value for Rich Poor Cutoff
@@ -500,14 +504,18 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 	traj.i[t] = traj.s[t] * traj.y[t];
 	traj.c[t] = traj.y[t] - traj.i[t];
 	traj.cpc[t] = 1000 * traj.c[t] / traj.pop[ssp][t];
+
 	// capital stock step transition
 	traj.k[t+1] = traj.k[t] * pow(1-params.dk, 5) + 5 * traj.i[t];
-	// THIS CAN BE IMPROVED
-	if (t >= 1){
-		traj.ri[t-1] = (1 + params.prstp) * 
+	if (t >= 1){	// THIS CAN BE IMPROVED
+		traj.ri[t] = (1 + params.prstp) * 
 			pow(traj.cpc[t]/traj.cpc[t-1], params.elasmu/5.0) - 1;
 	}
-
+	traj.periodu[t] = (pow(traj.cpc[t], 1 - params.elasmu) - 1.0) / 
+		(1.0 - params.elasmu) - 1.0;
+	traj.cemutotper[t] = traj.pop[ssp][t] * traj.periodu[t] * 
+		(1.0 / pow(1.0 + params.prstp, 5*t));
+	utility += traj.cemutotper[t];
 	// std::cout << "\t\tHere the region " << name << " evolves to the step " << t+1 << " emitting (GtCO2):" << e[t] << std::endl;
 	t++;
 	return;
@@ -787,6 +795,8 @@ void RICEEconAgent::econAgentDelete(){
 	delete[] traj.cpc;
 	delete[] traj.ri;
 	delete[] traj.cprice;
+	// delete[] traj.periodu;
+	// delete[] traj.cemutotper;
 	delete[] e;
 	delete[] traj.omega;
 	delete[] traj.tatm_local;

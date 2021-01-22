@@ -85,8 +85,10 @@ void RICE::simulate(){
 void RICE::resetTidx(){
 	t = 0;
 	econ->t = 0;
+	// econ->utility = 0.0;
 	for (int ag=0; ag < econ->agents; ag++){
 		econ->agents_ptr[ag]->t = 0;
+		// econ->agents_ptr[ag]->utility = 0.0;
 	}
 	climate->t = 0;
 	carbon->t = 0;
