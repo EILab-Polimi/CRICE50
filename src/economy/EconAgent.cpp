@@ -119,10 +119,19 @@ void RICEEconAgent::readParams(){
 		in >>sJunk;
 	}
 	in >> line;
-	params.DMType = stringToDecisionMakers(line);
+	while (sJunk!="t_min_miu"){
+		in >>sJunk;
+	}
+	in >> params.t_min_miu;
+	while (sJunk!="max_miu_up"){
+		in >>sJunk;
+	}
+	in >> params.max_miu_up;
+	while (sJunk!="t_max_miu"){
+		in >>sJunk;
+	}
+	in >> params.t_max_miu;
 	in.close();
-	// THIS HAS TO BE FIXED
-	params.damage_type = 1;
 
 	in.open("./settings/globalEconParams.txt", std::ios_base::in);
 	if (!in){
@@ -322,6 +331,14 @@ void RICEEconAgent::readBaseline(int hrzn){
 	}
 	in.close();
 	traj.miu = new double[hrzn + 1];
+	traj.miu_up = new double[hrzn + 1];
+	for (int tidx = 0; tidx < horizon ; tidx++){
+		traj.miu_up[tidx] = 1.0 + std::max(0.0, std::min(
+			(params.max_miu_up - 1.0) * 
+			(2015.0 + 5 * tidx - params.t_min_miu) / 
+			(params.t_max_miu - params.t_min_miu), 
+			params.max_miu_up - 1.0 ));
+	}
 	traj.s = new double[hrzn + 1];
 	//initialize s
 	in.open("./data_ed57/data_economy/s0.csv");
@@ -500,7 +517,7 @@ void RICEEconAgent::nextAction(){
 	// set decision variables
 	switch (params.DMType){
 		case BAU:
-			traj.miu[t] = std::min(1.0, 0.1 * (double) t);
+			traj.miu[t] = std::min(traj.miu_up[t], 0.1 * (double) t);
 			traj.miu[t] = 0.0;
 			traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
 			break;
@@ -533,21 +550,21 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 		traj.damfrac[t] = 0.0;	
 	}
 	else{
-		if (params.damage_type == BURKESR){
+		if (params.damagesType == BURKESR){
 			//BURKE - SR
 			traj.impact[t] = params.beta_bhm_sr* traj.tatm_local[t] + 
 				params.beta_bhm_sr_2* pow(traj.tatm_local[t],2)
 				- params.beta_bhm_sr* params.base_tatm 
 				- params.beta_bhm_sr_2* pow(params.base_tatm,2);
 		}	
-		else if (params.damage_type == BURKELR){
+		else if (params.damagesType == BURKELR){
 			//BURKE - LR
 			traj.impact[t] = params.beta_bhm_lr* traj.tatm_local[t] + 
 				params.beta_bhm_lr_2* pow(traj.tatm_local[t],2)
 				- params.beta_bhm_lr* params.base_tatm 
 				- params.beta_bhm_lr_2* pow(params.base_tatm,2);
 		}
-		else if (params.damage_type == BURKESR_DIFF){
+		else if (params.damagesType == BURKESR_DIFF){
 			//BURKE - SR diff
 			if (params.indRPCutoff == BASEGDP){
 				if (RPCutoff > traj.gdpbase[ssp][t]){
@@ -578,7 +595,7 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 				}
 			}
 		}
-		else if (params.damage_type == BURKELR_DIFF){
+		else if (params.damagesType == BURKELR_DIFF){
 			//BURKE - LR diff
 			if (params.indRPCutoff == BASEGDP){
 				if (RPCutoff > traj.gdpbase[ssp][t]){
@@ -609,7 +626,7 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 				}
 			}
 		}
-		else if (params.damage_type == DJO){
+		else if (params.damagesType == DJO){
 			//DJO
 			if (params.indRPCutoff == BASEGDP){
 				if (RPCutoff > traj.gdpbase[ssp][t]){
@@ -632,7 +649,7 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 				}			
 			}
 		}
-		else if (params.damage_type == KAHN){
+		else if (params.damagesType == KAHN){
 			//KAHN
 			double tatm_mavg = 0.0;
 			for (int tidx=1; tidx<7; tidx++){
@@ -759,6 +776,7 @@ void RICEEconAgent::econAgentDelete(){
 	delete[] traj.eland;
 	delete[] traj.abatecost;
 	delete[] traj.miu;
+	delete[] traj.miu_up;
 	delete[] traj.s;
 	delete[] traj.i;
 	delete[] traj.ygross;

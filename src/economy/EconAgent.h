@@ -35,14 +35,14 @@ struct RICEEconAgentParams{
 	double alpha_tatm;
 	double beta_tatm;
 	double base_tatm;
-	// int indRPCutoff;	// gdp baseline or last value of gdp
-	int damage_type;
-	int temp_limit;
 	DamagesType damagesType;
 	RPCutoffIndType indRPCutoff;
 	TempLimit tempLimit;
 	ElandType elandType;
 	DecisionMakers DMType;
+	int t_min_miu;
+	int t_max_miu;
+	double max_miu_up;
 	double beta_bhm_sr;
 	double beta_bhm_sr_2;
 	double beta_bhm_lr;
@@ -74,6 +74,7 @@ struct RICEEconAgentTraj{
 	double* eland;
 	double* abatecost;
 	double* miu;
+	double* miu_up;
 	double* s;
 	double* i;
 	double* ygross;
