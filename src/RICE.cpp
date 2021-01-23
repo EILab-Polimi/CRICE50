@@ -16,7 +16,9 @@ RICE::RICE(){
 	std::string sJunk = "";
 	in.open("./settings/generalSettings.txt");
 	if (!in){
-		std::cout << "The RICE general file could not be found!" << std::endl;
+		std::cout << 
+			"The RICE general file could not be found!" 
+			<< std::endl;
 	    exit(1);
 	}
 	while (sJunk!="horizon"){
@@ -44,7 +46,9 @@ RICE::RICE(){
 			carbon = new DICECarbon(horizon);
 			break;
 		case ERR:
-			std::cerr << "insert an available ModelType for Carbon" << std::endl;
+			std::cerr << 
+				"insert an available ModelType for Carbon" 
+				<< std::endl;
 	}
 	switch(climate_model){
 		case WITCH:
@@ -56,7 +60,9 @@ RICE::RICE(){
 			climate = new DICEClimate(horizon);
 			break;
 		case ERR:
-			std::cerr << "insert an available ModelType for Climate" << std::endl;
+			std::cerr << 
+				"insert an available ModelType for Climate" 
+				<< std::endl;
 	}
 	econ = new Econ(horizon);
 	t = 0;
@@ -80,13 +86,26 @@ void RICE::simulate(){
 		// std::cout << "\tSimulation time step " << t << ", year " << 2015+t*5 << std::endl;
 		nextStep();
 	} 
-	std::cout << "Objective value - utility is equal to" << econ->utility << std::endl;;
+	std::cout << "Objective value - utility is equal to: " 
+		<< econ->utility << std::endl;;
 	return;
 }
 void RICE::resetTidx(){
 	t = 0;
 	econ->t = 0;
-	econ->utility = pow(10,-8);
+	switch (econ->params.utilityType){
+		case COOP:
+			econ->utility = pow(10,-8);	
+			break;
+		case NON_COOP:
+			econ->utility = 0.0;
+			break;
+		case UTILITYERR:
+			std::cerr << 
+				"Please insert a valid option for the utility setting" 
+				<< std::endl;
+			exit(1);
+	}
 	for (int ag=0; ag < econ->agents; ag++){
 		econ->agents_ptr[ag]->t = 0;
 		econ->agents_ptr[ag]->utility = 0.0;

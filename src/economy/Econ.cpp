@@ -13,6 +13,11 @@ RPMetricType stringToRPMetricType(std::string input){
 	if (input == "MEDIAN") return MEDIAN;	
 	return METRICERR;
 }
+UtilityType stringToUtilityType(std::string input){
+	if (input == "COOP") return COOP;
+	if (input == "NON-COOP") return NON_COOP;	
+	return UTILITYERR;
+}
 // constructor
 Econ::Econ(){
 
@@ -60,7 +65,9 @@ void Econ::readParams(){
 	std::string line;
 	in.open("./settings/globalEconParams.txt", std::ios_base::in);
 	if (!in){
-		std::cout << "The general economic settings file specified could not be found!" << std::endl;
+		std::cout << 
+			"The general economic settings file could not be found!" 
+			<< std::endl;
 	    exit(1);
 	}
 	while (sJunk!="nagents"){
@@ -85,6 +92,12 @@ void Econ::readParams(){
 	in >> line;
 	std::cout << line << std::endl;
 	params.RPCutoffMetric = stringToRPMetricType(line);
+	while (sJunk!="utility"){
+		in >>sJunk;
+	}
+	in >> line;
+	std::cout << line << std::endl;
+	params.utilityType = stringToUtilityType(line);
 	in.close();
 	return;
 }
@@ -96,7 +109,7 @@ void Econ::nextStep(double* tatm){
 	for (int ag=0; ag < agents; ag++){
 		RPCutoffValues[ag] = agents_ptr[ag]->getValueForRPCutoff();
 	}
-	// sort values
+	// sort values and compute cutoff
 	std::sort(RPCutoffValues,RPCutoffValues+agents);
 	double RPCutoff = 0.0;
 	switch (params.RPCutoffMetric){
@@ -110,35 +123,55 @@ void Econ::nextStep(double* tatm){
 			RPCutoff = RPCutoffValues[agents/2];
 			break;
 		case METRICERR:
-			std::cerr << "Please insert an available metric for RPCutoff" << std::endl;
+			std::cerr <<
+				 "Please insert an available metric for RPCutoff" 
+				 << std::endl;
 	}
 	// nextStep in each agent
 	e[t] = 0.0;
-	double w_pop[agents];
-	double sum_pop = 0.0;
+	double pop[agents];
+	double sum_pop = 0.0, sum_cpc = 0.0;
 	double cpc[agents];
 	for (int ag=0; ag < agents; ag++){
+		// compute next step for the agent
 		agents_ptr[ag]->nextStep(tatm, RPCutoff);
+		// retrieve relevant data from the agent
 		e[t] += agents_ptr[ag]->getEmissions(t);
-		w_pop[ag] = agents_ptr[ag]->getPop(t);
-		sum_pop += w_pop[ag];
+		pop[ag] = agents_ptr[ag]->getPop(t);
+		sum_pop += pop[ag];
 		cpc[ag] = agents_ptr[ag]->getCPC(t);
+		sum_cpc += cpc[ag];
 	}
-	for (int ag=0; ag < agents; ag++){
-		cemutotper[t] += w_pop[ag]/sum_pop * pow(cpc[ag], 1.0 - params.ineqav);
+	// compute period utility and update utiltiy
+	if (params.utilityType == COOP){
+		for (int ag=0; ag < agents; ag++){
+			cemutotper[t] += pop[ag]/sum_pop * 							// pop weights
+				pow(cpc[ag], 1.0 - params.ineqav);						// cpc & ineqav
+		}
+		cemutotper[t] = pow((1 + params.prstp), -5.0*t) *				// rr(t)
+			(pow(cemutotper[t], (1.0 - params.elasmu)/					// cpc & elasmu
+				(1.0 - params.ineqav))									//     + ineqav
+			/ (1.0 - params.elasmu) - 1.0);								// elasmu
+		utility += cemutotper[t] * 5 * pow(10,-8);						// update utility
 	}
-	std::cout << t << "\t" << cemutotper[t] << "\t" << sum_pop << std::endl;
-	cemutotper[t] = pow((1 + params.prstp), -5.0*t) *
-		(pow(cemutotper[t], (1.0 - params.elasmu)/(1.0 - params.ineqav)) 
-			/ (1.0 - params.elasmu) - 1.0) ;
-	utility += cemutotper[t] * 5 * pow(10,-8);
+	else if (params.utilityType == NON_COOP){
+		for (int ag=0; ag < agents; ag++){
+			cemutotper[t] = 
+				pow(cpc[ag], params.elasmu) / 							// NEGISHI
+				pow(sum_cpc, params.elasmu) *							// NEGISHI
+				pop[ag] / pow(1 + params.prstp, 5*t) *					// POP and rr(t)
+				((pow(cpc[ag], 1.0 - params.elasmu) - 1.0) / 			// PERIODU
+				(1.0 - params.elasmu) - 1.0);							// PERIODU
+		}
+		utility += 5 * 0.0001 * cemutotper[t];							// update utility
+	}
 	// std::cout << "\t\tHere the economy evolves to next step: " << t+1 << std::endl;
 	t++;
 	return;
 }
 //writes header of file
 void Econ::writeHeader(std::fstream& output){
-	output << "E\t";
+	output << "E\tCEMUTOTPER\t";
 	for (int ag=0; ag < agents; ag++){
 		agents_ptr[ag]->writeHeader(output);
 	}
@@ -147,7 +180,8 @@ void Econ::writeHeader(std::fstream& output){
 }
 //writes steps to file
 void Econ::writeStep(std::fstream& output){
-	output << e[t] << "\t";
+	output << e[t] << "\t"
+		<< cemutotper[t] << "\t" ;
 	for (int ag=0; ag < agents; ag++){
 		agents_ptr[ag]->writeStep(output);
 	}

@@ -732,6 +732,8 @@ void RICEEconAgent::writeHeader(std::fstream& output){
 		"CPC" << name << "\t" <<
 		"RI" << name << "\t" <<
 		"CPRICE" << name << "\t" <<
+		"PERIODU" << name << "\t" <<
+		"CEMUTOTPER" << name << "\t" <<
 		"OMEGA" << name << "\t" << 
 		"TATM_LOCAL" << name << "\t" << 
 		"DAMFRAC" << name << "\t" << 
@@ -767,6 +769,8 @@ void RICEEconAgent::writeStep(std::fstream& output){
 		traj.cpc[t] << "\t" <<
 		traj.ri[t] << "\t" <<
 		traj.cprice[t] << "\t" <<
+		traj.periodu[t] << "\t" <<
+		traj.cemutotper[t] << "\t" <<
 		traj.omega[t] << "\t" <<
 		traj.tatm_local[t] << "\t" <<
 		traj.damfrac[t] << "\t" <<
