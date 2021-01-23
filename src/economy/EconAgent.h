@@ -15,10 +15,12 @@ class EconAgent{
 public:
 	EconAgent();
 	virtual ~EconAgent() = 0;
-	double* e;		//emissions
 	double utility;
 	int t; 			// time step
 	virtual double getValueForRPCutoff() = 0;
+	virtual double getEmissions(int tidx) = 0;
+	virtual double getPop(int tidx) = 0;
+	virtual double getCPC(int tidx) = 0;
 	virtual void nextStep(double* tatm, double RPCutoff) = 0;
 	virtual void writeHeader(std::fstream& output) = 0;
 	virtual void writeStep(std::fstream& output) = 0;
@@ -68,6 +70,7 @@ struct RICEEconAgentTraj{
 	double** sigma;
 	double* gdp;
 	double* eind;
+	double* e;	
 	double* k;
 	double* mx;
 	double* ax;
@@ -110,6 +113,9 @@ public:
 	void readParams();
 	void readBaseline(int hrzn);
 	double getValueForRPCutoff();
+	double getEmissions(int tidx);
+	double getPop(int tidx);
+	double getCPC(int tidx);
 	void nextStep(double* tatm, double RPCutoff);
 	void computeDamages(double* tatm, double RPCutoff);
 	void nextAction();

@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
+#include <math.h>
 
 RPMetricType stringToRPMetricType(std::string input){
 	if (input == "MEAN") return MEAN;
@@ -24,6 +25,7 @@ Econ::~Econ(){
 Econ::Econ(int hrzn){
 	readParams();
 	e = new double[hrzn+1];
+	cemutotper = new double[hrzn + 1];
 	agents_ptr = new EconAgent * [agents];
 	t = 0;
 	std::fstream in;
@@ -112,10 +114,24 @@ void Econ::nextStep(double* tatm){
 	}
 	// nextStep in each agent
 	e[t] = 0.0;
+	double w_pop[agents];
+	double sum_pop = 0.0;
+	double cpc[agents];
 	for (int ag=0; ag < agents; ag++){
 		agents_ptr[ag]->nextStep(tatm, RPCutoff);
-		e[t] += agents_ptr[ag]->e[t];
+		e[t] += agents_ptr[ag]->getEmissions(t);
+		w_pop[ag] = agents_ptr[ag]->getPop(t);
+		sum_pop += w_pop[ag];
+		cpc[ag] = agents_ptr[ag]->getCPC(t);
 	}
+	for (int ag=0; ag < agents; ag++){
+		cemutotper[t] += w_pop[ag]/sum_pop * pow(cpc[ag], 1.0 - params.ineqav);
+	}
+	std::cout << t << "\t" << cemutotper[t] << "\t" << sum_pop << std::endl;
+	cemutotper[t] = pow((1 + params.prstp), -5.0*t) *
+		(pow(cemutotper[t], (1.0 - params.elasmu)/(1.0 - params.ineqav)) 
+			/ (1.0 - params.elasmu) - 1.0) ;
+	utility += cemutotper[t] * 5 * pow(10,-8);
 	// std::cout << "\t\tHere the economy evolves to next step: " << t+1 << std::endl;
 	t++;
 	return;
@@ -146,5 +162,6 @@ void Econ::econDelete(){
 	}
 	delete[] agents_ptr;
 	delete[] e;
+	delete[] cemutotper;
 	return;
 }

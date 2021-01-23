@@ -58,7 +58,7 @@ RICEEconAgent::~RICEEconAgent(){
 }
 // allocates the memory for an agent
 RICEEconAgent::RICEEconAgent(int hrzn, std::string regname){
-	e = new double[hrzn + 1];
+	// e = new double[hrzn + 1];
 	t = 0;
 	horizon = hrzn;
 	name = regname;
@@ -310,6 +310,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 
 	traj.gdp = new double[hrzn + 1];
 	traj.eind = new double[hrzn + 1];
+	traj.e = new double[hrzn + 1];
 	traj.k = new double[hrzn + 1];
 	//initialize k
 	in.open("./data_ed57/data_economy/k0.csv");
@@ -489,7 +490,7 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 	// compute emissions
 	traj.eind[t] = traj.sigma[ssp][t] * 
 		traj.ygross[t] * (1 - traj.miu[t]);
-	e[t] = traj.eind[t] + traj.eland[t];
+	traj.e[t] = traj.eind[t] + traj.eland[t];
 	computeDamages(tatm, RPCutoff);	
 	// compute abatecost
 	traj.abatecost[t] = traj.mx[t] *
@@ -540,9 +541,9 @@ void RICEEconAgent::nextAction(){
 		case DMERR:
 			std::cerr << "Please insert an available option for DMType" << std::endl;
 	}
-	if (t >= horizon - 10){
-		traj.s[t] = params.optlr_s; 
-	}
+	// if (t >= horizon - 10){
+	// 	traj.s[t] = params.optlr_s; 
+	// }
 	return;	
 }
 void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
@@ -694,6 +695,18 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 	}
 	return;
 }
+// get emissions
+double RICEEconAgent::getEmissions(int tidx){
+	return traj.e[tidx];
+}
+// get population
+double RICEEconAgent::getPop(int tidx){
+	return traj.pop[ssp][tidx];
+}
+// get consumption per capita
+double RICEEconAgent::getCPC(int tidx){
+	return traj.cpc[tidx];
+}
 // writes header
 void RICEEconAgent::writeHeader(std::fstream& output){
 	output << "POP" << name << "\t" <<
@@ -743,7 +756,7 @@ void RICEEconAgent::writeStep(std::fstream& output){
 		traj.ygross[t] << "\t" <<
 		traj.miu[t] << "\t" <<
 		traj.eind[t] << "\t" <<
-		e[t] << "\t" <<
+		traj.e[t] << "\t" <<
 		traj.s[t] << "\t" <<
 		traj.i[t] << "\t" <<
 		traj.damages[t] << "\t" <<
@@ -795,9 +808,9 @@ void RICEEconAgent::econAgentDelete(){
 	delete[] traj.cpc;
 	delete[] traj.ri;
 	delete[] traj.cprice;
-	// delete[] traj.periodu;
-	// delete[] traj.cemutotper;
-	delete[] e;
+	delete[] traj.periodu;
+	delete[] traj.cemutotper;
+	delete[] traj.e;
 	delete[] traj.omega;
 	delete[] traj.tatm_local;
 	delete[] traj.damfrac;

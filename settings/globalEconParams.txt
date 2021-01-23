@@ -1,5 +1,5 @@
 nagents			57
 elasmu			1.45
 prstp			0.015
-ineqav			1.00
+ineqav			0.50
 RPCutoffMetric	MEAN		(MEAN / MEDIAN)

@@ -23,6 +23,7 @@ public:
 	int t;						// time step
 	EconParams params;
 	double* e;
+	double* cemutotper;
 	double utility;
 	void readParams();
 	void nextStep(double* tatm);
