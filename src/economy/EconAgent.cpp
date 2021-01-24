@@ -482,16 +482,21 @@ double RICEEconAgent::getValueForRPCutoff(){
 
 // simulates one time step
 void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
+	//take action first based on available information 
+	// (especially in adaptive decision making setting)
 	nextAction();
+
 	// compute ygross
 	traj.ygross[t] = traj.tfp[ssp][t] * 
 		pow(traj.k[t], params.gama) * 
 		pow(traj.pop[ssp][t]/1000.0, 1 - params.gama);
+
 	// compute emissions
 	traj.eind[t] = traj.sigma[ssp][t] * 
 		traj.ygross[t] * (1 - traj.miu[t]);
 	traj.e[t] = traj.eind[t] + traj.eland[t];
 	computeDamages(tatm, RPCutoff);	
+
 	// compute abatecost
 	traj.abatecost[t] = traj.mx[t] *
 		( (traj.ax[t] * pow(traj.miu[t],2) / 2) + 
@@ -499,6 +504,7 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 	traj.cprice[t] = traj.mx[t] *
 		( (traj.ax[t] * pow(traj.miu[t],2)) + 
 			(traj.bx[t] * pow(traj.miu[t],4)));
+
 	// compute variables for economic step transition
 	traj.ynet[t] = traj.ygross[t] - traj.damages[t];
 	traj.y[t] = traj.ynet[t] - traj.abatecost[t];
@@ -512,6 +518,8 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 		traj.ri[t] = (1 + params.prstp) * 
 			pow(traj.cpc[t]/traj.cpc[t-1], params.elasmu/5.0) - 1;
 	}
+
+	//compute utility per period
 	traj.periodu[t] = (pow(traj.cpc[t], 1 - params.elasmu) - 1.0) / 
 		(1.0 - params.elasmu) - 1.0;
 	traj.cemutotper[t] = traj.pop[ssp][t] * traj.periodu[t] * 
@@ -531,10 +539,14 @@ void RICEEconAgent::nextAction(){
 			traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
 			break;
 		case INPUT_STATIC:
+			// no need to do anything here
+			// miu, s & other decs. vars are fixed 
+			// at the beginning of simulation
 			std::cerr << "not developed yet" << std::endl;
 			exit(1);
 			break;
 		case INPUT_POLICY:
+			// here the decision variables are computed using a policy
 			std::cerr << "not developed yet" << std::endl;
 			exit(1);
 			break;
