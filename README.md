@@ -2,7 +2,7 @@ General simulation settings are defined in the folder
 
 	settings:
 		generalSettings.txt: horizon, (tstep), carbon_model, climate_model
-		globalEconParams.txt: nagents, elasmu, prstp, ineqav, RPCutoffMetric
+		globalEconParams.txt: nagents, elasmu, prstp, ineqav, RPCutoffMetric, utility
 		EconAgentParams.txt: gama, dk, dela0, deland, ssp, damages, RPCutoffInd, TempLimit, Eland, DecisionMakersType
 settings for DICE carbon and climate models are in the folder
 	
