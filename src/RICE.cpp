@@ -71,6 +71,11 @@ RICE::RICE(){
 RICE::~RICE(){
 	
 }
+// sets decision variables provided within MOEA framework
+void RICE::setVariables(double* vars){
+	econ->setEconVariables(vars);
+	return;
+}
 // simulates one step of the model
 void RICE::nextStep(){
 	econ->nextStep(climate->tatm);
@@ -86,8 +91,8 @@ void RICE::simulate(){
 		// std::cout << "\tSimulation time step " << t << ", year " << 2015+t*5 << std::endl;
 		nextStep();
 	} 
-	std::cout << "Objective value - utility is equal to: " 
-		<< econ->utility << std::endl;;
+	// std::cout << "Objective value - utility is equal to: " 
+	// 	<< econ->utility << std::endl;;
 	return;
 }
 void RICE::resetTidx(){

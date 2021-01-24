@@ -7,24 +7,34 @@
 TODO: Here we will put authors and license
 */
 #include "RICE.h"
+#include "./emodps/moeaframework.h"
 #include <iostream>
 #include <time.h>
+#include <string>
 
 int main(int argc, char* argv[])
 {	
 	clock_t start, end;
 	start = clock();
 
+	int nobjs = 1;
+	int nvars = 57*58*2;
+	double objs[nobjs];
+	double vars[nvars];
 
 	// ==== MODEL SETTINGS ==========
 	// here we should be reading the input file
 	// and fix the settings for the simulations 
 	// to be run
 
-	// int carbontype = 1;
-	// if (argc > 1){
-	// 	carbontype = atoi(argv[1]);		
-	// }
+	std::string input;
+	if (argc > 1) {
+		input = argv[1];
+	}
+	if (!input.empty()){
+		std::cout << input << std::endl;		
+	}
+
 	// int horizon = 57; // 57 timesteps mean from 2015 (0) to 2305 (57)
 
 	// do we want to consider different delta t ?
@@ -42,18 +52,33 @@ int main(int argc, char* argv[])
 	RICE* riceptr = &rice;
 
 	// ==== SIMULATION EXECUTION ==========
+	if (argc <= 1){
+		riceptr->simulate();	
+		std::cout << riceptr->econ->utility << std::endl;	
+	}
+	else{
+		MOEA_Init(nobjs, 0);
+		while (MOEA_Next_solution() == MOEA_SUCCESS) {
+			MOEA_Read_doubles(nvars, vars);
+			riceptr->setVariables(vars);
+			riceptr->simulate();
+			objs[0] = riceptr->econ->utility;
+			MOEA_Write(objs, NULL);
+		}
+	}
 
-	riceptr->simulate();
 
+	// DRAFT CODE FOR MULTIPLE ITERATIONS
 	// for (int iter=0; iter<10; iter++){
-	 //    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
-	 //    std::cout << "Simulating: " << std::endl;
+	//    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+	//    std::cout << "Simulating: " << std::endl;
 
-	 //    std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+	//    std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
 
-	 //    riceptr->resetTidx();
+	//    riceptr->resetTidx();
 		// riceptr->simulate();
 	// }
+
     std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
     std::cout << "Writing output data: " << std::endl;
 

@@ -28,6 +28,7 @@ public:
 	double* cemutotper;
 	double utility;
 	void readParams();
+	void setEconVariables(double* vars);
 	void nextStep(double* tatm);
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);	
