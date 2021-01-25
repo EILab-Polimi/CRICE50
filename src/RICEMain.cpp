@@ -11,8 +11,6 @@ TODO: Here we will put authors and license
 #include <iostream>
 #include <time.h>
 #include <string>
-#include <math.h>
-#include <fstream>
 
 int main(int argc, char* argv[])
 {	
@@ -33,7 +31,9 @@ int main(int argc, char* argv[])
 	if (argc > 1) {
 		input = argv[1];
 	}
-
+	if (!input.empty()){
+		std::cout << input << std::endl;		
+	}
 
 	// int horizon = 57; // 57 timesteps mean from 2015 (0) to 2305 (57)
 
@@ -44,14 +44,13 @@ int main(int argc, char* argv[])
 	// here we create the RICE instance
 	// and the associated pointer
 
- //    std::cout << "Loading input data: " << std::endl;
+    std::cout << "Loading input data: " << std::endl;
 	RICE rice;
- //    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
- //    std::cout << "Simulating: " << std::endl;
+    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+    std::cout << "Simulating: " << std::endl;
 
 	RICE* riceptr = &rice;
-	std::ofstream outputfile;
-	outputfile.open("./outputsim.txt");
+
 	// ==== SIMULATION EXECUTION ==========
 	if (argc <= 1){
 		riceptr->simulate();	
@@ -63,8 +62,7 @@ int main(int argc, char* argv[])
 			MOEA_Read_doubles(nvars, vars);
 			riceptr->setVariables(vars);
 			riceptr->simulate();
-			objs[0] = riceptr->econ->utility * pow(10,10);
-			outputfile << objs[0] << std::endl;
+			objs[0] = riceptr->econ->utility;
 			MOEA_Write(objs, NULL);
 		}
 	}

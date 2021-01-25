@@ -39,7 +39,7 @@ Econ::Econ(int hrzn){
 	int nag = 0;
 	in.open("./data_ed57/data_economy/k0.csv");
 	if (!in){
-		std::cerr << "The k0 file could not be found!" << std::endl;
+		std::cout << "The k0 file could not be found!" << std::endl;
 	    exit(1);
 	}
 	while(std::getline(in, line) && nag < agents){
@@ -65,7 +65,7 @@ void Econ::readParams(){
 	std::string line;
 	in.open("./settings/globalEconParams.txt", std::ios_base::in);
 	if (!in){
-		std::cerr << 
+		std::cout << 
 			"The general economic settings file could not be found!" 
 			<< std::endl;
 	    exit(1);
@@ -90,13 +90,13 @@ void Econ::readParams(){
 		in >>sJunk;
 	}
 	in >> line;
-	// std::cout << line << std::endl;
+	std::cout << line << std::endl;
 	params.RPCutoffMetric = stringToRPMetricType(line);
 	while (sJunk!="utility"){
 		in >>sJunk;
 	}
 	in >> line;
-	// std::cout << line << std::endl;
+	std::cout << line << std::endl;
 	params.utilityType = stringToUtilityType(line);
 	in.close();
 	return;
@@ -104,7 +104,10 @@ void Econ::readParams(){
 // set decision variables using MOEA framework
 void Econ::setEconVariables(double* vars){
 	for (int ag=0; ag < agents; ag++){
-		agents_ptr[ag]->setAgentVariables(vars + ag*58*2);
+		vars = agents_ptr[ag]->setAgentVariables(vars);
+		if (vars==nullptr){
+			std::cerr << ag << "\t exiting decision variable setting loop" << std::endl;
+		}
 	}
 	return;
 }
