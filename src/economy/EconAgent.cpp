@@ -469,15 +469,17 @@ void RICEEconAgent::readBaseline(int hrzn){
 	return;
 }
 // set agent's decision variables
-double* RICEEconAgent::setAgentVariables(double* vars){
+void RICEEconAgent::setAgentVariables(double* vars){
 	if (params.DMType == INPUT_STATIC){
 		for (int tidx=0; tidx < horizon; tidx ++){
-			traj.miu[tidx] = vars[0];
-			traj.s[tidx] = vars[1];
-			vars += 2;
+			if (tidx > 0) {
+				vars += 2;
+				traj.miu[tidx] = vars[0];
+				traj.s[tidx] = vars[1];
+			}
 		}
 	}
-	return vars;
+	return;
 }
 // returns value for Rich Poor Cutoff
 double RICEEconAgent::getValueForRPCutoff(){
@@ -496,7 +498,7 @@ double RICEEconAgent::getValueForRPCutoff(){
 void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 	//take action first based on available information 
 	// (especially in adaptive decision making setting)
-	nextAction();
+	nextAction();		
 
 	// compute ygross
 	traj.ygross[t] = traj.tfp[ssp][t] * 
@@ -545,6 +547,11 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 void RICEEconAgent::nextAction(){
 	// set decision variables
 	switch (params.DMType){
+		case INPUT_POLICY:
+			// here the decision variables are computed using a policy
+			std::cerr << "not developed yet" << std::endl;
+			exit(1);
+			break;
 		case BAU:
 			traj.miu[t] = std::min(traj.miu_up[t], 0.1 * (double) t);
 			traj.miu[t] = 0.0;
@@ -557,17 +564,14 @@ void RICEEconAgent::nextAction(){
 			// std::cerr << "not developed yet" << std::endl;
 			// exit(1);
 			break;
-		case INPUT_POLICY:
-			// here the decision variables are computed using a policy
-			std::cerr << "not developed yet" << std::endl;
-			exit(1);
-			break;
 		case DMERR:
 			std::cerr << "Please insert an available option for DMType" << std::endl;
 	}
 	traj.miu[0] = 0.0;
+
 	if (t > 0){
-		traj.miu[t] = std::min(traj.miu[t-1] + 0.1, traj.miu[t]);
+		traj.miu[t] = std::min(traj.miu[t-1] + 0.2, traj.miu[t]);
+		// traj.s[t] = std::max(traj.s[t-1] - 0.1, std::min(traj.s[t-1] + 0.1, traj.s[t]));
 	}
 	// if (t >= horizon - 10){
 	// 	traj.s[t] = params.optlr_s; 

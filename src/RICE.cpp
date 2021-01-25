@@ -16,7 +16,7 @@ RICE::RICE(){
 	std::string sJunk = "";
 	in.open("./settings/generalSettings.txt");
 	if (!in){
-		std::cout << 
+		std::cerr << 
 			"The RICE general file could not be found!" 
 			<< std::endl;
 	    exit(1);
@@ -38,11 +38,11 @@ RICE::RICE(){
 
 	switch(carbon_model){
 		case WITCH:
-			std::cout << "WITCH carbon" << std::endl;
+			// std::cout << "WITCH carbon" << std::endl;
 			carbon = new WITCHCarbon(horizon);
 			break;
 		case DICE:
-			std::cout << "DICE carbon" << std::endl;
+			// std::cout << "DICE carbon" << std::endl;
 			carbon = new DICECarbon(horizon);
 			break;
 		case ERR:
@@ -52,11 +52,11 @@ RICE::RICE(){
 	}
 	switch(climate_model){
 		case WITCH:
-			std::cout << "WITCH climate" << std::endl;
+			// std::cout << "WITCH climate" << std::endl;
 			climate = new WITCHClimate(horizon);
 			break;
 		case DICE:
-			std::cout << "DICE climate" << std::endl;
+			// std::cout << "DICE climate" << std::endl;
 			climate = new DICEClimate(horizon);
 			break;
 		case ERR:
@@ -124,7 +124,7 @@ void RICE::writeSimulation(){
 	std::fstream output;
 	output.open("./simulationOutput.txt", std::ios_base::out);
 	if (!output) {
-		std::cout << "Error: file could not be opened" << std::endl;
+		std::cerr << "Error: file could not be opened" << std::endl;
     	exit(1);
     }
 	// === Write header ======
