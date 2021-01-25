@@ -119,6 +119,7 @@ void RICEEconAgent::readParams(){
 		in >>sJunk;
 	}
 	in >> line;
+	params.DMType = stringToDecisionMakers(line);
 	while (sJunk!="t_min_miu"){
 		in >>sJunk;
 	}
@@ -467,6 +468,19 @@ void RICEEconAgent::readBaseline(int hrzn){
 	traj.impact = new double[hrzn + 1];
 	return;
 }
+// set agent's decision variables
+void RICEEconAgent::setAgentVariables(double* vars){
+	if (params.DMType == INPUT_STATIC){
+		for (int tidx=0; tidx < horizon; tidx ++){
+			if (tidx > 0) {
+				vars += 2;
+				traj.miu[tidx] = vars[0];
+				traj.s[tidx] = vars[1];
+			}
+		}
+	}
+	return;
+}
 // returns value for Rich Poor Cutoff
 double RICEEconAgent::getValueForRPCutoff(){
 	switch (params.indRPCutoff){
@@ -482,16 +496,21 @@ double RICEEconAgent::getValueForRPCutoff(){
 
 // simulates one time step
 void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
-	nextAction();
+	//take action first based on available information 
+	// (especially in adaptive decision making setting)
+	nextAction();		
+
 	// compute ygross
 	traj.ygross[t] = traj.tfp[ssp][t] * 
 		pow(traj.k[t], params.gama) * 
 		pow(traj.pop[ssp][t]/1000.0, 1 - params.gama);
+
 	// compute emissions
 	traj.eind[t] = traj.sigma[ssp][t] * 
 		traj.ygross[t] * (1 - traj.miu[t]);
 	traj.e[t] = traj.eind[t] + traj.eland[t];
 	computeDamages(tatm, RPCutoff);	
+
 	// compute abatecost
 	traj.abatecost[t] = traj.mx[t] *
 		( (traj.ax[t] * pow(traj.miu[t],2) / 2) + 
@@ -499,9 +518,10 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 	traj.cprice[t] = traj.mx[t] *
 		( (traj.ax[t] * pow(traj.miu[t],2)) + 
 			(traj.bx[t] * pow(traj.miu[t],4)));
+
 	// compute variables for economic step transition
 	traj.ynet[t] = traj.ygross[t] - traj.damages[t];
-	traj.y[t] = traj.ynet[t] - traj.abatecost[t];
+	traj.y[t] = std::max(0.01, traj.ynet[t] - traj.abatecost[t]); //avoid damages making negative gdp
 	traj.i[t] = traj.s[t] * traj.y[t];
 	traj.c[t] = traj.y[t] - traj.i[t];
 	traj.cpc[t] = 1000 * traj.c[t] / traj.pop[ssp][t];
@@ -512,6 +532,8 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 		traj.ri[t] = (1 + params.prstp) * 
 			pow(traj.cpc[t]/traj.cpc[t-1], params.elasmu/5.0) - 1;
 	}
+
+	//compute utility per period
 	traj.periodu[t] = (pow(traj.cpc[t], 1 - params.elasmu) - 1.0) / 
 		(1.0 - params.elasmu) - 1.0;
 	traj.cemutotper[t] = traj.pop[ssp][t] * traj.periodu[t] * 
@@ -525,21 +547,31 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 void RICEEconAgent::nextAction(){
 	// set decision variables
 	switch (params.DMType){
+		case INPUT_POLICY:
+			// here the decision variables are computed using a policy
+			std::cerr << "not developed yet" << std::endl;
+			exit(1);
+			break;
 		case BAU:
 			traj.miu[t] = std::min(traj.miu_up[t], 0.1 * (double) t);
 			traj.miu[t] = 0.0;
 			traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
 			break;
 		case INPUT_STATIC:
-			std::cerr << "not developed yet" << std::endl;
-			exit(1);
-			break;
-		case INPUT_POLICY:
-			std::cerr << "not developed yet" << std::endl;
-			exit(1);
+			// no need to do anything here
+			// miu, s & other decs. vars are fixed 
+			// at the beginning of simulation
+			// std::cerr << "not developed yet" << std::endl;
+			// exit(1);
 			break;
 		case DMERR:
 			std::cerr << "Please insert an available option for DMType" << std::endl;
+	}
+	traj.miu[0] = 0.0;
+
+	if (t > 0){
+		traj.miu[t] = std::min(traj.miu[t-1] + 0.2, traj.miu[t]);
+		// traj.s[t] = std::max(traj.s[t-1] - 0.1, std::min(traj.s[t-1] + 0.1, traj.s[t]));
 	}
 	// if (t >= horizon - 10){
 	// 	traj.s[t] = params.optlr_s; 
