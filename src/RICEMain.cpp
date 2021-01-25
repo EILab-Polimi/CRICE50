@@ -70,6 +70,7 @@ void GetFilesInDirectory(std::vector<std::string> &out, const std::string &direc
 #endif
 }
 
+
 int main(int argc, char* argv[])
 {	
 	clock_t start, end;
