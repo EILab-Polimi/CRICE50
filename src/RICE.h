@@ -20,7 +20,6 @@ public:
 	Carbon* carbon;					// pointer to carbon module active in the model
 	Climate* climate;				// pointer to climate module active in the model
 	Econ* econ;						// pointer to economic module active in the model
-	void setVariables(double* vars);
 	void nextStep();
 	void simulate();
 	void resetTidx();

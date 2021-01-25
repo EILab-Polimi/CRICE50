@@ -101,16 +101,6 @@ void Econ::readParams(){
 	in.close();
 	return;
 }
-// set decision variables using MOEA framework
-void Econ::setEconVariables(double* vars){
-	for (int ag=0; ag < agents; ag++){
-		vars = agents_ptr[ag]->setAgentVariables(vars);
-		if (vars==nullptr){
-			std::cerr << ag << "\t exiting decision variable setting loop" << std::endl;
-		}
-	}
-	return;
-}
 // simulates one step
 void Econ::nextStep(double* tatm){
 	// compute Rich Poor Cutoff

@@ -22,7 +22,6 @@ public:
 	virtual double getPop(int tidx) = 0;
 	virtual double getCPC(int tidx) = 0;
 	virtual void nextStep(double* tatm, double RPCutoff) = 0;
-	virtual double* setAgentVariables(double* vars) = 0;
 	virtual void writeHeader(std::fstream& output) = 0;
 	virtual void writeStep(std::fstream& output) = 0;
 	virtual void econAgentDelete() = 0;
@@ -118,7 +117,6 @@ public:
 	double getPop(int tidx);
 	double getCPC(int tidx);
 	void nextStep(double* tatm, double RPCutoff);
-	double* setAgentVariables(double* vars);
 	void computeDamages(double* tatm, double RPCutoff);
 	void nextAction();
 	void writeHeader(std::fstream& output);
