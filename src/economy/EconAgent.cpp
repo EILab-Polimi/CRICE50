@@ -471,7 +471,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 // set agent's decision variables
 void RICEEconAgent::setAgentVariables(double* vars){
 	if (params.DMType == INPUT_STATIC){
-		for (int tidx=0; tidx < horizon; tidx ++){
+		for (int tidx=0; tidx < horizon; tidx++){
 			if (tidx > 0) {
 				vars += 2;
 				traj.miu[tidx] = vars[0];

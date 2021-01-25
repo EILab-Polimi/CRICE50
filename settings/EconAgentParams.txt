@@ -5,7 +5,7 @@ deland			0.001
 ssp				2			(1/2/3/4/5)
 damages			BURKESR		(BURKESR / BURKELR / BURKESR_DIFF / BURKELR_DIFF / DJO / KAHN)
 RPCutoffInd		BASEGDP		(BASEGDP / GDP)
-TempLimit		OFF			(ON / OFF)
+TempLimit		ON			(ON / OFF)
 Eland			OPT			(BAU / OPT)
 DecisionMakers	INPUT_STATIC			(BAU / INPUT_STATIC / INPUT_POLICY)
 t_min_miu		2050		(year until miu=1 is upper buond)

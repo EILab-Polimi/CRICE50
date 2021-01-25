@@ -11,40 +11,18 @@ NVAR=6612
 NOBJ=1
 EPS=1
 DECSVARS=2
-# RBF-policy 
-# lb="-1,0,-1,0,-1,0,-1,0,-1,0,-1,0,0"
-# ub="1,1,1,1,1,1,1,1,1,1,1,1,1"
-# LB=0,${lb},${lb},${lb},${lb},${lb},${lb},${lb}
-# UB=1,${ub},${ub},${ub},${ub},${ub},${ub},${ub}
-# UB="1"
-# LB="0"
-# for S in $(seq 2 $NVAR)
-# do
-# 	UB="$UB,1"
-# 	LB="$LB,0"
-# done
-
-# ANN-policy
-# UB="10"
-# LB="-10"
-
-# for S in $(seq 2 $NVAR)
-# do
-# 	UB="$UB,10"
-# 	LB="$LB,-10"
-# done
 
 # static intertemporal optimization
-UB="1.0,0.9"
-LB="0,0.1"
+UB="1.2,1.0"
+LB="0.0,0.0"
 
 NITER=NVAR
 ((NITER /= DECSVARS))
 
 for S in $(seq 2 $NITER)
 do
-	UB="$UB,1.0,0.9"
-	LB="$LB,0,0.1"
+	UB="$UB,1.2,1.0"
+	LB="$LB,0.0,0.0"
 done
 
 

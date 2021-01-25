@@ -19,6 +19,7 @@ int main(int argc, char* argv[])
 	clock_t start, end;
 	start = clock();
 
+	// TO BE FIXED
 	int nobjs = 1;
 	int nvars = 57*58*2;
 	double objs[nobjs];
@@ -28,14 +29,6 @@ int main(int argc, char* argv[])
 	// here we should be reading the input file
 	// and fix the settings for the simulations 
 	// to be run
-
-	std::string input;
-	if (argc > 1) {
-		input = argv[1];
-	}
-
-
-	// int horizon = 57; // 57 timesteps mean from 2015 (0) to 2305 (57)
 
 	// do we want to consider different delta t ?
 	// int delta_t = 1;
@@ -50,11 +43,10 @@ int main(int argc, char* argv[])
  //    std::cout << "Simulating: " << std::endl;
 
 	RICE* riceptr = &rice;
-	std::ofstream outputfile;
-	outputfile.open("./outputsim.txt");
+
 	// ==== SIMULATION EXECUTION ==========
 	if (argc <= 1){
-		riceptr->simulate();	
+		riceptr->simulate();				
 		std::cout << riceptr->econ->utility << std::endl;	
 	}
 	else{
@@ -64,7 +56,6 @@ int main(int argc, char* argv[])
 			riceptr->setVariables(vars);
 			riceptr->simulate();
 			objs[0] = riceptr->econ->utility * pow(10,10);
-			outputfile << objs[0] << std::endl;
 			MOEA_Write(objs, NULL);
 		}
 	}

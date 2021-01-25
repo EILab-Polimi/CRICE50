@@ -136,6 +136,7 @@ void Econ::nextStep(double* tatm){
 	}
 	// nextStep in each agent
 	e[t] = 0.0;
+	cemutotper[t] = 0.0;
 	double pop[agents];
 	double sum_pop = 0.0, sum_cpc = 0.0;
 	double cpc[agents];

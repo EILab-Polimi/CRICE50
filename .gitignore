@@ -59,6 +59,9 @@ tools/data_temp/*
 # Mac
 .DS_Store
 
+# Java
+*.jar
+
 # RICE50++
 RICE50++
 simulationOutput.txt
