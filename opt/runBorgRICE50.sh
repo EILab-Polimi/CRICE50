@@ -6,11 +6,15 @@ NAMEFILE=optRICE50
 EMODPS=/Users/angelocarlino/models/emodps
 # Optimization setting
 NSEEDS=1
-NFE=200
-NVAR=6612
+NFE=1000
+AGENTS=57
+HORIZON=58
+DECSVARS=2
+NVAR=$((AGENTS*HORIZON*DECSVARS))
+echo $NVAR
+
 NOBJ=1
 EPS=1
-DECSVARS=2
 
 # static intertemporal optimization
 UB="1.2,1.0"

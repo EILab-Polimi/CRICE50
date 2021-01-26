@@ -23,6 +23,7 @@ public:
 	int agents;					// number of agents	
 	EconAgent** agents_ptr;		// pointer to agents
 	int t;						// time step
+	int horizon;
 	EconParams params;
 	double* e;
 	double* cemutotper;

@@ -29,8 +29,9 @@ Econ::~Econ(){
 // allocates memory for the economic component
 Econ::Econ(int hrzn){
 	readParams();
-	e = new double[hrzn+1];
-	cemutotper = new double[hrzn + 1];
+	horizon = hrzn;
+	e = new double[horizon+1];
+	cemutotper = new double[horizon + 1];
 	agents_ptr = new EconAgent * [agents];
 	t = 0;
 	std::fstream in;
@@ -53,7 +54,7 @@ Econ::Econ(int hrzn){
 			count++;
 		}
 		if (splitline[0].compare("n")){
-			agents_ptr[nag] = new RICEEconAgent(hrzn, splitline[0]);
+			agents_ptr[nag] = new RICEEconAgent(horizon, splitline[0]);
 			nag++;
 		}
 	}
@@ -104,7 +105,7 @@ void Econ::readParams(){
 // set decision variables using MOEA framework
 void Econ::setEconVariables(double* vars){
 	for (int ag=0; ag < agents; ag++){
-		agents_ptr[ag]->setAgentVariables(vars + ag*58*2);
+		agents_ptr[ag]->setAgentVariables(vars + ag * horizon * 2);
 	}
 	return;
 }
