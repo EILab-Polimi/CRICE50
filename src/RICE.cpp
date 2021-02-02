@@ -35,7 +35,10 @@ RICE::RICE(){
 	}
 	in >> line;
 	climate_model = stringToModelType(line);
-
+	while (sJunk!="objectives"){
+		in >>sJunk;
+	}
+	in >> objs;
 	switch(carbon_model){
 		case WITCH:
 			// std::cout << "WITCH carbon" << std::endl;
@@ -76,6 +79,21 @@ void RICE::setVariables(double* vars){
 	econ->setEconVariables(vars);
 	return;
 }
+//returns number of objectives
+int RICE::getNObjs(){
+	return objs;
+} 
+//returns number of variables
+int RICE::getNVars(){
+	int nvars;
+	if (econ->params.DMType == INPUT_POLICY){
+		nvars = horizon*econ->agents * 2;
+	}
+	else{
+		nvars = horizon*econ->agents * 2;		
+	}
+	return nvars;
+} 
 // simulates one step of the model
 void RICE::nextStep(){
 	econ->nextStep(climate->tatm);

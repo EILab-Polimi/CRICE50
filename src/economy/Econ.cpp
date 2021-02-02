@@ -18,6 +18,12 @@ UtilityType stringToUtilityType(std::string input){
 	if (input == "NON-COOP") return NON_COOP;	
 	return UTILITYERR;
 }
+DecisionMakers stringToDecisionMakers(std::string input){
+	if (input == "BAU") return BAU;
+	if (input == "INPUT_STATIC") return INPUT_STATIC;	
+	if (input == "INPUT_POLICY") return INPUT_POLICY;	
+	return DMERR;
+}
 // constructor
 Econ::Econ(){
 
@@ -54,7 +60,7 @@ Econ::Econ(int hrzn){
 			count++;
 		}
 		if (splitline[0].compare("n")){
-			agents_ptr[nag] = new RICEEconAgent(horizon, splitline[0]);
+			agents_ptr[nag] = new RICEEconAgent(horizon, splitline[0], params.DMType);
 			nag++;
 		}
 	}
@@ -91,14 +97,17 @@ void Econ::readParams(){
 		in >>sJunk;
 	}
 	in >> line;
-	// std::cout << line << std::endl;
 	params.RPCutoffMetric = stringToRPMetricType(line);
 	while (sJunk!="utility"){
 		in >>sJunk;
 	}
 	in >> line;
-	// std::cout << line << std::endl;
 	params.utilityType = stringToUtilityType(line);
+	while (sJunk!="DecisionMakers"){
+		in >>sJunk;
+	}
+	in >> line;
+	params.DMType = stringToDecisionMakers(line);
 	in.close();
 	return;
 }

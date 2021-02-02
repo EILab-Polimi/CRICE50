@@ -19,12 +19,6 @@ int main(int argc, char* argv[])
 	clock_t start, end;
 	start = clock();
 
-	// TO BE FIXED
-	int nobjs = 1;
-	int nvars = 57*58*2;
-	double objs[nobjs];
-	double vars[nvars];
-
 	// ==== MODEL SETTINGS ==========
 	// here we should be reading the input file
 	// and fix the settings for the simulations 
@@ -37,15 +31,19 @@ int main(int argc, char* argv[])
 	// here we create the RICE instance
 	// and the associated pointer
 
- //    std::cout << "Loading input data: " << std::endl;
+    // std::cout << "Loading input data: " << std::endl;
 	RICE rice;
- //    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
- //    std::cout << "Simulating: " << std::endl;
+    // std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+    // std::cout << "Simulating: " << std::endl;
 
 	RICE* riceptr = &rice;
+	int nobjs = riceptr->getNObjs();
+	int nvars = riceptr->getNVars();	
+	double objs[nobjs];
+	double vars[nvars];
 
 	// ==== SIMULATION EXECUTION ==========
-	if (argc <= 1){
+	if (riceptr->econ->params.DMType == BAU){
 		riceptr->simulate();				
 		std::cout << riceptr->econ->utility << std::endl;	
 	}

@@ -32,12 +32,6 @@ ElandType stringToElandType(std::string input){
 	if (input == "OPT") return ELANDOPT;	
 	return ELANDERR;
 }
-DecisionMakers stringToDecisionMakers(std::string input){
-	if (input == "BAU") return BAU;
-	if (input == "INPUT_STATIC") return INPUT_STATIC;	
-	if (input == "INPUT_POLICY") return INPUT_POLICY;	
-	return DMERR;
-}
 
 // constructor
 EconAgent::EconAgent(){
@@ -57,11 +51,12 @@ RICEEconAgent::~RICEEconAgent(){
 
 }
 // allocates the memory for an agent
-RICEEconAgent::RICEEconAgent(int hrzn, std::string regname){
+RICEEconAgent::RICEEconAgent(int hrzn, std::string regname, DecisionMakers DMType){
 	// e = new double[hrzn + 1];
 	t = 0;
 	horizon = hrzn;
 	name = regname;
+	params.DMType = DMType;
 	readParams();
 	readBaseline(hrzn);
 }
@@ -115,11 +110,11 @@ void RICEEconAgent::readParams(){
 	}
 	in >> line;
 	params.elandType = stringToElandType(line);
-	while (sJunk!="DecisionMakers"){
-		in >>sJunk;
-	}
-	in >> line;
-	params.DMType = stringToDecisionMakers(line);
+	// while (sJunk!="DecisionMakers"){
+	// 	in >>sJunk;
+	// }
+	// in >> line;
+	// params.DMType = stringToDecisionMakers(line);
 	while (sJunk!="t_min_miu"){
 		in >>sJunk;
 	}
@@ -493,7 +488,10 @@ double RICEEconAgent::getValueForRPCutoff(){
 			exit(1);
 	}
 }
-
+// sets BAU simulation
+void RICEEconAgent::setBAUDMType(){
+	params.DMType = BAU;
+}
 // simulates one time step
 void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 	//take action first based on available information 

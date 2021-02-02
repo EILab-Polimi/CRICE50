@@ -7,7 +7,6 @@ damages			BURKESR		(BURKESR / BURKELR / BURKESR_DIFF / BURKELR_DIFF / DJO / KAHN
 RPCutoffInd		BASEGDP		(BASEGDP / GDP)
 TempLimit		ON			(ON / OFF)
 Eland			OPT			(BAU / OPT)
-DecisionMakers	INPUT_STATIC			(BAU / INPUT_STATIC / INPUT_POLICY)
 t_min_miu		2050		(year until miu=1 is upper buond)
 max_miu_up		1.20		(maximum possible value for emission control rate)
 t_max_miu		2200 		(first year where miu = max_miu_up is possible)

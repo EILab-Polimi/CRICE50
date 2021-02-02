@@ -21,6 +21,7 @@ public:
 	virtual double getEmissions(int tidx) = 0;
 	virtual double getPop(int tidx) = 0;
 	virtual double getCPC(int tidx) = 0;
+	virtual	void setBAUDMType() = 0;
 	virtual void nextStep(double* tatm, double RPCutoff) = 0;
 	virtual void setAgentVariables(double* vars) = 0;
 	virtual void writeHeader(std::fstream& output) = 0;
@@ -105,7 +106,7 @@ class RICEEconAgent: public EconAgent{
 public:
 	RICEEconAgent();
 	~RICEEconAgent();
-	RICEEconAgent(int hrzn, std::string regname);
+	RICEEconAgent(int hrzn, std::string regname, DecisionMakers DMType);
 	int horizon;
 	int ssp;
 	std::string name;
@@ -117,6 +118,7 @@ public:
 	double getEmissions(int tidx);
 	double getPop(int tidx);
 	double getCPC(int tidx);
+	void setBAUDMType();
 	void nextStep(double* tatm, double RPCutoff);
 	void setAgentVariables(double* vars);
 	void computeDamages(double* tatm, double RPCutoff);

@@ -13,6 +13,7 @@ struct EconParams{
 	double ineqav;
 	RPMetricType RPCutoffMetric; // median or mean
 	UtilityType utilityType;
+	DecisionMakers DMType;
 };
 
 class Econ{

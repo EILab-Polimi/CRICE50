@@ -15,12 +15,15 @@ public:
 	int agents;						// number of economic agents interacting
 	int horizon;					// length of the horizon
 	int t;							// time instant
+	int objs;
 	ModelType carbon_model;
 	ModelType climate_model;
 	Carbon* carbon;					// pointer to carbon module active in the model
 	Climate* climate;				// pointer to climate module active in the model
 	Econ* econ;						// pointer to economic module active in the model
 	void setVariables(double* vars);
+	int getNObjs();
+	int getNVars();
 	void nextStep();
 	void simulate();
 	void resetTidx();
