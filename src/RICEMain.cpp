@@ -90,6 +90,10 @@ int main(int argc, char* argv[])
     // std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
     // std::cout << "Simulating: " << std::endl;
 	RICE* riceptr = &rice;
+	int nobjs = riceptr->getNObjs();
+	int nvars = riceptr->getNVars();	
+	double objs[nobjs];
+	double vars[nvars];
 
 	int nobjs = riceptr->getNObjs();
 	int nvars = riceptr->getNVars();	
