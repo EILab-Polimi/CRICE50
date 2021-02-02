@@ -7,7 +7,7 @@
 TODO: Here we will put authors and license
 */
 #include "RICE.h"
-#include "./emodps/moeaframework.h"
+#include "./moeaframework/moeaframework.h"
 #include <iostream>
 #include <time.h>
 #include <string>
@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 			MOEA_Read_doubles(nvars, vars);
 			riceptr->setVariables(vars);
 			riceptr->simulate();
-			objs[0] = riceptr->econ->utility * pow(10,10);
+			objs[0] = riceptr->econ->utility;
 			MOEA_Write(objs, NULL);
 		}
 	}
@@ -70,16 +70,16 @@ int main(int argc, char* argv[])
 		// riceptr->simulate();
 	// }
 
-    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
-    std::cout << "Writing output data: " << std::endl;
+    // std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+    // std::cout << "Writing output data: " << std::endl;
 
 	// ==== POST PROCESSING ==========
 
 	// export simulation results in output file
 
 	riceptr->writeSimulation();
-    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
-    std::cout << "Freeing memory: " << std::endl;
+    // std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+    // std::cout << "Freeing memory: " << std::endl;
 	// delete memory used by RICE 
 	riceptr->RICE_delete();
 
