@@ -2,16 +2,17 @@ CC = gcc
 CXX = g++
 ARGS = -O3 -Wall
 CXXFLAGS = -c -O3 -Wall
-MOEAF = ./src/moeaframework
+EMODPS = ./src/emodps
 
 all: RICE50++
 
 RICE50++: ./src/RICE.o ./src/RICEMain.o \
-		${MOEAF}/moeaframework.o 
+		${EMODPS}/moeaframework.o ${EMODPS}/utils.o ${EMODPS}/param_function.o \
+		${EMODPS}/ncRBF.o ${EMODPS}/ann_mo.o
 	${CXX} ${ARGS} ./src/RICEMain.o ./src/RICE.o \
 		./src/carbon/Carbon.o ./src/climate/Climate.o \
 		./src/economy/Econ.o ./src/economy/EconAgent.o \
-		./src/moeaframework/moeaframework.o \
+		./src/emodps/moeaframework.o \
 		 -o RICE50++
 
 ./src/RICEMain.o: ./src/RICEMain.cpp
@@ -32,8 +33,20 @@ RICE50++: ./src/RICE.o ./src/RICEMain.o \
 ./src/economy/EconAgent.o: ./src/economy/EconAgent.cpp ./src/economy/EconAgent.h 
 	${CXX} ${CXXFLAGS} ./src/economy/EconAgent.cpp -o ./src/economy/EconAgent.o
 
-moeaframework.o: $(MOEAF)/moeaframework.c $(MOEAF)/moeaframework.h
-	${CC} ${ARGS} -c $(MOEAF)/moeaframework.c -o $(MOEAF)/moeaframework.o
+ncRBF.o: $(EMODPS)/ncRBF.cpp $(EMODPS)/ncRBF.h $(EMODPS)/param_function.h
+	$(CXX) ${ARGS} -c $(EMODPS)/ncRBF.cpp -o $(EMODPS)/ncRBF.o
+
+ann_mo.o: $(EMODPS)/ann_mo.cpp $(EMODPS)/ann_mo.h $(EMODPS)/param_function.h
+	$(CXX) ${ARGS} -c $(EMODPS)/ann_mo.cpp -o $(EMODPS)/ann_mo.o
+
+param_function.o: $(EMODPS)/param_function.cpp $(EMODPS)/param_function.h
+	$(CXX) ${ARGS} -c $(EMODPS)/param_function.cpp -o $(EMODPS)/param_function.o
+
+utils.o: $(EMODPS)/utils.cpp $(EMODPS)/utils.h
+	$(CXX) ${ARGS} -c $(EMODPS)/utils.cpp -o $(EMODPS)/utils.o
+
+moeaframework.o: $(EMODPS)/moeaframework.c $(EMODPS)/moeaframework.h
+	${CC} ${ARGS} -c $(EMODPS)//moeaframework.c -o $(EMODPS)//moeaframework.o
 clean: 
-	rm -rf *.o ./src/climate/*.o ./src/carbon/*.o ./src/economy/*.o ./src/*.o $(MOEAF)/*.o
+	rm -rf *.o ./src/climate/*.o ./src/carbon/*.o ./src/economy/*.o ./src/*.o $(EMODPS)/*.o
 	rm -rf RICE50++
