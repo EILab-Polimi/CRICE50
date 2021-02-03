@@ -57,7 +57,8 @@ tools/data_temp/*
 *.app
 
 # Mac
-.DS_Store
+*/.DS_Store
+
 
 # Java
 *.jar

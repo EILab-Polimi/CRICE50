@@ -2,7 +2,7 @@ CC = gcc
 CXX = g++
 ARGS = -O3 -Wall
 CXXFLAGS = -c -O3 -Wall
-EMODPS = ./src/emodps
+EMODPS = ./src/moeaframework
 
 all: RICE50++
 
@@ -12,7 +12,7 @@ RICE50++: ./src/RICE.o ./src/RICEMain.o \
 	${CXX} ${ARGS} ./src/RICEMain.o ./src/RICE.o \
 		./src/carbon/Carbon.o ./src/climate/Climate.o \
 		./src/economy/Econ.o ./src/economy/EconAgent.o \
-		./src/emodps/moeaframework.o \
+		./src/moeaframework/moeaframework.o \
 		 -o RICE50++
 
 ./src/RICEMain.o: ./src/RICEMain.cpp
