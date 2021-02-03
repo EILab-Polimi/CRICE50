@@ -62,5 +62,5 @@ utils.o: $(EMODPS)/utils.cpp $(EMODPS)/utils.h
 moeaframework.o: $(EMODPS)/moeaframework.c $(EMODPS)/moeaframework.h
 	${CC} ${ARGS} -c $(EMODPS)//moeaframework.c -o $(EMODPS)//moeaframework.o
 clean: 
-	rm -rf *.o ./src/climate/*.o ./src/carbon/*.o ./src/economy/*.o ./src/*.o $(MOEAF)/*.o
+	rm -rf *.o ./src/climate/*.o ./src/carbon/*.o ./src/economy/*.o ./src/*.o $(EMODPS)/*.o
 	rm -rf RICE50++
