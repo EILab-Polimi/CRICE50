@@ -113,8 +113,15 @@ void Econ::readParams(){
 }
 // set decision variables using MOEA framework
 void Econ::setEconVariables(double* vars){
-	for (int ag=0; ag < agents; ag++){
-		agents_ptr[ag]->setAgentVariables(vars + ag * horizon * 2);
+	if (params.DMType == INPUT_STATIC){
+		for (int ag=0; ag < agents; ag++){
+			agents_ptr[ag]->setAgentVariables(vars + ag * horizon * 2);
+		}
+	}
+	else if (params.DMType == INPUT_POLICY){
+		for (int ag=0; ag < agents; ag++){
+			agents_ptr[ag]->setAgentVariables(vars);
+		}
 	}
 	return;
 }

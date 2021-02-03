@@ -269,6 +269,8 @@ void RICEEconAgent::readPolicyParams(){
 	policy.Policy->setMaxOutput(policy.p_param.MOut);
 	policy.Policy->setMinInput(policy.p_param.mIn); 
 	policy.Policy->setMinOutput(policy.p_param.mOut);	
+	policy.input.resize(policy.p_param.policyInput);
+	policy.output.resize(policy.p_param.policyOutput);
 
 	return;
 }
@@ -556,6 +558,10 @@ void RICEEconAgent::setAgentVariables(double* vars){
 			}
 		}
 	}
+	else if (params.DMType == INPUT_POLICY){
+		policy.Policy->clearParameters();
+		policy.Policy->setParameters(vars);
+	}
 	return;
 }
 // returns value for Rich Poor Cutoff
@@ -628,6 +634,13 @@ void RICEEconAgent::nextAction(){
 	// set decision variables
 	switch (params.DMType){
 		case INPUT_POLICY:
+			// retrieve states or input to the policy
+			policy.input.clear();
+			policy.output.clear();
+			// input.push_back();
+			policy.output = policy.Policy->get_NormOutput(policy.input);
+			traj.miu[t] = policy.output[0];
+			traj.s[t] = policy.output[1];
 			// here the decision variables are computed using a policy
 			std::cerr << "not developed yet" << std::endl;
 			exit(1);
