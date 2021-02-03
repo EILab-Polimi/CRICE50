@@ -6,6 +6,11 @@
 #include <string>
 #include <algorithm>
 #include <math.h>
+#include "../moeaframework/rbf.h"
+#include "../moeaframework/ann.h"
+#include "../moeaframework/pwLinear.h"
+#include "../moeaframework/ncRBF.h"
+#include "../moeaframework/ann_mo.h"
 
 DamagesType stringToDamagesType(std::string input){
 	if (input == "NO") return NO;
@@ -50,16 +55,20 @@ RICEEconAgent::RICEEconAgent(){
 RICEEconAgent::~RICEEconAgent(){
 
 }
-// allocates the memory for an agent
+// custom constructor:
+// read params, exog. trajectories and allocate
 RICEEconAgent::RICEEconAgent(int hrzn, std::string regname, DecisionMakers DMType){
-	// e = new double[hrzn + 1];
 	t = 0;
 	horizon = hrzn;
 	name = regname;
 	params.DMType = DMType;
 	readParams();
+	if (params.DMType == INPUT_POLICY){
+		readPolicyParams();
+	}
 	readBaseline(hrzn);
 }
+// read econ agent params
 void RICEEconAgent::readParams(){
 	std::fstream in;
 	std::string sJunk = "";
@@ -110,11 +119,6 @@ void RICEEconAgent::readParams(){
 	}
 	in >> line;
 	params.elandType = stringToElandType(line);
-	// while (sJunk!="DecisionMakers"){
-	// 	in >>sJunk;
-	// }
-	// in >> line;
-	// params.DMType = stringToDecisionMakers(line);
 	while (sJunk!="t_min_miu"){
 		in >>sJunk;
 	}
@@ -191,6 +195,84 @@ void RICEEconAgent::readParams(){
 	params.beta_k = -0.0586;
 	return;
 }
+void RICEEconAgent::readPolicyParams(){
+	std::fstream in;
+	std::string sJunk = "";
+	in.open("./settings/settingsAgentPolicy.txt", std::ios_base::in);
+	if (!in){
+		std::cout << "The EconAgentParams settings file could not be found!" << std::endl;
+	    exit(1);
+	}
+	// read policy type (RBF/ANN/...)
+	while (sJunk!="<POLICY_CLASS"){
+		in >>sJunk;
+	}
+	in >> policy.p_param.tPolicy;
+	// read input number and bounds
+	double i1, i2;
+	while (sJunk!="<NUM_INPUT"){
+		in >>sJunk;
+	}
+	in >> policy.p_param.policyInput;
+    //Loop through all of the input data and read in this order:
+	for (int i=0; i < policy.p_param.policyInput; i++){
+		in >> i1 >> i2;
+	    policy.p_param.mIn.push_back(i1);
+	    policy.p_param.MIn.push_back(i2);
+	}
+	// read output number and bounds
+	double o1, o2;
+	while (sJunk!="<NUM_OUTPUT"){
+		in >>sJunk;
+	}
+	in >> policy.p_param.policyOutput;
+    //Loop through all of the input data and read in this order:
+    for (int i=0; i < policy.p_param.policyOutput; i++){
+    	in >> o1 >> o2;
+    	policy.p_param.mOut.push_back(o1);
+    	policy.p_param.MOut.push_back(o2);
+    }
+    // read number of nodes
+	while (sJunk!="<POLICY_STRUCTURE"){
+		in >>sJunk;
+	}
+	in >> policy.p_param.policyStr;
+	in.close();
+
+	// allocate policy based on params
+	switch (policy.p_param.tPolicy) {
+		case 1: // RBF policy
+			policy.Policy = new std::rbf(policy.p_param.policyInput,
+				policy.p_param.policyOutput,policy.p_param.policyStr);
+			break;
+		case 2: // ANN
+			policy.Policy = new std::ann(policy.p_param.policyInput,
+				policy.p_param.policyOutput,policy.p_param.policyStr);
+			break;
+		case 3: // piecewise linear policy
+			policy.Policy = new std::pwLinear(policy.p_param.policyInput,
+				policy.p_param.policyOutput,policy.p_param.policyStr);
+			break;
+		case 4:
+			policy.Policy = new std::ncRBF(policy.p_param.policyInput,
+				policy.p_param.policyOutput,policy.p_param.policyStr);
+			break;
+		case 5:
+			policy.Policy = new std::annmo(policy.p_param.policyInput,
+				policy.p_param.policyOutput,policy.p_param.policyStr);
+			break;
+		default:
+			break;
+	}
+	// save bounds in input and outputs
+	policy.Policy->setMaxInput(policy.p_param.MIn); 
+	policy.Policy->setMaxOutput(policy.p_param.MOut);
+	policy.Policy->setMinInput(policy.p_param.mIn); 
+	policy.Policy->setMinOutput(policy.p_param.mOut);	
+
+	return;
+}
+// read exogenous baseline trajectories
 void RICEEconAgent::readBaseline(int hrzn){
 	std::fstream in;
 	std::string line;

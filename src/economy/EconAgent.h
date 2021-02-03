@@ -2,6 +2,7 @@
 #define ECONAGENT__H
 #include <string>
 #include <fstream>
+#include "../moeaframework/param_function.h"
 
 enum DamagesType {NO, BURKESR, BURKELR, 
 	BURKESR_DIFF, BURKELR_DIFF, 
@@ -102,6 +103,11 @@ struct RICEEconAgentTraj{
 	double* impact;
 };
 
+struct EconAgentPolicy{
+	std::pFunction_param p_param;
+	std::param_function* Policy;
+};
+
 class RICEEconAgent: public EconAgent{
 public:
 	RICEEconAgent();
@@ -112,7 +118,9 @@ public:
 	std::string name;
 	RICEEconAgentParams params;
 	RICEEconAgentTraj traj;
+	EconAgentPolicy policy;
 	void readParams();
+	void readPolicyParams();
 	void readBaseline(int hrzn);
 	double getValueForRPCutoff();
 	double getEmissions(int tidx);
