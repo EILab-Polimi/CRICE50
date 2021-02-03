@@ -176,6 +176,11 @@ struct EconAgentPolicy{
 	int nvars, evars;
 };
 
+struct EconAgentPolicy{
+	std::pFunction_param p_param;
+	std::param_function* Policy;
+};
+
 class RICEEconAgent: public EconAgent{
 public:
 	RICEEconAgent();
