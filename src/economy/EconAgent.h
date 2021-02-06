@@ -180,6 +180,7 @@ struct EconAgentPolicy{
 	std::pFunction_param p_param;
 	std::param_function* Policy;
 	std::vector<double> input, output;
+	int nvars;
 };
 
 class RICEEconAgent: public EconAgent{

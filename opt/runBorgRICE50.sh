@@ -6,27 +6,34 @@ NAMEFILE=optRICE50
 EMODPS=/Users/angelocarlino/models/emodps
 # Optimization setting
 NSEEDS=1
+
+# static intertemporal optimization
 NFE=1000
 AGENTS=57
 HORIZON=58
 DECSVARS=2
 NVAR=$((AGENTS*HORIZON*DECSVARS))
-echo $NVAR
-
-NOBJ=1
-EPS=1
-
-# static intertemporal optimization
 UB="1.2,1.0"
 LB="0.0,0.0"
-
 NITER=NVAR
 ((NITER /= DECSVARS))
-
 for S in $(seq 2 $NITER)
 do
 	UB="$UB,1.2,1.0"
 	LB="$LB,0.0,0.0"
+done
+
+# emodps
+NFE=100000
+NVAR=74
+NOBJ=1
+EPS=0.0000000001
+UB="1.0"
+LB="0.0"
+for S in $(seq 2 $NVAR)
+do
+	UB="$UB,1.0"
+	LB="$LB,0.0"
 done
 
 
@@ -35,9 +42,8 @@ for SEED in $(seq 1 $NSEEDS)
 do
 OUTFILE=./opt/BorgOutput/${NAMEFILE}_${SEED}.out
 RUNFILE=./opt/BorgOutput/rntdynamics_${SEED}.txt
-PARAM=opt
 cd ..
-${EMODPS}/borg/borg.exe -n ${NFE} -v ${NVAR} -o ${NOBJ} -s ${SEED} -l ${LB} -u ${UB} -e ${EPS} -f ${OUTFILE} -R ${RUNFILE} -F 100 ${PROBLEM} ${PARAM}
+${EMODPS}/borg/borg.exe -n ${NFE} -v ${NVAR} -o ${NOBJ} -s ${SEED} -l ${LB} -u ${UB} -e ${EPS} -f ${OUTFILE} -R ${RUNFILE} -F 10000 ${PROBLEM}
 done
 echo "optimization terminated"
 

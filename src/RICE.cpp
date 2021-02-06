@@ -104,7 +104,6 @@ RICE::RICE(){
 	}
 
 	econ = new Econ(horizon);
-
 	if (econ->params.DMType == INPUT_POLICY){
 		econ->initializeStates(econ->getNStates() +
 			climate->getNStates() + carbon->getNStates());
