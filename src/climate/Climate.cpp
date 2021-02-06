@@ -28,6 +28,7 @@ WITCHClimate::~WITCHClimate(){
 WITCHClimate::WITCHClimate(int hrzn){
 	tatm = new double[hrzn + 1];
 	tocean = new double[hrzn + 1];
+	statesVector = new double[2];
 	t = 0;
 	readParams();
 }
@@ -96,10 +97,21 @@ void WITCHClimate::writeStep(std::fstream& output){
 		tocean[t] << "\t" ;
 	t++;
 }
+//get states
+double* WITCHClimate::getStates(){
+	statesVector[0] = tatm[t];
+	statesVector[1] = tocean[t];
+	return statesVector;
+}
+// get number of states
+int WITCHClimate::getNStates(){
+	return 2;
+}
 // frees allocated memory
 void WITCHClimate::climateDelete(){
 	delete[] tatm;
 	delete[] tocean;
+	delete[] statesVector;
 	return;
 }
 
@@ -118,6 +130,7 @@ DICEClimate::~DICEClimate(){
 DICEClimate::DICEClimate(int hrzn){
 	tatm = new double[hrzn + 1];
 	tocean = new double[hrzn + 1];
+	statesVector = new double[2];
 	t = 0;
 	readParams();
 }
@@ -185,9 +198,20 @@ void DICEClimate::writeStep(std::fstream& output){
 		tocean[t] << "\t" ;
 	t++;
 }
+//get states
+double* DICEClimate::getStates(){
+	statesVector[0] = tatm[t];
+	statesVector[1] = tocean[t];
+	return statesVector;
+}
+// get number of states
+int DICEClimate::getNStates(){
+	return 2;
+}
 // frees allocated memory
 void DICEClimate::climateDelete(){
 	delete[] tatm;
 	delete[] tocean;
+	delete[] statesVector;
 	return;
 }

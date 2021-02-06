@@ -204,13 +204,13 @@ void RICEEconAgent::readPolicyParams(){
 	    exit(1);
 	}
 	// read policy type (RBF/ANN/...)
-	while (sJunk!="<POLICY_CLASS"){
+	while (sJunk!="<POLICY_CLASS>"){
 		in >>sJunk;
 	}
 	in >> policy.p_param.tPolicy;
 	// read input number and bounds
 	double i1, i2;
-	while (sJunk!="<NUM_INPUT"){
+	while (sJunk!="<NUM_INPUT>"){
 		in >>sJunk;
 	}
 	in >> policy.p_param.policyInput;
@@ -222,7 +222,7 @@ void RICEEconAgent::readPolicyParams(){
 	}
 	// read output number and bounds
 	double o1, o2;
-	while (sJunk!="<NUM_OUTPUT"){
+	while (sJunk!="<NUM_OUTPUT>"){
 		in >>sJunk;
 	}
 	in >> policy.p_param.policyOutput;
@@ -233,7 +233,7 @@ void RICEEconAgent::readPolicyParams(){
     	policy.p_param.MOut.push_back(o2);
     }
     // read number of nodes
-	while (sJunk!="<POLICY_STRUCTURE"){
+	while (sJunk!="<POLICY_STRUCTURE>"){
 		in >>sJunk;
 	}
 	in >> policy.p_param.policyStr;
@@ -248,6 +248,9 @@ void RICEEconAgent::readPolicyParams(){
 		case 2: // ANN
 			policy.Policy = new std::ann(policy.p_param.policyInput,
 				policy.p_param.policyOutput,policy.p_param.policyStr);
+			policy.nvars = policy.p_param.policyOutput * 
+				(policy.p_param.policyStr * 
+				(policy.p_param.policyInput + 2) + 1); 
 			break;
 		case 3: // piecewise linear policy
 			policy.Policy = new std::pwLinear(policy.p_param.policyInput,
@@ -256,10 +259,16 @@ void RICEEconAgent::readPolicyParams(){
 		case 4:
 			policy.Policy = new std::ncRBF(policy.p_param.policyInput,
 				policy.p_param.policyOutput,policy.p_param.policyStr);
+			policy.nvars = policy.p_param.policyStr * 
+				(2 * policy.p_param.policyInput + policy.p_param.policyOutput) 
+				+ policy.p_param.policyOutput; 
 			break;
 		case 5:
 			policy.Policy = new std::annmo(policy.p_param.policyInput,
 				policy.p_param.policyOutput,policy.p_param.policyStr);
+			policy.nvars = policy.p_param.policyStr * 
+				(policy.p_param.policyInput + policy.p_param.policyOutput + 1) 
+				+ policy.p_param.policyOutput; 
 			break;
 		default:
 			break;
@@ -273,6 +282,10 @@ void RICEEconAgent::readPolicyParams(){
 	policy.output.resize(policy.p_param.policyOutput);
 
 	return;
+}
+// return number of variables
+int RICEEconAgent::getNVars(){
+	return policy.nvars;
 }
 // read exogenous baseline trajectories
 void RICEEconAgent::readBaseline(int hrzn){
@@ -584,6 +597,13 @@ void RICEEconAgent::setBAUDMType(){
 void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 	//take action first based on available information 
 	// (especially in adaptive decision making setting)
+	// eventually consider 30°C limit
+	if (params.tempLimit == ON){
+		traj.tatm_local[t] = std::min(30.0, params.alpha_tatm + params.beta_tatm * tatm[t]);
+	}
+	else{
+		traj.tatm_local[t] = params.alpha_tatm + params.beta_tatm * tatm[t];	
+	}
 	nextAction();		
 
 	// compute ygross
@@ -595,7 +615,7 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 	traj.eind[t] = traj.sigma[ssp][t] * 
 		traj.ygross[t] * (1 - traj.miu[t]);
 	traj.e[t] = traj.eind[t] + traj.eland[t];
-	computeDamages(tatm, RPCutoff);	
+	computeDamages(RPCutoff);	
 
 	// compute abatecost
 	traj.abatecost[t] = traj.mx[t] *
@@ -632,53 +652,54 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 // take next action
 void RICEEconAgent::nextAction(){
 	// set decision variables
-	switch (params.DMType){
-		case INPUT_POLICY:
-			// retrieve states or input to the policy
-			policy.input.clear();
-			policy.output.clear();
-			// input.push_back();
-			policy.output = policy.Policy->get_NormOutput(policy.input);
-			traj.miu[t] = policy.output[0];
-			traj.s[t] = policy.output[1];
-			// here the decision variables are computed using a policy
-			std::cerr << "not developed yet" << std::endl;
-			exit(1);
-			break;
-		case BAU:
-			traj.miu[t] = std::min(traj.miu_up[t], 0.1 * (double) t);
-			traj.miu[t] = 0.0;
-			traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
-			break;
-		case INPUT_STATIC:
-			// no need to do anything here
-			// miu, s & other decs. vars are fixed 
-			// at the beginning of simulation
-			// std::cerr << "not developed yet" << std::endl;
-			// exit(1);
-			break;
-		case DMERR:
-			std::cerr << "Please insert an available option for DMType" << std::endl;
+	if (t>0){
+		switch (params.DMType){
+			case INPUT_POLICY:
+				// retrieve states or input to the policy
+				policy.input.clear();
+				policy.output.clear();
+				// inputs: effK, tatm_local, tatm, tocean, mat, mup, mlo, time
+				policy.input.push_back(traj.k[t]/(traj.tfp[ssp][t] * traj.pop[ssp][t])); //as in DICE
+				// policy.input.push_back(traj.y[t - 1]/(traj.tfp[ssp][t - 1] * traj.pop[ssp][t - 1])); //maybe better (?)
+				policy.input.push_back(traj.tatm_local[t]);
+				for (int s = 0; s < nGlobalStates; s++){
+					policy.input.push_back(globalStates[s]);
+				}
+				policy.input.push_back(t);
+				
+				policy.output = policy.Policy->get_NormOutput(policy.input);
+				traj.miu[t] = policy.output[0];
+				traj.s[t] = policy.output[1];
+				traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
+				break;
+			case BAU:
+				traj.miu[t] = std::min(traj.miu_up[t], 0.1 * (double) t);
+				traj.miu[t] = 0.0;
+				traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
+				break;
+			case INPUT_STATIC:
+				// no need to do anything here
+				// miu, s & other decs. vars are fixed 
+				// at the beginning of simulation
+				// std::cerr << "not developed yet" << std::endl;
+				// exit(1);
+				break;
+			case DMERR:
+				std::cerr << "Please insert an available option for DMType" << std::endl;
+		}
+		traj.miu[t] = std::max(0.0, std::min(traj.miu_up[t], std::min(traj.miu[t-1] + 0.2, traj.miu[t])));
+		traj.s[t] = std::max(0.001, std::min(0.999, traj.s[t]));
 	}
-	traj.miu[0] = 0.0;
+	else{
+		traj.miu[0] = 0.0;
+	}
 
-	if (t > 0){
-		traj.miu[t] = std::min(traj.miu[t-1] + 0.2, traj.miu[t]);
-		// traj.s[t] = std::max(traj.s[t-1] - 0.1, std::min(traj.s[t-1] + 0.1, traj.s[t]));
-	}
 	// if (t >= horizon - 10){
 	// 	traj.s[t] = params.optlr_s; 
 	// }
 	return;	
 }
-void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
-	// eventually consider 30°C limit
-	if (params.tempLimit == ON){
-		traj.tatm_local[t] = std::min(30.0, params.alpha_tatm + params.beta_tatm * tatm[t]);
-	}
-	else{
-		traj.tatm_local[t] = params.alpha_tatm + params.beta_tatm * tatm[t];	
-	}
+void RICEEconAgent::computeDamages(double RPCutoff){
 	if (params.damagesType == NO){
 		traj.damages[t] = 0.0;	
 		traj.damfrac[t] = 0.0;	

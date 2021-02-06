@@ -125,6 +125,27 @@ void Econ::setEconVariables(double* vars){
 	}
 	return;
 }
+// initializes vector of global states
+void Econ::initializeStates(int numGlobalStates){
+	nGlobalStates = numGlobalStates;
+	globalStates = new double[numGlobalStates];
+	for (int ag = 0; ag < agents; ag++){
+		agents_ptr[ag]->globalStates = globalStates;
+		agents_ptr[ag]->nGlobalStates = nGlobalStates;
+	}
+} 
+// returns the pointer to a vector of global economic state variables
+double* Econ::getStates(){
+	return econStates;
+}
+// returns the pointer to a vector of global economic state variables
+int Econ::getNStates(){
+	return 0;
+}
+// return number of variables for policy
+int Econ::getNVars(){
+	return agents_ptr[0]->getNVars();
+}
 // simulates one step
 void Econ::nextStep(double* tatm){
 	// compute Rich Poor Cutoff
@@ -222,5 +243,6 @@ void Econ::econDelete(){
 	delete[] agents_ptr;
 	delete[] e;
 	delete[] cemutotper;
+	delete[] globalStates;
 	return;
 }

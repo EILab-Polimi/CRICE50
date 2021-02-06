@@ -10,11 +10,14 @@ class Climate{
 public:
 	Climate();
 	~Climate();
+	double* statesVector;
 	double* tatm;  	// atmospheric temperature (°C w.r.t 1900)
 	int t;			// time step
 	virtual void nextStep(double forc) = 0;
 	virtual void writeHeader(std::fstream& output) = 0;
 	virtual void writeStep(std::fstream& output) = 0;
+	virtual double* getStates() = 0;
+	virtual int getNStates() = 0;
 	virtual void climateDelete() = 0;
 };
 
@@ -39,6 +42,8 @@ public:
 	void nextStep(double forc);
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
+	double* getStates();
+	int getNStates();
 	void climateDelete();
 };
 
@@ -64,6 +69,8 @@ public:
 	void nextStep(double forc);
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
+	double* getStates();
+	int getNStates();
 	void climateDelete();
 };
 

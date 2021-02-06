@@ -68,6 +68,10 @@ RICE::RICE(){
 				<< std::endl;
 	}
 	econ = new Econ(horizon);
+	if (econ->params.DMType == INPUT_POLICY){
+		econ->initializeStates(econ->getNStates() +
+			climate->getNStates() + carbon->getNStates());
+	}
 	t = 0;
 }
 // destructor
@@ -87,15 +91,39 @@ int RICE::getNObjs(){
 int RICE::getNVars(){
 	int nvars;
 	if (econ->params.DMType == INPUT_POLICY){
-		nvars = horizon*econ->agents * 2;
+		nvars = econ->getNVars();
 	}
 	else{
 		nvars = horizon*econ->agents * 2;		
 	}
 	return nvars;
 } 
+// get global States to be used in control policies as inputs
+void RICE::updateGlobalStates(){
+	double* econStates = econ->getStates();
+	int nEconStates = econ->getNStates();
+	double* climateStates = climate->getStates();
+	int nClimateStates = climate->getNStates();
+	double* carbonStates = carbon->getStates();
+	int nCarbonStates = carbon->getNStates();
+	for (int n=0; n < nEconStates; n++){
+		econ->globalStates[n] = econStates[n];
+	}
+	int nstart = nEconStates;
+	for (int n=nstart; n < nstart + nClimateStates; n++) {
+		econ->globalStates[n] = climateStates[n - nstart];
+	}
+	nstart = nEconStates + nClimateStates;
+	for (int n=nstart ; n < nstart + nCarbonStates; n++) {
+		econ->globalStates[n] = carbonStates[n - nstart];
+	}
+	return;
+}
 // simulates one step of the model
 void RICE::nextStep(){
+	if (econ->params.DMType == INPUT_POLICY){
+		updateGlobalStates();
+	}
 	econ->nextStep(climate->tatm);
 	carbon->nextStep(econ->e[t]);
 	climate->nextStep(carbon->forc[t]);

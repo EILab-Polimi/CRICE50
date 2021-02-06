@@ -24,6 +24,7 @@ public:
 	void setVariables(double* vars);
 	int getNObjs();
 	int getNVars();
+	void updateGlobalStates();
 	void nextStep();
 	void simulate();
 	void resetTidx();

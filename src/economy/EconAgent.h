@@ -17,11 +17,14 @@ public:
 	EconAgent();
 	virtual ~EconAgent() = 0;
 	double utility;
+	double* globalStates;
+	int nGlobalStates;
 	int t; 			// time step
 	virtual double getValueForRPCutoff() = 0;
 	virtual double getEmissions(int tidx) = 0;
 	virtual double getPop(int tidx) = 0;
 	virtual double getCPC(int tidx) = 0;
+	virtual int getNVars() = 0;
 	virtual	void setBAUDMType() = 0;
 	virtual void nextStep(double* tatm, double RPCutoff) = 0;
 	virtual void setAgentVariables(double* vars) = 0;
@@ -107,6 +110,7 @@ struct EconAgentPolicy{
 	std::pFunction_param p_param;
 	std::param_function* Policy;
 	std::vector<double> input, output;
+	int nvars;
 };
 
 class RICEEconAgent: public EconAgent{
@@ -127,10 +131,11 @@ public:
 	double getEmissions(int tidx);
 	double getPop(int tidx);
 	double getCPC(int tidx);
+	int getNVars();
 	void setBAUDMType();
 	void nextStep(double* tatm, double RPCutoff);
 	void setAgentVariables(double* vars);
-	void computeDamages(double* tatm, double RPCutoff);
+	void computeDamages(double RPCutoff);
 	void nextAction();
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);

@@ -32,7 +32,7 @@ DICECarbon::DICECarbon(int hrzn){
 	mlo = new double[hrzn + 1];  // Carbon concentration increase in Lower Oceans [GtC from 1750]
 	forc = new double[hrzn + 1];  // Increase in Radiative Forcing [W/m2 from 1900]
 	forcoth = new double[hrzn + 1];  // Exogenous forcing from other greenhouse gases [W/m2]
-		
+	statesVector = new double[3];
 	readParams();
 	t = 0;
 }
@@ -136,6 +136,17 @@ void DICECarbon::writeStep(std::fstream& output){
 		forcoth[t] << "\t" ;
 	t++;
 }
+//get states
+double* DICECarbon::getStates(){
+	statesVector[0] = mat[t];
+	statesVector[1] = mat[t];
+	statesVector[2] = mat[t];
+	return statesVector;
+}
+// get number of states
+int DICECarbon::getNStates(){
+	return 3;
+}
 // frees allocated memory
 void DICECarbon::carbonDelete(){
 	delete[] mat;
@@ -143,6 +154,7 @@ void DICECarbon::carbonDelete(){
 	delete[] mlo;
 	delete[] forc;
 	delete[] forcoth;
+	delete[] statesVector;
 	return;
 }
 
@@ -167,6 +179,7 @@ WITCHCarbon::WITCHCarbon(int hrzn){
 	mup = new double[hrzn + 1];  // Carbon concentration increase in Shallow Oceans [GtC from 1750]
 	mlo = new double[hrzn + 1];  // Carbon concentration increase in Lower Oceans [GtC from 1750]
 	forc = new double[hrzn + 1];  // Increase in Radiative Forcing [W/m2 from 1900]
+	statesVector = new double[3];
 	readParams();
 	t = 0;
 }
@@ -336,12 +349,24 @@ void WITCHCarbon::writeStep(std::fstream& output){
 		forc[t] << "\t" ;
 	t++;
 }
+//get states
+double* WITCHCarbon::getStates(){
+	statesVector[0] = mat[t];
+	statesVector[1] = mat[t];
+	statesVector[2] = mat[t];
+	return statesVector;
+}
+// get number of states
+int WITCHCarbon::getNStates(){
+	return 3;
+}
 // frees allocated memory
 void WITCHCarbon::carbonDelete(){
 	delete[] mat;
 	delete[] mup;
 	delete[] mlo;
 	delete[] forc;
+	delete[] statesVector;
 	return;
 }
 

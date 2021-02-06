@@ -53,7 +53,7 @@ int main(int argc, char* argv[])
 			MOEA_Read_doubles(nvars, vars);
 			riceptr->setVariables(vars);
 			riceptr->simulate();
-			objs[0] = riceptr->econ->utility;
+			objs[0] =  - riceptr->econ->utility;
 			MOEA_Write(objs, NULL);
 		}
 	}

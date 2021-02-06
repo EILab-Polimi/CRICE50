@@ -28,8 +28,16 @@ public:
 	EconParams params;
 	double* e;
 	double* cemutotper;
+	double* globalStates;
+	int nGlobalStates;
+	double* econStates;
 	double utility;
 	void readParams();
+	void updateGlobalStates();
+	void initializeStates(int numGlobalStates);
+	double* getStates();
+	int getNStates();
+	int getNVars();
 	void setEconVariables(double* vars);
 	void nextStep(double* tatm);
 	void writeHeader(std::fstream& output);
