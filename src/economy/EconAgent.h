@@ -7,6 +7,7 @@
 enum DamagesType {NO, BURKESR, BURKELR, 
 	BURKESR_DIFF, BURKELR_DIFF, 
 	DJO, KAHN, DAMAGEERR};
+enum OmegaEq {FULL, SIMPLE, OMEGAERR};
 enum RPCutoffIndType {BASEGDP, GDP, RPINDERR};
 enum TempLimit {ON, OFF, TEMPLIMITERR};
 enum ElandType {ELANDBAU, ELANDOPT, ELANDERR};
@@ -45,6 +46,7 @@ struct RICEEconAgentParams{
 	double beta_tatm;
 	double base_tatm;
 	DamagesType damagesType;
+	OmegaEq omegaEq;
 	RPCutoffIndType indRPCutoff;
 	TempLimit tempLimit;
 	ElandType elandType;

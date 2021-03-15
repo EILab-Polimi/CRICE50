@@ -22,6 +22,11 @@ DamagesType stringToDamagesType(std::string input){
 	if (input == "KAHN") return KAHN;	
 	return DAMAGEERR;
 }
+OmegaEq stringToOmegaEq(std::string input){
+	if (input == "FULL") return FULL;
+	if (input == "SIMPLE") return SIMPLE;
+	return OMEGAERR;
+}
 RPCutoffIndType stringToRPCutoffIndType(std::string input){
 	if (input == "BASEGDP") return BASEGDP;
 	if (input == "GDP") return GDP;	
@@ -104,6 +109,11 @@ void RICEEconAgent::readParams(){
 	}
 	in >> line;
 	params.damagesType = stringToDamagesType(line);	
+	while (sJunk!="omega"){
+		in >>sJunk;
+	}
+	in >> line;
+	params.omegaEq = stringToOmegaEq(line);	
 	while (sJunk!="RPCutoffInd"){
 		in >>sJunk;
 	}
@@ -827,27 +837,23 @@ void RICEEconAgent::computeDamages(double RPCutoff){
 			traj.basegrowthcap[t] = pow((traj.gdpbase[ssp][t+1]/traj.pop[ssp][t+1])
 				/ (traj.gdpbase[ssp][t]/traj.pop[ssp][t]), 1.0/5.0) - 1;
 			// EQ OMEGA
-			traj.omega[t+1] = (((1.0 + (traj.omega[t])) 
-				* (traj.tfp[ssp][t+1]/traj.tfp[ssp][t])
-				* pow(traj.pop[ssp][t+1]/traj.pop[ssp][t], 1.0 - params.gama) * traj.pop[ssp][t]/traj.pop[ssp][t+1] 
-				* traj.komega[t]
-				/ pow(1.0 + traj.basegrowthcap[t] + traj.impact[t], 5) ) - 1.0);
-			// //alterative formulation
-			// traj.omega[t+1] = (1.0 + traj.omega[t]) / 
-			// 	pow(1 + traj.impact[t], 5) - 1;
+			if (params.omegaEq == FULL){
+				traj.omega[t+1] = (((1.0 + (traj.omega[t])) 
+					* (traj.tfp[ssp][t+1]/traj.tfp[ssp][t])
+					* pow(traj.pop[ssp][t+1]/traj.pop[ssp][t], 1.0 - params.gama) * traj.pop[ssp][t]/traj.pop[ssp][t+1] 
+					* traj.komega[t]
+					/ pow(1.0 + traj.basegrowthcap[t] + traj.impact[t], 5) ) - 1.0);				
+			}
+			else if (params.omegaEq == SIMPLE){
+				traj.omega[t+1] = (1.0 + traj.omega[t]) / 
+					pow(1 + traj.impact[t], 5) - 1;				
+			}
 		}
 		traj.damfrac[t] = 1.0 - (1.0 / ( 1.0 + traj.omega[t]));
 		traj.ynet_estimated[t] = std::min(std::max(traj.ygross[t] 
 			* (1 - traj.damfrac[t]), pow(10.0, -4.0) * traj.gdpbase[ssp][t]), 
 			2.0 * traj.gdpbase[ssp][t]);
-		traj.damages[t] = traj.ygross[t] - traj.ynet_estimated[t];
-		// // alternative formulation
-		// if (t>0){
-		// 	traj.damages[t] = traj.ygross[t] - traj.pop[ssp][t] / traj.pop[ssp][t-1] *
-		// 		traj.ynet[t-1] * 
-		// 		pow(pow((traj.ygross[t]/traj.pop[ssp][t]) / 
-		// 		(traj.ygross[t-1]/traj.pop[ssp][t-1]), 0.2) + traj.impact[t], 5);	
-		// }		
+		traj.damages[t] = traj.ygross[t] - traj.ynet_estimated[t];	
 	}
 	return;
 }
