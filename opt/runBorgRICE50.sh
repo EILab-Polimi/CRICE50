@@ -24,7 +24,7 @@ do
 done
 
 # emodps
-NFE=100000
+NFE=50000
 NVAR=74
 NOBJ=1
 EPS=0.0000000001
@@ -43,7 +43,7 @@ do
 OUTFILE=./opt/BorgOutput/${NAMEFILE}_${SEED}.out
 RUNFILE=./opt/BorgOutput/rntdynamics_${SEED}.txt
 cd ..
-${EMODPS}/borg/borg.exe -n ${NFE} -v ${NVAR} -o ${NOBJ} -s ${SEED} -l ${LB} -u ${UB} -e ${EPS} -f ${OUTFILE} -R ${RUNFILE} -F 10000 ${PROBLEM}
+${EMODPS}/borg/borg.exe -n ${NFE} -v ${NVAR} -o ${NOBJ} -s ${SEED} -l ${LB} -u ${UB} -e ${EPS} -f ${OUTFILE} -R ${RUNFILE} -F 1000 ${PROBLEM}
 done
 echo "optimization terminated"
 
