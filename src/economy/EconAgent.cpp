@@ -693,7 +693,7 @@ void RICEEconAgent::nextAction(){
 	else{
 		traj.miu[0] = 0.0;
 	}
-
+	traj.miu[1] = 0.03;
 	// if (t >= horizon - 10){
 	// 	traj.s[t] = params.optlr_s; 
 	// }
@@ -832,12 +832,22 @@ void RICEEconAgent::computeDamages(double RPCutoff){
 				* pow(traj.pop[ssp][t+1]/traj.pop[ssp][t], 1.0 - params.gama) * traj.pop[ssp][t]/traj.pop[ssp][t+1] 
 				* traj.komega[t]
 				/ pow(1.0 + traj.basegrowthcap[t] + traj.impact[t], 5) ) - 1.0);
+			// //alterative formulation
+			// traj.omega[t+1] = (1.0 + traj.omega[t]) / 
+			// 	pow(1 + traj.impact[t], 5) - 1;
 		}
 		traj.damfrac[t] = 1.0 - (1.0 / ( 1.0 + traj.omega[t]));
 		traj.ynet_estimated[t] = std::min(std::max(traj.ygross[t] 
 			* (1 - traj.damfrac[t]), pow(10.0, -4.0) * traj.gdpbase[ssp][t]), 
 			2.0 * traj.gdpbase[ssp][t]);
 		traj.damages[t] = traj.ygross[t] - traj.ynet_estimated[t];
+		// // alternative formulation
+		// if (t>0){
+		// 	traj.damages[t] = traj.ygross[t] - traj.pop[ssp][t] / traj.pop[ssp][t-1] *
+		// 		traj.ynet[t-1] * 
+		// 		pow(pow((traj.ygross[t]/traj.pop[ssp][t]) / 
+		// 		(traj.ygross[t-1]/traj.pop[ssp][t-1]), 0.2) + traj.impact[t], 5);	
+		// }		
 	}
 	return;
 }
