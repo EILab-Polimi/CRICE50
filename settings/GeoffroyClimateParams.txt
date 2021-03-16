@@ -1,0 +1,8 @@
+nu				3.1			
+delta_temp		0.115		
+xi1				7.3			
+xi3				0.73		
+xi4				106			
+kappa			3.6813		
+TLO0			0.324		
+TAT0			1.243		

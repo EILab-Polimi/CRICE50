@@ -74,5 +74,34 @@ public:
 	void climateDelete();
 };
 
+// ====  Geoffroy et al. (2013)-Climate module ========
+// used in Hansel et al. (2020)
+
+struct paramsGeoffroyClimate{
+	double nu;
+	double delta_temp;
+	double xi1;
+	double xi3;
+	double xi4;
+	double kappa;
+	double xi2;
+};
+
+class GeoffroyClimate: public Climate{
+public:
+	GeoffroyClimate();
+	~GeoffroyClimate();
+	GeoffroyClimate(int hrzn);
+	double* tocean;		// ocean temperature (°C w.r.t 1900)
+	paramsGeoffroyClimate params;
+	void readParams();
+	void nextStep(double forc);
+	void writeHeader(std::fstream& output);
+	void writeStep(std::fstream& output);
+	double* getStates();
+	int getNStates();
+	void climateDelete();
+};
+
 
 #endif
