@@ -575,3 +575,117 @@ void FAIRTemp::climateDelete(){
 	delete[] toCarbon;
 	return;
 }
+
+
+// ====  Geoffroy et al. (2013) Climate module ========
+
+// constructor
+GeoffroyClimate::GeoffroyClimate(){
+
+}
+// destructor
+GeoffroyClimate::~GeoffroyClimate(){
+
+}// allocates memory for the climate component
+GeoffroyClimate::GeoffroyClimate(int hrzn){
+	tatm = new double[hrzn + 1];
+	tocean = new double[hrzn + 1];
+	statesVector = new double[2];
+	t = 0;
+	readParams();
+}
+// read parameters from text file
+// and stores them in the params struct
+// and setting initial conditions
+void GeoffroyClimate::readParams(){
+	std::fstream in;
+	std::string sJunk="";
+	in.open("./settings/GeoffroyClimateParams.txt");
+		if (!in){
+		std::cout << "The Geoffroy climate settings file could not be found!" << std::endl;
+	    exit(1);
+	}
+	while (sJunk!="nu"){
+		in >>sJunk;
+	}
+	in >> params.nu;
+	while (sJunk!="delta_temp"){
+		in >>sJunk;
+	}
+	in >> params.delta_temp;
+	while (sJunk!="xi1"){
+		in >>sJunk;
+	}
+	in >> params.xi1;
+	while (sJunk!="xi3"){
+		in >>sJunk;
+	}
+	in >> params.xi3;
+	while (sJunk!="xi4"){
+		in >>sJunk;
+	}
+	in >> params.xi4;
+	while (sJunk!="kappa"){
+		in >>sJunk;
+	}
+	in >> params.kappa;
+	params.xi2 = params.kappa / params.nu;
+	while (sJunk!="TLO0"){
+		in >>sJunk;
+	}
+	in >> tocean[0];
+	while (sJunk!="TAT0"){
+		in >>sJunk;
+	}
+	in >> tatm[0];
+	in.close();
+	return;
+}
+// simulates one time step
+void GeoffroyClimate::nextStep(double forc){
+
+	double tatm_short = tatm[t];
+	for (int tidx=0; tidx < 5; tidx++){
+		tatm_short = tatm_short + 1.0/params.xi1 * 
+			((forc - params.xi2*tatm_short) + \
+			- params.xi3 * (tatm_short - tocean[t]));
+	}
+	// Global temperature increase from pre-industrial levels
+	tatm[t+1] = tatm_short;
+
+	// Ocean temperature
+	tocean[t+1] = tocean[t] + \
+		5.0 * params.xi3/params.xi4 * (tatm[t] - tocean[t]);
+	// std::cout << "\t\tWITCH climate evolves to next step:" << std::endl;
+	// std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
+	t++;
+	return;
+}
+void GeoffroyClimate::writeHeader(std::fstream& output){
+	output << "TATM" << "\t" <<
+		"TOCEAN" << "\t";
+	t = 0;
+}
+//writes step to output
+void GeoffroyClimate::writeStep(std::fstream& output){
+	output << tatm[t] << "\t" <<
+		tocean[t] << "\t" ;
+	t++;
+}
+//get states
+double* GeoffroyClimate::getStates(){
+	statesVector[0] = tatm[t];
+	statesVector[1] = tocean[t];
+	return statesVector;
+}
+// get number of states
+int GeoffroyClimate::getNStates(){
+	return 2;
+}
+// frees allocated memory
+void GeoffroyClimate::climateDelete(){
+	delete[] tatm;
+	delete[] tocean;
+	delete[] statesVector;
+	return;
+}
