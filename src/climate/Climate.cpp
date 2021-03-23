@@ -591,6 +591,7 @@ GeoffroyClimate::GeoffroyClimate(int hrzn){
 	tatm = new double[hrzn + 1];
 	tocean = new double[hrzn + 1];
 	statesVector = new double[2];
+	toCarbonVec = new double[1];
 	t = 0;
 	readParams();
 }
@@ -678,6 +679,10 @@ double* GeoffroyClimate::getStates(){
 	statesVector[1] = tocean[t];
 	return statesVector;
 }
+double* GeoffroyClimate::toCarbon(){
+	toCarbonVec[0] = tatm[t];
+	return toCarbonVec;
+}
 // get number of states
 int GeoffroyClimate::getNStates(){
 	return 2;
@@ -687,5 +692,6 @@ void GeoffroyClimate::climateDelete(){
 	delete[] tatm;
 	delete[] tocean;
 	delete[] statesVector;
+	delete[] toCarbonVec;
 	return;
 }

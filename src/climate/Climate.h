@@ -21,6 +21,7 @@ public:
 	virtual void writeHeader(std::fstream& output) = 0;
 	virtual void writeStep(std::fstream& output) = 0;
 	virtual double* getStates() = 0;
+	virtual double* toCarbon() = 0;
 	virtual int getNStates() = 0;
 	virtual void updateLinks() = 0;
 	virtual void climateDelete() = 0;
@@ -54,6 +55,7 @@ public:
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
 	double* getStates();
+	double* toCarbon();
 	int getNStates();
 	void updateLinks();
 	void climateDelete();
@@ -88,6 +90,7 @@ public:
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
 	double* getStates();
+	double* toCarbon();
 	int getNStates();
 	void updateLinks();
 	void climateDelete();
@@ -204,6 +207,7 @@ public:
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
 	double* getStates();
+	double* toCarbon();
 	int getNStates();
 	void climateDelete();
 };

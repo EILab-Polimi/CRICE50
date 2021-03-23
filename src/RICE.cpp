@@ -188,6 +188,7 @@ void RICE::nextStep(){
 // simulates all the horizon
 void RICE::simulate(){
 	resetTidx();
+
 	for (int time=0 ; time < horizon; time++){
 		nextStep();
 	} 
