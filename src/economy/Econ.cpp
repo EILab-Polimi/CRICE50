@@ -162,6 +162,11 @@ void Econ::initializeStates(int numGlobalStates){
 double* Econ::getStates(){
 	return statesVector;
 }
+// passes the variables needed to nextStep in carbon cycle
+double* Econ::toCarbon(){
+	toCarbonVec[0] = e[t-1]; //index is [t-1] as econ has already moved to t+1 when carbon->nextStep is called
+	return toCarbonVec;
+}
 // returns the pointer to a vector of global economic state variables
 int Econ::getNStates(){
 	// return 1; ony if GCF is capable of storing

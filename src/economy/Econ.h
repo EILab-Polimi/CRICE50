@@ -49,6 +49,7 @@ public:
 	void updateGlobalStates();
 	void initializeStates(int numGlobalStates);
 	double* getStates();
+	double* toCarbon();
 	int getNStates();
 	int getNVars();
 	void setEconVariables(double* vars);
