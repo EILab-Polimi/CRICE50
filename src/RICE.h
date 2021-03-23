@@ -6,7 +6,7 @@
 #include "./economy/Econ.h"
 #include <string>
 
-enum ModelType {WITCH , DICE, ERR};
+enum ModelType {WITCH , DICE, FAIR, GEOFFROY, ERR};
 
 class RICE{
 public:

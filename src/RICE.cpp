@@ -7,6 +7,8 @@
 ModelType stringToModelType(std::string input){
 	if (input == "DICE") return DICE;
 	if (input == "WITCH") return WITCH;	
+	if (input == "FAIR") return FAIR;
+	if (input == "GEOFFROY") return GEOFFROY;
 	return ERR;
 }
 // constructor  
@@ -41,13 +43,18 @@ RICE::RICE(){
 	in >> objs;
 	switch(carbon_model){
 		case WITCH:
-			// std::cout << "WITCH carbon" << std::endl;
 			carbon = new WITCHCarbon(horizon);
 			break;
 		case DICE:
-			// std::cout << "DICE carbon" << std::endl;
 			carbon = new DICECarbon(horizon);
 			break;
+		case FAIR:
+			carbon = new FAIRCarbon(horizon);
+			break;
+		case GEOFFROY:
+			std::cerr <<
+				"insert an available ModelType for Carbon" 
+				<< std::endl;
 		case ERR:
 			std::cerr << 
 				"insert an available ModelType for Carbon" 
@@ -55,13 +62,18 @@ RICE::RICE(){
 	}
 	switch(climate_model){
 		case WITCH:
-			// std::cout << "WITCH climate" << std::endl;
 			climate = new WITCHClimate(horizon);
 			break;
 		case DICE:
-			// std::cout << "DICE climate" << std::endl;
 			climate = new DICEClimate(horizon);
 			break;
+		case GEOFFROY:
+			climate = new GeoffroyClimate(horizon);
+			break;
+		case FAIR:
+			std::cerr << 
+				"insert an available ModelType for Climate" 
+				<< std::endl;			
 		case ERR:
 			std::cerr << 
 				"insert an available ModelType for Climate" 
@@ -125,7 +137,13 @@ void RICE::nextStep(){
 		updateGlobalStates();
 	}
 	econ->nextStep(climate->tatm);
-	carbon->nextStep(econ->e[t]);
+	// if (carbon_model == FAIR){
+	// 	carbon->nextStepC(econ->e[t], climate->toCarbon());
+	// }
+	// else{
+	// 	carbon->nextStep(econ->e[t]);		
+	// }
+	carbon->nextStep(econ->e[t], climate->toCarbon());
 	climate->nextStep(carbon->forc[t]);
 	t++;
 	return;
@@ -133,6 +151,7 @@ void RICE::nextStep(){
 // simulates all the horizon
 void RICE::simulate(){
 	resetTidx();
+
 	for (int time=0 ; time < horizon; time++){
 		// std::cout << "\tSimulation time step " << t << ", year " << 2015+t*5 << std::endl;
 		nextStep();

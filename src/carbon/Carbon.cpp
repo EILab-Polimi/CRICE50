@@ -37,7 +37,7 @@ DICECarbon::DICECarbon(int hrzn){
 	t = 0;
 }
 // simulates next step
-void DICECarbon::nextStep(double e){
+void DICECarbon::nextStep(double e, double* fromClimate){
 
 	// OGHG Forcing
 	forcoth[t] = params.fex0 + (params.fex1 - params.fex0) * std::min((double)t/17.0,1.0);
@@ -55,6 +55,7 @@ void DICECarbon::nextStep(double e){
 	t++;
 	return;
 }
+
 // read parameters from text file
 // and stores them in the params struct
 // and setting initial conditions
@@ -139,8 +140,8 @@ void DICECarbon::writeStep(std::fstream& output){
 //get states
 double* DICECarbon::getStates(){
 	statesVector[0] = mat[t];
-	statesVector[1] = mat[t];
-	statesVector[2] = mat[t];
+	statesVector[1] = mup[t];
+	statesVector[2] = mlo[t];
 	return statesVector;
 }
 // get number of states
@@ -184,7 +185,7 @@ WITCHCarbon::WITCHCarbon(int hrzn){
 	t = 0;
 }
 // simulates next step
-void WITCHCarbon::nextStep(double e){
+void WITCHCarbon::nextStep(double e, double* fromClimate){
 
 	// Carbon concentration increase in Atmosphere 
 	mat[t+1] = mat[t] * params.at2at + mup[t] * params.up2at +
@@ -352,8 +353,8 @@ void WITCHCarbon::writeStep(std::fstream& output){
 //get states
 double* WITCHCarbon::getStates(){
 	statesVector[0] = mat[t];
-	statesVector[1] = mat[t];
-	statesVector[2] = mat[t];
+	statesVector[1] = mup[t];
+	statesVector[2] = mlo[t];
 	return statesVector;
 }
 // get number of states
@@ -372,3 +373,189 @@ void WITCHCarbon::carbonDelete(){
 
 
 // ====   FAIR-Carbon module ========
+
+// constructor
+FAIRCarbon::FAIRCarbon(){
+
+}
+// destructor
+FAIRCarbon::~FAIRCarbon(){
+
+}
+// allocates the carbon component
+FAIRCarbon::FAIRCarbon(int hrzn){
+	mat = new double[hrzn + 1];  // Carbon concentration increase in Atmosphere [GtC from 1750]
+	c_cycle = new double[hrzn + 1][4];  // Carbon concentration increase in Atmosphere [GtC from 1750]
+	cca_tot = new double[hrzn + 1];
+	alpha = new double[hrzn + 1];
+	forc = new double[hrzn + 1];  // Increase in Radiative Forcing [W/m2 from 1900]
+	forcoth = new double[hrzn + 1];
+	statesVector = new double[1];
+	readParams();
+	std::fstream in;
+	in.open("./settings/FAIRforcothSSP2.txt", std::ios_base::in);
+	if (!in){
+		std::cout << "The FAIR carbon settings file could not be found!" << std::endl;
+	    exit(1);
+	}
+	for (int tidx=0; tidx <= hrzn; tidx++){
+		if (tidx <=17){
+			in >> forcoth[tidx];			
+		}
+		else{
+			forcoth[tidx] = forcoth[tidx-1];
+		}
+	}
+	in.close();
+	t = 0;
+}
+// simulates next step
+void FAIRCarbon::nextStep(double e, double* fromClimate){
+
+	tatm = fromClimate[0];
+	// need to get tatm from climate component
+	computeAlpha();
+
+	// iterate over boxes
+	for (int box=0; box<4; box++){
+    	c_cycle[t+1][box] = \
+	      c_cycle[t][box] * exp(-5/(alpha[t] * params.t_scale[box])) +
+	      params.fraction[box] * (e * 
+	      exp(-5/(alpha[t] * params.t_scale[box]))*(1/3.666) ) + 
+	      params.fraction[box] * (e * 
+	      exp(-(5-1)/(alpha[t] * params.t_scale[box]))*(1/3.666) ) + 
+	      params.fraction[box] * (e * 
+	      exp(-(5-2)/(alpha[t] * params.t_scale[box]))*(1/3.666) ) + 
+	      params.fraction[box] * (e * 
+	      exp(-(5-3)/(alpha[t] * params.t_scale[box]))*(1/3.666) ) + 
+	      params.fraction[box] * (e * 
+	      exp(-(5-4)/(alpha[t] * params.t_scale[box]))*(1/3.666) ) ;
+  	}
+
+  	// compute mat
+	mat[t+1] = params.mateq;
+  	for (int box=0; box < 4; box++){
+    	mat[t+1] += c_cycle[t+1][box];
+  	}
+	mat[t+1] = std::max(1.0, mat[t+1]);
+  	
+  	// Radiative forcing
+	forc[t + 1] = params.kappa * 
+    	(log(mat[t + 1] / params.mateq) / log(2.0)) + forcoth[t + 1];
+
+	t++;
+	return;
+}
+void FAIRCarbon::computeAlpha(){
+	double input[2];
+	//normalize inputs
+	input[0] = std::max(0.0, 
+    	(cca_tot[t] - (mat[t] - 588.0) - 30.966999999999985) /
+    	(620.967 - 30.966999999999985));
+	input[1] = std::max(0.0, (tatm - 1.0) / (3.95 - 1.0));
+
+	//compute alpha via ANN
+	alpha[t] = 0.4224476755742342 + 
+	    (-2.24079509) * 
+	    	(-1.0 + 2.0 / 
+	        	( 1.0 + exp( -2.0 * 
+	          	(-1.1679476786651246 + 
+	            	(-0.5497803029711411) * input[0] + 
+	            	(-0.6082563253131715) * input[1] )))) +
+	    (2.10715655) * 
+	    	(-1.0 + 2.0 / 
+	        	( 1.0 + exp( -2.0 * 
+	        	(-1.9221811095464068 + 
+	            	(0.8797355517352923) * input[0] + 
+	            	(0.9631872008727567) * input[1] )))) ;
+
+	return;
+}
+// read parameters from text file
+// and stores them in the params struct
+// and setting initial conditions
+void FAIRCarbon::readParams(){
+	std::fstream in;
+	std::string sJunk = "";
+	in.open("./settings/FAIRCarbonParams.txt", std::ios_base::in);
+	if (!in){
+		std::cout << "The FAIR carbon settings file could not be found!" << std::endl;
+	    exit(1);
+	}
+	while (sJunk!="MATEQ"){
+		in >>sJunk;
+	}
+	in >> params.mateq;
+	while (sJunk!="MUPEQ"){
+		in >>sJunk;
+	}
+	in >> params.mupeq;
+	while (sJunk!="MLOEQ"){
+		in >>sJunk;
+	}
+	in >> params.mloeq;
+	while (sJunk!="t_scale"){
+		in >>sJunk;
+	}
+	for (int box=0; box<4; box++){
+		in >> params.t_scale[box];
+	}
+	while (sJunk!="fraction"){
+		in >>sJunk;
+	}
+	for (int box=0; box<4; box++){
+		in >> params.fraction[box];
+	}
+	while (sJunk!="kappa"){
+		in >>sJunk;
+	}
+	in >> params.kappa;
+	while (sJunk!="mat0"){
+		in >>sJunk;
+	}
+	in >> mat[0];
+	while (sJunk!="c_cycle0"){
+		in >>sJunk;
+	}
+	for (int box=0; box<4; box++){
+		in >> c_cycle[0][box];
+	}
+	while (sJunk!="cca_tot0"){
+		in >>sJunk;
+	}
+	in >> cca_tot[0];
+	in.close();
+	return;
+}
+//writes header for output
+void FAIRCarbon::writeHeader(std::fstream& output){
+	output << "MAT" << "\t" <<
+		"FORC" << "\t" ;
+	t = 0;
+}
+//writes step to output
+void FAIRCarbon::writeStep(std::fstream& output){
+	output << mat[t] << "\t" <<
+		forc[t] << "\t" ;
+	t++;
+}
+//get states
+double* FAIRCarbon::getStates(){
+	statesVector[0] = mat[t];
+	return statesVector;
+}
+// get number of states
+int FAIRCarbon::getNStates(){
+	return 1;
+}
+// frees allocated memory
+void FAIRCarbon::carbonDelete(){
+	delete[] mat;
+	delete[] c_cycle;
+	delete[] alpha;
+	delete[] cca_tot;
+	delete[] forc;
+	delete[] forcoth;
+	delete[] statesVector;
+	return;
+}

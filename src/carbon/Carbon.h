@@ -13,7 +13,7 @@ public:
 	double* statesVector;
 	double* forc; 	// (W/m2) increase w.r.t 1900 - this is the element every carbon component needs to have to pass it to temperature
 	int t; 			// time step
-	virtual void nextStep(double e) = 0;
+	virtual void nextStep(double e, double* fromClimate) = 0;
 	virtual void writeHeader(std::fstream& output) = 0;
 	virtual void writeStep(std::fstream& output) = 0;
 	virtual double* getStates() = 0;
@@ -51,7 +51,7 @@ public:
 	double* forcoth; 	// forcing of other GHG (W/m2) - increase w.r.t 1900
 	paramsDICECarbon params;
 	void readParams();
-	void nextStep(double e);
+	void nextStep(double e, double* fromClimate);
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
 	double* getStates();
@@ -87,7 +87,7 @@ public:
 	double* mlo;		// lower strata carbon (GtC)
 	paramsWITCHCarbon params;
 	void readParams();
-	void nextStep(double e);
+	void nextStep(double e, double* fromClimate);
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
 	double* getStates();
@@ -98,23 +98,35 @@ public:
 
 // ====   FAIR-Carbon module ========
 
-// struct paramsFAIRCarbon{
-// 	int param1;
-// 	int param2;
-// };
+struct paramsFAIRCarbon{
+	int mateq;
+	int mupeq;
+	int mloeq;
+	double t_scale[4];
+	double fraction[4];
+	double kappa;
+};
 
-// class FAIRCarbon: public Carbon{
-// public:
-// 	FAIRCarbon();
-// 	~FAIRCarbon();
-// 	double* mat;		// atmospheric carbon (GtC)
-// 	double* mup;		// upper strata carbon (GtC)
-// 	double* mlo;		// lower strata carbon (GtC)
-// 	paramsFAIRCarbon params;
-// 	int t;				// time step
-// 	void allocate(int hrzn);
-// 	void nextStep();
-// 	void carbon_delete();
-// };
+class FAIRCarbon: public Carbon{
+public:
+	FAIRCarbon();
+	~FAIRCarbon();
+	FAIRCarbon(int hrzn);
+	double* alpha;
+	double (*c_cycle)[4];
+	double* mat;		// atmospheric carbon (GtC)
+	double* cca_tot;
+	double* forcoth;
+	double tatm; //current tatm needed to compute alpha at each time step
+	paramsFAIRCarbon params;
+	void readParams();
+	void computeAlpha();
+	void nextStep(double e, double* fromClimate);
+	void writeHeader(std::fstream& output);
+	void writeStep(std::fstream& output);
+	double* getStates();
+	int getNStates();
+	void carbonDelete();
+};
 
 #endif
