@@ -13,7 +13,7 @@ public:
 	double* statesVector;
 	double* forc; 	// (W/m2) increase w.r.t 1900 - this is the element every carbon component needs to have to pass it to temperature
 	int t; 			// time step
-	virtual void nextStep(double e, double* fromClimate) = 0;
+	virtual void nextStep(double* fromEcon, double* fromClimate) = 0;
 	virtual void writeHeader(std::fstream& output) = 0;
 	virtual void writeStep(std::fstream& output) = 0;
 	virtual double* getStates() = 0;
@@ -51,7 +51,7 @@ public:
 	double* forcoth; 	// forcing of other GHG (W/m2) - increase w.r.t 1900
 	paramsDICECarbon params;
 	void readParams();
-	void nextStep(double e, double* fromClimate);
+	void nextStep(double* fromEcon, double* fromClimate);
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
 	double* getStates();
@@ -87,7 +87,7 @@ public:
 	double* mlo;		// lower strata carbon (GtC)
 	paramsWITCHCarbon params;
 	void readParams();
-	void nextStep(double e, double* fromClimate);
+	void nextStep(double* fromEcon, double* fromClimate);
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
 	double* getStates();
@@ -121,7 +121,7 @@ public:
 	paramsFAIRCarbon params;
 	void readParams();
 	void computeAlpha();
-	void nextStep(double e, double* fromClimate);
+	void nextStep(double* fromEcon, double* fromClimate);
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
 	double* getStates();

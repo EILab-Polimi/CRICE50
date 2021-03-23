@@ -37,8 +37,9 @@ DICECarbon::DICECarbon(int hrzn){
 	t = 0;
 }
 // simulates next step
-void DICECarbon::nextStep(double e, double* fromClimate){
+void DICECarbon::nextStep(double* fromEcon, double* fromClimate){
 
+	double e = fromEcon[0];
 	// OGHG Forcing
 	forcoth[t] = params.fex0 + (params.fex1 - params.fex0) * std::min((double)t/17.0,1.0);
 	// Carbon concentration increase in Atmosphere 
@@ -185,8 +186,9 @@ WITCHCarbon::WITCHCarbon(int hrzn){
 	t = 0;
 }
 // simulates next step
-void WITCHCarbon::nextStep(double e, double* fromClimate){
+void WITCHCarbon::nextStep(double* fromEcon, double* fromClimate){
 
+	double e = fromEcon[0];
 	// Carbon concentration increase in Atmosphere 
 	mat[t+1] = mat[t] * params.at2at + mup[t] * params.up2at +
 		e * 5 * params.CO2toC;
@@ -410,8 +412,9 @@ FAIRCarbon::FAIRCarbon(int hrzn){
 	t = 0;
 }
 // simulates next step
-void FAIRCarbon::nextStep(double e, double* fromClimate){
+void FAIRCarbon::nextStep(double* fromEcon, double* fromClimate){
 
+	double e = fromEcon[0];
 	tatm = fromClimate[0];
 	// need to get tatm from climate component
 	computeAlpha();

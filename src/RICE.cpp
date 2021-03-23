@@ -143,7 +143,7 @@ void RICE::nextStep(){
 	// else{
 	// 	carbon->nextStep(econ->e[t]);		
 	// }
-	carbon->nextStep(econ->e[t], climate->toCarbon());
+	carbon->nextStep(econ->toCarbon(), climate->toCarbon());
 	climate->nextStep(carbon->forc[t]);
 	t++;
 	return;

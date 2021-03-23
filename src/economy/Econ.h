@@ -29,6 +29,7 @@ public:
 	double* e;
 	double* cemutotper;
 	double* globalStates;
+	double* toCarbonVec;
 	int nGlobalStates;
 	double* econStates;
 	double utility;
@@ -36,6 +37,7 @@ public:
 	void updateGlobalStates();
 	void initializeStates(int numGlobalStates);
 	double* getStates();
+	double* toCarbon();
 	int getNStates();
 	int getNVars();
 	void setEconVariables(double* vars);

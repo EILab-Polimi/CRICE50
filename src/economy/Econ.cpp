@@ -39,6 +39,7 @@ Econ::Econ(int hrzn){
 	e = new double[horizon+1];
 	cemutotper = new double[horizon + 1];
 	agents_ptr = new EconAgent * [agents];
+	toCarbonVec = new double[1];
 	t = 0;
 	std::fstream in;
 	std::string line;
@@ -137,6 +138,11 @@ void Econ::initializeStates(int numGlobalStates){
 // returns the pointer to a vector of global economic state variables
 double* Econ::getStates(){
 	return econStates;
+}
+// passes the variables needed to nextStep in carbon cycle
+double* Econ::toCarbon(){
+	toCarbonVec[0] = e[t-1]; //index is [t-1] as econ has already moved to t+1 when carbon->nextStep is called
+	return toCarbonVec;
 }
 // returns the pointer to a vector of global economic state variables
 int Econ::getNStates(){
@@ -244,5 +250,6 @@ void Econ::econDelete(){
 	delete[] e;
 	delete[] cemutotper;
 	delete[] globalStates;
+	delete[] toCarbonVec;
 	return;
 }
