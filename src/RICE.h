@@ -22,6 +22,7 @@ public:
 	Climate* climate;				// pointer to climate module active in the model
 	Econ* econ;						// pointer to economic module active in the model
 	void setVariables(double* vars);
+	void createLinks();
 	int getNObjs();
 	int getNVars();
 	void updateGlobalStates();

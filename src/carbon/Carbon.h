@@ -11,13 +11,18 @@ public:
 	Carbon();
 	~Carbon();
 	double* statesVector;
+	double* toClimate;
+	double* toEcon;
+	double* fromEcon;
+	double* fromClimate;
 	double* forc; 	// (W/m2) increase w.r.t 1900 - this is the element every carbon component needs to have to pass it to temperature
 	int t; 			// time step
-	virtual void nextStep(double* fromEcon, double* fromClimate) = 0;
+	virtual void nextStep() = 0;
 	virtual void writeHeader(std::fstream& output) = 0;
 	virtual void writeStep(std::fstream& output) = 0;
 	virtual double* getStates() = 0;
 	virtual int getNStates() = 0;
+	virtual void updateLinks() = 0;
 	virtual void carbonDelete() = 0;
 };
 
@@ -49,13 +54,15 @@ public:
 	double* mup;		// upper strata carbon (GtC)
 	double* mlo;		// lower strata carbon (GtC)
 	double* forcoth; 	// forcing of other GHG (W/m2) - increase w.r.t 1900
+	double e;
 	paramsDICECarbon params;
 	void readParams();
-	void nextStep(double* fromEcon, double* fromClimate);
+	void nextStep();
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
 	double* getStates();
 	int getNStates();
+	void updateLinks();
 	void carbonDelete();
 };
 
@@ -85,13 +92,15 @@ public:
 	double* mat;		// atmospheric carbon (GtC)
 	double* mup;		// upper strata carbon (GtC)
 	double* mlo;		// lower strata carbon (GtC)
+	double e;
 	paramsWITCHCarbon params;
 	void readParams();
-	void nextStep(double* fromEcon, double* fromClimate);
+	void nextStep();
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
 	double* getStates();
 	int getNStates();
+	void updateLinks();
 	void carbonDelete();
 };
 
@@ -117,15 +126,16 @@ public:
 	double* mat;		// atmospheric carbon (GtC)
 	double* cca_tot;
 	double* forcoth;
-	double tatm; //current tatm needed to compute alpha at each time step
+	double tatm, e; //current tatm and emissions needed to compute alpha at each time step
 	paramsFAIRCarbon params;
 	void readParams();
 	void computeAlpha();
-	void nextStep(double* fromEcon, double* fromClimate);
+	void nextStep();
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
 	double* getStates();
 	int getNStates();
+	void updateLinks();
 	void carbonDelete();
 };
 

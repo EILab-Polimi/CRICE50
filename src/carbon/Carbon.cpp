@@ -33,13 +33,14 @@ DICECarbon::DICECarbon(int hrzn){
 	forc = new double[hrzn + 1];  // Increase in Radiative Forcing [W/m2 from 1900]
 	forcoth = new double[hrzn + 1];  // Exogenous forcing from other greenhouse gases [W/m2]
 	statesVector = new double[3];
+	toClimate = new double[1];
 	readParams();
 	t = 0;
 }
 // simulates next step
-void DICECarbon::nextStep(double* fromEcon, double* fromClimate){
+void DICECarbon::nextStep(){
 
-	double e = fromEcon[0];
+	e = fromEcon[0];
 	// OGHG Forcing
 	forcoth[t] = params.fex0 + (params.fex1 - params.fex0) * std::min((double)t/17.0,1.0);
 	// Carbon concentration increase in Atmosphere 
@@ -53,6 +54,7 @@ void DICECarbon::nextStep(double* fromEcon, double* fromClimate){
 
 	// std::cout << "\t\tDICE carbon cycle evolves to next step: " << std::endl;
 	// std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
+	updateLinks();
 	t++;
 	return;
 }
@@ -149,6 +151,11 @@ double* DICECarbon::getStates(){
 int DICECarbon::getNStates(){
 	return 3;
 }
+// update shared info with climate
+void DICECarbon::updateLinks(){
+	toClimate[0] = forc[t];
+	return;
+}
 // frees allocated memory
 void DICECarbon::carbonDelete(){
 	delete[] mat;
@@ -157,11 +164,9 @@ void DICECarbon::carbonDelete(){
 	delete[] forc;
 	delete[] forcoth;
 	delete[] statesVector;
+	delete[] toClimate;
 	return;
 }
-
-
-
 
 
 // ====  WITCH-Carbon module =============
@@ -182,13 +187,14 @@ WITCHCarbon::WITCHCarbon(int hrzn){
 	mlo = new double[hrzn + 1];  // Carbon concentration increase in Lower Oceans [GtC from 1750]
 	forc = new double[hrzn + 1];  // Increase in Radiative Forcing [W/m2 from 1900]
 	statesVector = new double[3];
+	toClimate = new double[1];
 	readParams();
 	t = 0;
 }
 // simulates next step
-void WITCHCarbon::nextStep(double* fromEcon, double* fromClimate){
+void WITCHCarbon::nextStep(){
 
-	double e = fromEcon[0];
+	e = fromEcon[0];
 	// Carbon concentration increase in Atmosphere 
 	mat[t+1] = mat[t] * params.at2at + mup[t] * params.up2at +
 		e * 5 * params.CO2toC;
@@ -204,6 +210,7 @@ void WITCHCarbon::nextStep(double* fromEcon, double* fromClimate){
 
 	// std::cout << "\t\tWITCH carbon cycle evolves to next step: " << std::endl;
 	// std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
+	updateLinks();
 	t++;
 	return;
 }
@@ -363,6 +370,11 @@ double* WITCHCarbon::getStates(){
 int WITCHCarbon::getNStates(){
 	return 3;
 }
+// update shared info with climate
+void WITCHCarbon::updateLinks(){
+	toClimate[0] = forc[t];
+	return;
+}
 // frees allocated memory
 void WITCHCarbon::carbonDelete(){
 	delete[] mat;
@@ -370,6 +382,7 @@ void WITCHCarbon::carbonDelete(){
 	delete[] mlo;
 	delete[] forc;
 	delete[] statesVector;
+	delete[] toClimate;
 	return;
 }
 
@@ -393,6 +406,7 @@ FAIRCarbon::FAIRCarbon(int hrzn){
 	forc = new double[hrzn + 1];  // Increase in Radiative Forcing [W/m2 from 1900]
 	forcoth = new double[hrzn + 1];
 	statesVector = new double[1];
+	toClimate = new double[1];
 	readParams();
 	std::fstream in;
 	in.open("./settings/FAIRforcothSSP2.txt", std::ios_base::in);
@@ -412,10 +426,11 @@ FAIRCarbon::FAIRCarbon(int hrzn){
 	t = 0;
 }
 // simulates next step
-void FAIRCarbon::nextStep(double* fromEcon, double* fromClimate){
+void FAIRCarbon::nextStep(){
 
-	double e = fromEcon[0];
+	e = fromEcon[0];
 	tatm = fromClimate[0];
+
 	// need to get tatm from climate component
 	computeAlpha();
 
@@ -441,11 +456,14 @@ void FAIRCarbon::nextStep(double* fromEcon, double* fromClimate){
     	mat[t+1] += c_cycle[t+1][box];
   	}
 	mat[t+1] = std::max(1.0, mat[t+1]);
+
+	cca_tot[t+1] = cca_tot[t] + e * 5.0 / 3.666;
   	
   	// Radiative forcing
-	forc[t + 1] = params.kappa * 
-    	(log(mat[t + 1] / params.mateq) / log(2.0)) + forcoth[t + 1];
+	forc[t+1] = params.kappa * 
+    	(log(mat[t+1] / params.mateq) / log(2.0)) + forcoth[t+1];
 
+	updateLinks();
 	t++;
 	return;
 }
@@ -551,6 +569,11 @@ double* FAIRCarbon::getStates(){
 int FAIRCarbon::getNStates(){
 	return 1;
 }
+// update shared info with climate
+void FAIRCarbon::updateLinks(){
+	toClimate[0] = forc[t+1];
+	return;
+}
 // frees allocated memory
 void FAIRCarbon::carbonDelete(){
 	delete[] mat;
@@ -560,5 +583,6 @@ void FAIRCarbon::carbonDelete(){
 	delete[] forc;
 	delete[] forcoth;
 	delete[] statesVector;
+	delete[] toClimate;
 	return;
 }

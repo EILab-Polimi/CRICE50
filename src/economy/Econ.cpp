@@ -39,7 +39,7 @@ Econ::Econ(int hrzn){
 	e = new double[horizon+1];
 	cemutotper = new double[horizon + 1];
 	agents_ptr = new EconAgent * [agents];
-	toCarbonVec = new double[1];
+	toCarbon = new double[1];
 	t = 0;
 	std::fstream in;
 	std::string line;
@@ -139,23 +139,24 @@ void Econ::initializeStates(int numGlobalStates){
 double* Econ::getStates(){
 	return econStates;
 }
-// passes the variables needed to nextStep in carbon cycle
-double* Econ::toCarbon(){
-	toCarbonVec[0] = e[t-1]; //index is [t-1] as econ has already moved to t+1 when carbon->nextStep is called
-	return toCarbonVec;
-}
 // returns the pointer to a vector of global economic state variables
 int Econ::getNStates(){
 	return 0;
+}
+// passes the variables needed to nextStep in carbon cycle
+void Econ::updateLinks(){
+	toCarbon[0] = e[t];
+	return;
 }
 // return number of variables for policy
 int Econ::getNVars(){
 	return agents_ptr[0]->getNVars();
 }
 // simulates one step
-void Econ::nextStep(double* tatm){
+void Econ::nextStep(){
 	// compute Rich Poor Cutoff
 	// get value for cutoff from every agent
+	double* tatm = fromClimate;
 	double RPCutoffValues[agents];
 	for (int ag=0; ag < agents; ag++){
 		RPCutoffValues[ag] = agents_ptr[ag]->getValueForRPCutoff();
@@ -217,7 +218,7 @@ void Econ::nextStep(double* tatm){
 		}
 		utility += 5 * 0.0001 * cemutotper[t];							// update utility
 	}
-	// std::cout << "\t\tHere the economy evolves to next step: " << t+1 << std::endl;
+	updateLinks();
 	t++;
 	return;
 }
@@ -250,6 +251,6 @@ void Econ::econDelete(){
 	delete[] e;
 	delete[] cemutotper;
 	delete[] globalStates;
-	delete[] toCarbonVec;
+	delete[] toCarbon;
 	return;
 }

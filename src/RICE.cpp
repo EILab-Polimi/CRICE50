@@ -84,6 +84,9 @@ RICE::RICE(){
 		econ->initializeStates(econ->getNStates() +
 			climate->getNStates() + carbon->getNStates());
 	}
+
+	createLinks();
+
 	t = 0;
 }
 // destructor
@@ -95,6 +98,17 @@ void RICE::setVariables(double* vars){
 	econ->setEconVariables(vars);
 	return;
 }
+// creates links between objects
+void RICE::createLinks(){
+	econ->fromCarbon = carbon->toEcon;
+	econ->fromClimate = climate->toEcon;
+	carbon->fromEcon = econ->toCarbon;
+	carbon->fromClimate = climate->toCarbon;
+	climate->fromCarbon = carbon->toClimate;
+	climate->fromEcon = econ->toClimate;
+	return;
+}
+
 //returns number of objectives
 int RICE::getNObjs(){
 	return objs;
@@ -129,6 +143,7 @@ void RICE::updateGlobalStates(){
 	for (int n=nstart ; n < nstart + nCarbonStates; n++) {
 		econ->globalStates[n] = carbonStates[n - nstart];
 	}
+
 	return;
 }
 // simulates one step of the model
@@ -136,15 +151,9 @@ void RICE::nextStep(){
 	if (econ->params.DMType == INPUT_POLICY){
 		updateGlobalStates();
 	}
-	econ->nextStep(climate->tatm);
-	// if (carbon_model == FAIR){
-	// 	carbon->nextStepC(econ->e[t], climate->toCarbon());
-	// }
-	// else{
-	// 	carbon->nextStep(econ->e[t]);		
-	// }
-	carbon->nextStep(econ->toCarbon(), climate->toCarbon());
-	climate->nextStep(carbon->forc[t]);
+	econ->nextStep();
+	carbon->nextStep();
+	climate->nextStep();
 	t++;
 	return;
 }

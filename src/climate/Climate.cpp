@@ -29,7 +29,8 @@ WITCHClimate::WITCHClimate(int hrzn){
 	tatm = new double[hrzn + 1];
 	tocean = new double[hrzn + 1];
 	statesVector = new double[2];
-	toCarbonVec = new double[1];
+	toCarbon = new double[1];
+	toEcon = tatm;
 	t = 0;
 	readParams();
 }
@@ -73,8 +74,9 @@ void WITCHClimate::readParams(){
 	return;
 }
 // simulates one time step
-void WITCHClimate::nextStep(double forc){
+void WITCHClimate::nextStep(){
 
+	forc = fromCarbon[0];
 	// Global temperature increase from pre-industrial levels
 	tatm[t+1] = tatm[t] +
 		params.sigma1 * (forc - params.lambda * tatm[t]
@@ -84,6 +86,7 @@ void WITCHClimate::nextStep(double forc){
 	tocean[t+1] = tocean[t] + params.heat_ocean * (tatm[t] - tocean[t]);
 	// std::cout << "\t\tWITCH climate evolves to next step:" << std::endl;
 	// std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
+	updateLinks();
 	t++;
 	return;
 }
@@ -104,9 +107,9 @@ double* WITCHClimate::getStates(){
 	statesVector[1] = tocean[t];
 	return statesVector;
 }
-double* WITCHClimate::toCarbon(){
-	toCarbonVec[0] = tatm[t];
-	return toCarbonVec;
+void WITCHClimate::updateLinks(){
+	toCarbon[0] = tatm[t+1];
+	return;
 }
 // get number of states
 int WITCHClimate::getNStates(){
@@ -117,6 +120,7 @@ void WITCHClimate::climateDelete(){
 	delete[] tatm;
 	delete[] tocean;
 	delete[] statesVector;
+	delete[] toCarbon;
 	return;
 }
 
@@ -136,6 +140,8 @@ DICEClimate::DICEClimate(int hrzn){
 	tatm = new double[hrzn + 1];
 	tocean = new double[hrzn + 1];
 	statesVector = new double[2];
+	toCarbon = new double[1];
+	toEcon = tatm;
 	t = 0;
 	readParams();
 }
@@ -182,13 +188,16 @@ void DICEClimate::readParams(){
 	return;
 }
 // simulates one time step
-void DICEClimate::nextStep(double forc){
+void DICEClimate::nextStep(){
+
+	forc = fromCarbon[0];
 	tatm[t+1] = tatm[t] +
 		params.c1 * (forc - params.fco22x / params.t2xco2 * tatm[t] +
 						 - params.c3 * (tatm[t] - tocean[t]));
 	tocean[t+1] = tocean[t] + params.c4 * (tatm[t] - tocean[t]);
 	// std::cout << "\t\tDICE climate evolves to next step:" << std::endl;
 	// std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
+	updateLinks();
 	t++;
 	return;
 }
@@ -209,9 +218,9 @@ double* DICEClimate::getStates(){
 	statesVector[1] = tocean[t];
 	return statesVector;
 }
-double* DICEClimate::toCarbon(){
-	toCarbonVec[0] = tatm[t];
-	return toCarbonVec;
+void DICEClimate::updateLinks(){
+	toCarbon[0] = tatm[t+1];
+	return;
 }
 // get number of states
 int DICEClimate::getNStates(){
@@ -222,6 +231,7 @@ void DICEClimate::climateDelete(){
 	delete[] tatm;
 	delete[] tocean;
 	delete[] statesVector;
+	delete[] toCarbon;
 	return;
 }
 
@@ -240,7 +250,8 @@ GeoffroyClimate::GeoffroyClimate(int hrzn){
 	tatm = new double[hrzn + 1];
 	tocean = new double[hrzn + 1];
 	statesVector = new double[2];
-	toCarbonVec = new double[1];
+	toCarbon = new double[1];
+	toEcon = tatm;
 	t = 0;
 	readParams();
 }
@@ -292,8 +303,9 @@ void GeoffroyClimate::readParams(){
 	return;
 }
 // simulates one time step
-void GeoffroyClimate::nextStep(double forc){
+void GeoffroyClimate::nextStep(){
 
+	forc = fromCarbon[0];
 	double tatm_short = tatm[t];
 	for (int tidx=0; tidx < 5; tidx++){
 		tatm_short = tatm_short + 1.0/params.xi1 * 
@@ -308,6 +320,7 @@ void GeoffroyClimate::nextStep(double forc){
 		5.0 * params.xi3/params.xi4 * (tatm[t] - tocean[t]);
 	// std::cout << "\t\tWITCH climate evolves to next step:" << std::endl;
 	// std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
+	updateLinks();
 	t++;
 	return;
 }
@@ -328,9 +341,9 @@ double* GeoffroyClimate::getStates(){
 	statesVector[1] = tocean[t];
 	return statesVector;
 }
-double* GeoffroyClimate::toCarbon(){
-	toCarbonVec[0] = tatm[t];
-	return toCarbonVec;
+void GeoffroyClimate::updateLinks(){
+	toCarbon[0] = tatm[t+1];
+	return;
 }
 // get number of states
 int GeoffroyClimate::getNStates(){
@@ -341,6 +354,6 @@ void GeoffroyClimate::climateDelete(){
 	delete[] tatm;
 	delete[] tocean;
 	delete[] statesVector;
-	delete[] toCarbonVec;
+	delete[] toCarbon;
 	return;
 }

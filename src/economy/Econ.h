@@ -29,7 +29,10 @@ public:
 	double* e;
 	double* cemutotper;
 	double* globalStates;
-	double* toCarbonVec;
+	double* toCarbon;
+	double* toClimate;
+	double* fromCarbon;
+	double* fromClimate;
 	int nGlobalStates;
 	double* econStates;
 	double utility;
@@ -37,11 +40,11 @@ public:
 	void updateGlobalStates();
 	void initializeStates(int numGlobalStates);
 	double* getStates();
-	double* toCarbon();
 	int getNStates();
 	int getNVars();
 	void setEconVariables(double* vars);
-	void nextStep(double* tatm);
+	void nextStep();
+	void updateLinks();
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);	
 	void econDelete();
