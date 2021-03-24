@@ -164,6 +164,7 @@ void RICE::updateGlobalStates(){
 	for (int n=nstart ; n < nstart + nCarbonStates; n++) {
 		econ->globalStates[n] = carbonStates[n - nstart];
 	}
+
 	return;
 }
 // simulates one step of the model
