@@ -49,7 +49,6 @@ for reg57 in mapping:
 		temp[el[0]][1] = temp[el[0]][1] / tot
 	weights[reg57[0]] = temp
 
-
 ## read AdaptCoeff from AD-WITCH
 with open('../../settings/AdaptCoeffOrigADWITCH.txt') as f:
 	file = f.read().split("\n")
