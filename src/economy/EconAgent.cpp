@@ -42,6 +42,11 @@ ElandType stringToElandType(std::string input){
 	if (input == "OPT") return ELANDOPT;	
 	return ELANDERR;
 }
+Adaptation stringToAdaptation(std::string input){
+	if (input == "ON") return ADWITCH;
+	if (input == "OFF") return NOADAPT;	
+	return ADAPTERR;
+}
 
 // constructor
 EconAgent::EconAgent(){
@@ -141,6 +146,11 @@ void RICEEconAgent::readParams(){
 		in >>sJunk;
 	}
 	in >> params.t_max_miu;
+	while (sJunk!="Adapt"){
+		in >>sJunk;
+	}
+	in >> line;
+	params.adaptType = stringToAdaptation(line);
 	in.close();
 
 	in.open("./settings/globalEconParams.txt", std::ios_base::in);
@@ -203,6 +213,25 @@ void RICEEconAgent::readParams(){
 	params.beta_djo_r = 0.0261;
 	params.beta_djo_p = 0.0261 - 0.01655;
 	params.beta_k = -0.0586;
+	in.open("./settings/AdaptCoeffOrigED57.txt", std::ios_base::in);
+	if (!in){
+		std::cout << "The AdaptCoeff settings file could not be found!" << std::endl;
+	    exit(1);
+	}
+	while (sJunk!=name){
+		in >>sJunk;
+	}
+	in >> params.dk_adsad;
+	in >> params.dk_adsac;
+	in >> params.rho_ad;
+	in >> params.rho_adact;
+	in >> params.rho_adcap;
+	in >> params.miu_ad;
+	in >> params.phi_ad;
+	in >> params.beta1_ad;
+	in >> params.beta2_ad;
+	in >> params.beta3_ad;
+	in.close();
 	return;
 }
 void RICEEconAgent::readPolicyParams(){

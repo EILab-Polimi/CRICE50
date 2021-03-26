@@ -1,0 +1,19 @@
+Adaptation parameters
+
+AD-DICE
+delta 		0.05
+rho 		0.5
+beta1		90
+beta2 		0.49
+beta3		0.8
+
+AD-RICE
+delta		0.05
+rho 		0.5
+
+AD-WITCH	(Agrawala et al. (2010) & Agrawala et al. (2011))
+delta 		0.1
+deltacap	0.03
+rho 		0.167
+rhoact		0.167 # or -0.111 bosello et al.(2014)
+rhocap		-4

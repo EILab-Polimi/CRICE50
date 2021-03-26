@@ -12,6 +12,7 @@ enum RPCutoffIndType {BASEGDP, GDP, RPINDERR};
 enum TempLimit {ON, OFF, TEMPLIMITERR};
 enum ElandType {ELANDBAU, ELANDOPT, ELANDERR};
 enum DecisionMakers {BAU, INPUT_STATIC, INPUT_POLICY, DMERR};
+enum Adaptation {NOADAPT, ADWITCH, ADAPTERR};
 
 class EconAgent{
 public:
@@ -51,6 +52,7 @@ struct RICEEconAgentParams{
 	TempLimit tempLimit;
 	ElandType elandType;
 	DecisionMakers DMType;
+	Adaptation adaptType;
 	int t_min_miu;
 	int t_max_miu;
 	double max_miu_up;
@@ -69,6 +71,16 @@ struct RICEEconAgentParams{
 	double beta_djo_r;
 	double beta_djo_p;
 	double beta_k;
+	double dk_adsad;
+	double dk_adsac;
+	double rho_ad;
+	double rho_adact;
+	double rho_adcap;
+	double miu_ad;
+	double phi_ad;
+	double beta1_ad;
+	double beta2_ad;
+	double beta3_ad;
 };
 
 struct RICEEconAgentTraj{
