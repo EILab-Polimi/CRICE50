@@ -72,11 +72,58 @@ RICEEconAgent::RICEEconAgent(int hrzn, std::string regname, DecisionMakers DMTyp
 	horizon = hrzn;
 	name = regname;
 	params.DMType = DMType;
+	allocate();
 	readParams();
 	if (params.DMType == INPUT_POLICY){
 		readPolicyParams();
 	}
 	readBaseline(hrzn);
+}
+void RICEEconAgent::allocate(){
+	// traj.pop = new double[5][horizon + 1];
+	// traj.tfp = new double[5][horizon + 1];
+	// traj.gdpbase = new double[5][horizon + 1];
+	// traj.sigma = new double[5][horizon + 1];
+	traj.gdp = new double[horizon + 1];
+	traj.eind = new double[horizon + 1];
+	traj.e = new double[horizon + 1];	
+	traj.k = new double[horizon + 1];
+	traj.mx = new double[horizon + 1];
+	traj.ax = new double[horizon + 1];
+	traj.bx = new double[horizon + 1];
+	traj.eland = new double[horizon + 1];
+	traj.abatecost = new double[horizon + 1];
+	traj.miu = new double[horizon + 1];
+	traj.miu_up = new double[horizon + 1];
+	traj.s = new double[horizon + 1];
+	traj.i = new double[horizon + 1];
+	traj.ygross = new double[horizon + 1];
+	traj.ynet = new double[horizon + 1];
+	traj.y = new double[horizon + 1];
+	traj.damages = new double[horizon + 1];
+	traj.c = new double[horizon + 1];
+	traj.cpc = new double[horizon + 1];
+	traj.ri = new double[horizon + 1];
+	traj.cprice = new double[horizon + 1];
+	traj.periodu = new double[horizon + 1];
+	traj.cemutotper = new double[horizon + 1];
+	traj.omega = new double[horizon + 1];
+	traj.tatm_local = new double[horizon + 1];
+	traj.damfrac = new double[horizon + 1];
+	traj.komega = new double[horizon + 1];
+	traj.basegrowthcap = new double[horizon + 1];
+	traj.ynet_estimated = new double[horizon + 1];
+	traj.impact = new double[horizon + 1];
+	traj.adapt = new double[horizon + 1];
+	traj.act = new double[horizon + 1];
+	traj.sad = new double[horizon + 1];
+	traj.fad = new double[horizon + 1];
+	traj.ia = new double[horizon + 1];
+	traj.iac = new double[horizon + 1];
+	traj.ac = new double[horizon + 1];
+	traj.sac = new double[horizon + 1];
+	traj.gac = new double[horizon + 1];	
+	return;
 }
 // read econ agent params
 void RICEEconAgent::readParams(){
@@ -146,7 +193,7 @@ void RICEEconAgent::readParams(){
 		in >>sJunk;
 	}
 	in >> params.t_max_miu;
-	while (sJunk!="Adapt"){
+	while (sJunk!="Adaptation"){
 		in >>sJunk;
 	}
 	in >> line;
@@ -231,6 +278,8 @@ void RICEEconAgent::readParams(){
 	in >> params.beta1_ad;
 	in >> params.beta2_ad;
 	in >> params.beta3_ad;
+	in >> traj.gac[0];
+
 	in.close();
 	return;
 }
@@ -330,7 +379,7 @@ int RICEEconAgent::getNVars(){
 void RICEEconAgent::readBaseline(int hrzn){
 	std::fstream in;
 	std::string line;
-	//carbon intensity
+	// carbon intensity
 	traj.sigma = new double * [5];
 	for (int idxssp=0; idxssp<5; idxssp++){
 		traj.sigma[idxssp] = new double[hrzn + 1];
@@ -440,10 +489,10 @@ void RICEEconAgent::readBaseline(int hrzn){
 	}
 	in.close();
 
-	traj.gdp = new double[hrzn + 1];
-	traj.eind = new double[hrzn + 1];
-	traj.e = new double[hrzn + 1];
-	traj.k = new double[hrzn + 1];
+	// traj.gdp = new double[hrzn + 1];
+	// traj.eind = new double[hrzn + 1];
+	// traj.e = new double[hrzn + 1];
+	// traj.k = new double[hrzn + 1];
 	//initialize k
 	in.open("./data_ed57/data_economy/k0.csv");
 	if (!in){
@@ -465,8 +514,8 @@ void RICEEconAgent::readBaseline(int hrzn){
 		}
 	}
 	in.close();
-	traj.miu = new double[hrzn + 1];
-	traj.miu_up = new double[hrzn + 1];
+	// traj.miu = new double[hrzn + 1];
+	// traj.miu_up = new double[hrzn + 1];
 	for (int tidx = 0; tidx < horizon ; tidx++){
 		traj.miu_up[tidx] = 1.0 + std::max(0.0, std::min(
 			(params.max_miu_up - 1.0) * 
@@ -474,7 +523,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 			(params.t_max_miu - params.t_min_miu), 
 			params.max_miu_up - 1.0 ));
 	}
-	traj.s = new double[hrzn + 1];
+	// traj.s = new double[hrzn + 1];
 	//initialize s
 	in.open("./data_ed57/data_economy/s0.csv");
 	if (!in){
@@ -497,7 +546,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	}
 	in.close();	
 	//macc multiplier
-	traj.mx = new double[hrzn + 1];
+	// traj.mx = new double[hrzn + 1];
 	in.open("./data_ed57/data_macc/mx_multiplier.csv");
 	if (!in){
 		std::cout << "The mx multiplier file could not be found!" << std::endl;
@@ -519,8 +568,8 @@ void RICEEconAgent::readBaseline(int hrzn){
 	}
 	in.close();
 	//macc coefficients
-	traj.ax = new double[hrzn + 1];
-	traj.bx = new double[hrzn + 1];
+	// traj.ax = new double[hrzn + 1];
+	// traj.bx = new double[hrzn + 1];
 	in.open("./data_ed57/data_macc/macc_coeffs.csv");
 	if (!in){
 		std::cout << "The macc coeffs file could not be found!" << std::endl;
@@ -547,7 +596,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 	}
 	in.close();
 	//land use emissions
-	traj.eland = new double[hrzn + 1];
+	// traj.eland = new double[hrzn + 1];
 	switch (params.elandType){
 		case ELANDBAU:
 			in.open("./data_ed57/data_land_use/etree_bau.csv");
@@ -577,26 +626,35 @@ void RICEEconAgent::readBaseline(int hrzn){
 		}
 	}
 	in.close();
-	traj.abatecost = new double[hrzn + 1];
-	traj.i = new double[hrzn + 1];
-	traj.ygross = new double[hrzn + 1];
-	traj.ynet = new double[hrzn + 1];
-	traj.y = new double[hrzn + 1];
-	traj.damages = new double[hrzn + 1];
-	traj.c = new double[hrzn + 1];
-	traj.cpc = new double[hrzn + 1];
-	traj.ri = new double[hrzn + 1];
-	traj.cprice = new double[hrzn + 1];
-	traj.periodu = new double[hrzn + 1];
-	traj.cemutotper = new double[hrzn + 1];	
-	traj.omega = new double[hrzn + 1];
+	// traj.abatecost = new double[hrzn + 1];
+	// traj.i = new double[hrzn + 1];
+	// traj.ygross = new double[hrzn + 1];
+	// traj.ynet = new double[hrzn + 1];
+	// traj.y = new double[hrzn + 1];
+	// traj.damages = new double[hrzn + 1];
+	// traj.c = new double[hrzn + 1];
+	// traj.cpc = new double[hrzn + 1];
+	// traj.ri = new double[hrzn + 1];
+	// traj.cprice = new double[hrzn + 1];
+	// traj.periodu = new double[hrzn + 1];
+	// traj.cemutotper = new double[hrzn + 1];	
+	// traj.omega = new double[hrzn + 1];
 	traj.omega[0] = 0.0;
-	traj.tatm_local = new double[hrzn + 1];
-	traj.damfrac = new double[hrzn + 1];
-	traj.komega = new double[hrzn + 1];
-	traj.basegrowthcap = new double[hrzn + 1];
-	traj.ynet_estimated = new double[hrzn + 1];
-	traj.impact = new double[hrzn + 1];
+	// traj.tatm_local = new double[hrzn + 1];
+	// traj.damfrac = new double[hrzn + 1];
+	// traj.komega = new double[hrzn + 1];
+	// traj.basegrowthcap = new double[hrzn + 1];
+	// traj.ynet_estimated = new double[hrzn + 1];
+	// traj.impact = new double[hrzn + 1];
+	// traj.adapt = new double[hrzn + 1];
+	// traj.act = new double[hrzn + 1];
+	// traj.sad = new double[hrzn + 1];
+	// traj.fad = new double[hrzn + 1];
+	// traj.ia = new double[hrzn + 1];
+	// traj.iac = new double[hrzn + 1];
+	// traj.ac = new double[hrzn + 1];
+	// traj.gac = new double[hrzn + 1];
+	// traj.sac = new double[hrzn + 1];
 	return;
 }
 // set agent's decision variables
@@ -655,6 +713,8 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 		traj.ygross[t] * (1 - traj.miu[t]);
 	traj.e[t] = traj.eind[t] + traj.eland[t];
 	computeDamages(RPCutoff);	
+
+	// computeAdaptation
 
 	// compute abatecost
 	traj.abatecost[t] = traj.mx[t] *
@@ -1013,6 +1073,14 @@ void RICEEconAgent::econAgentDelete(){
 	delete[] traj.basegrowthcap;
 	delete[] traj.ynet_estimated;
 	delete[] traj.impact;
-
+	delete[] traj.adapt;
+	delete[] traj.act;
+	delete[] traj.sad;
+	delete[] traj.fad;
+	delete[] traj.ia;
+	delete[] traj.iac;
+	delete[] traj.ac;
+	delete[] traj.gac;
+	delete[] traj.sac;
 	return;
 }

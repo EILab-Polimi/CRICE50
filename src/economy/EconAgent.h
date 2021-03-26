@@ -118,6 +118,15 @@ struct RICEEconAgentTraj{
 	double* basegrowthcap;
 	double* ynet_estimated;
 	double* impact;
+	double* adapt;
+	double* act;
+	double* sad;
+	double* fad;
+	double* ia;
+	double* iac;
+	double* ac;
+	double* sac;
+	double* gac;	
 };
 
 struct EconAgentPolicy{
@@ -138,6 +147,7 @@ public:
 	RICEEconAgentParams params;
 	RICEEconAgentTraj traj;
 	EconAgentPolicy policy;
+	void allocate();
 	void readParams();
 	void readPolicyParams();
 	void readBaseline(int hrzn);

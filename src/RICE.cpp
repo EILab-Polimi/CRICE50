@@ -84,7 +84,6 @@ RICE::RICE(){
 		econ->initializeStates(econ->getNStates() +
 			climate->getNStates() + carbon->getNStates());
 	}
-
 	createLinks();
 
 	t = 0;

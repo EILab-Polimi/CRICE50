@@ -48,12 +48,28 @@ for reg57 in mapping:
 	for el in enumerate(temp):
 		temp[el[0]][1] = temp[el[0]][1] / tot
 	weights[reg57[0]] = temp
-# print(weights)
+
 
 ## read AdaptCoeff from AD-WITCH
 with open('../../settings/AdaptCoeffOrigADWITCH.txt') as f:
 	file = f.read().split("\n")
 newfile = [line.split() for line in file]
+
+## read gdp data and map gdp over 13 regions
+## gdp is used as weight to compute generic adaptive capacity at time 0
+gdpdata = pd.read_csv("../data_baseline/ssp_ykali.csv")
+gdpdata = gdpdata.loc[(gdpdata['ssp']=='ssp1') & (gdpdata['t']==1)]
+gdpweights = {}
+gdp13 = {}
+for reg13 in mapping:
+	gdp13[reg13[1]] = 0.0
+	for reg57 in mapping:
+		temp = 0.0
+		for reg57_2 in mapping:
+			if reg57[0] == reg57_2[0]:
+				temp += reg57[2]
+		if reg57[1]==reg13[1]:
+			gdp13[reg13[1]] += gdpdata.loc[(gdpdata['n']==reg57[0])].values[0][3] * reg57[2]/temp
 
 ## assign coefficients to ED57 via weighted average from AD-WITCH
 insk = ["dk_adsad", "dk_adcap", "rho_ad", "rho_adact", "rho_adcap"]
@@ -62,6 +78,7 @@ AdaptCoeffED57 = []
 for reg in weights:
 	temp = []
 	for regw in weights[reg]:
+		reg13 = regw[0]
 		if regw[0] == 'india':
 			regw[0] = 'sasia'
 		if regw[0] == 'oldeuro':
@@ -71,6 +88,7 @@ for reg in weights:
 		for line in newfile:
 			if line[0].lower() == regw[0]:
 				temp.append([float(el)*regw[1] for el in line[1:]])
+				temp[-1][-1] *= gdpdata.loc[(gdpdata['n']==reg)].values[0][3] / gdp13[reg13]
 	values = [0.0 for x in range(len(temp[0]))]
 	for value in temp:
 		for x in enumerate(value):
