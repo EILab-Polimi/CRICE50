@@ -960,6 +960,8 @@ void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 
 	computeAdaptation(tatm);
 
+	// computeAdaptation
+
 	// compute abatecost
 	traj.abatecost[t] = traj.mx[t] *
 		( (traj.ax[t] * pow(traj.miu[t],2) / 2) + 
