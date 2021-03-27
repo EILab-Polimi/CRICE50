@@ -960,20 +960,7 @@ void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 
 	computeAdaptation(tatm);
 
-	// computeAdaptation()
-	traj.adcosts[t] = traj.fad[t] + traj.ia[t] + traj.iac[t];
-	traj.act[t] = params.beta1_ad * pow( params.beta2_ad * pow(traj.fad[t], params.rho_adact) + \
-		(1 - params.beta2_ad) * pow(traj.sad[t], params.rho_adact), params.beta3_ad / params.rho_adact);
-	traj.ac[t] = pow( params.phi_ad * pow(traj.sac[t], params.rho_adcap) + \
-		(1 - params.phi_ad) * pow(traj.gac[t], params.rho_adcap), 1 / params.rho_adcap);
-
-	traj.adapt[t] = pow( params.miu_ad * pow(traj.act[t], params.rho_ad) + \
-		(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), 1 / params.rho_ad);
-	traj.rd[t] = traj.damages[t] / (1 + adapt[t]);
-
-	traj.sad[t+1] = traj.sad[t] * (1 - params.dk_adsad) + traj.ia[t];
-	traj.sac[t+1] = traj.sac[t] * (1 - params.dk_adsac) + traj.iac[t];
-	traj.gac[t+1] = traj.gac[t] * (traj.tfp[ssp][t+1]/traj.tfp[ssp][t]); //actually exogenous grows as tfp
+	computeAdaptation();
 
 	// compute abatecost
 	traj.abatecost[t] = traj.mx[t] *
