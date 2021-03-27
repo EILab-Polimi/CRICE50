@@ -126,7 +126,8 @@ struct RICEEconAgentTraj{
 	double* iac;
 	double* ac;
 	double* sac;
-	double* gac;	
+	double* gac;
+	double* adcosts;	
 };
 
 struct EconAgentPolicy{
