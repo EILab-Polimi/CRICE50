@@ -119,6 +119,7 @@ struct RICEEconAgentTraj{
 	double* ynet_estimated;
 	double* impact;
 	double* adapt;
+	double* rd;
 	double* act;
 	double* sad;
 	double* fad;
@@ -161,6 +162,7 @@ public:
 	void nextStep(double* tatm, double RPCutoff);
 	void setAgentVariables(double* vars);
 	void computeDamages(double RPCutoff);
+	void computeAdaptation();
 	void nextAction();
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);

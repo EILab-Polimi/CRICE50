@@ -115,6 +115,7 @@ void RICEEconAgent::allocate(){
 	traj.ynet_estimated = new double[horizon + 1];
 	traj.impact = new double[horizon + 1];
 	traj.adapt = new double[horizon + 1];
+	traj.rd = new double[horizon + 1];
 	traj.act = new double[horizon + 1];
 	traj.sad = new double[horizon + 1];
 	traj.fad = new double[horizon + 1];
@@ -715,20 +716,7 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 	traj.e[t] = traj.eind[t] + traj.eland[t];
 	computeDamages(RPCutoff);	
 
-	// computeAdaptation()
-	traj.adcosts[t] = traj.fad[t] + traj.ia[t] + traj.iac[t];
-	traj.act[t] = params.beta1_ad * pow( params.beta2_ad * pow(traj.fad[t], params.rho_adact) + \
-		(1 - params.beta2_ad) * pow(traj.sad[t], params.rho_adact), params.beta3_ad / params.rho_adact);
-	traj.ac[t] = pow( params.phi_ad * pow(traj.sac[t], params.rho_adcap) + \
-		(1 - params.phi_ad) * pow(traj.gac[t], params.rho_adcap), 1 / params.rho_adcap);
-
-	traj.adapt[t] = pow( params.miu_ad * pow(traj.act[t], params.rho_ad) + \
-		(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), 1 / params.rho_ad);
-	traj.rd[t] = traj.damages[t] / (1 + adapt[t]);
-
-	traj.sad[t+1] = traj.sad[t] * (1 - params.dk_adsad) + traj.ia[t];
-	traj.sac[t+1] = traj.sac[t] * (1 - params.dk_adsac) + traj.iac[t];
-	traj.gac[t+1] = traj.gac[t] * (traj.tfp[ssp][t+1]/traj.tfp[ssp][t]); //actually exogenous grows as tfp
+	computeAdaptation();
 
 	// compute abatecost
 	traj.abatecost[t] = traj.mx[t] *
@@ -739,8 +727,10 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 			(traj.bx[t] * pow(traj.miu[t],4)));
 
 	// compute variables for economic step transition
-	traj.ynet[t] = traj.ygross[t] - traj.damages[t];
-	traj.y[t] = std::max(0.01, traj.ynet[t] - traj.abatecost[t]); //avoid damages making negative gdp
+	// traj.ynet[t] = traj.ygross[t] - traj.damages[t];
+	// traj.y[t] = std::max(0.01, traj.ynet[t] - traj.abatecost[t]); //avoid damages making negative gdp
+	traj.ynet[t] = traj.ygross[t] - traj.rd[t];
+	traj.y[t] = std::max(0.01, traj.ynet[t] - traj.abatecost[t] - traj.adcosts[t]); //avoid damages making negative gdp
 	traj.i[t] = traj.s[t] * traj.y[t];
 	traj.c[t] = traj.y[t] - traj.i[t];
 	traj.cpc[t] = 1000 * traj.c[t] / traj.pop[ssp][t];
@@ -760,6 +750,31 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 	utility += traj.cemutotper[t];
 	// std::cout << "\t\tHere the region " << name << " evolves to the step " << t+1 << " emitting (GtCO2):" << e[t] << std::endl;
 	t++;
+	return;
+}
+void RICEEconAgent::computeAdaptation(){
+	if (params.adaptType == ADWITCH){
+		traj.fad[t] = traj.fad[t] * traj.ygross[t];
+		traj.ia[t] = traj.ia[t] * traj.ygross[t];
+		traj.iac[t] = traj.iac[t] * traj.ygross[t];
+		traj.adcosts[t] = traj.fad[t] + traj.ia[t] + traj.iac[t];
+		traj.act[t] = params.beta1_ad * pow( params.beta2_ad * pow(traj.fad[t], params.rho_adact) + \
+			(1 - params.beta2_ad) * pow(traj.sad[t], params.rho_adact), params.beta3_ad / params.rho_adact);
+		traj.ac[t] = pow( params.phi_ad * pow(traj.sac[t], params.rho_adcap) + \
+			(1 - params.phi_ad) * pow(traj.gac[t], params.rho_adcap), 1 / params.rho_adcap);
+
+		traj.adapt[t] = pow( params.miu_ad * pow(traj.act[t], params.rho_ad) + \
+			(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), 1 / params.rho_ad);
+		traj.rd[t] = traj.damages[t] / (1 + traj.adapt[t]);
+
+		traj.sad[t+1] = traj.sad[t] * (1 - params.dk_adsad) + traj.ia[t];
+		traj.sac[t+1] = traj.sac[t] * (1 - params.dk_adsac) + traj.iac[t];
+		traj.gac[t+1] = traj.gac[t] * (traj.tfp[ssp][t+1]/traj.tfp[ssp][t]); //actually exogenous grows as tfp	
+	}
+	else{
+		traj.rd[t] = traj.damages[t];
+		traj.adcosts[t] = 0.0;
+	}
 	return;
 }
 // take next action
@@ -1088,6 +1103,7 @@ void RICEEconAgent::econAgentDelete(){
 	delete[] traj.ynet_estimated;
 	delete[] traj.impact;
 	delete[] traj.adapt;
+	delete[] traj.rd;
 	delete[] traj.act;
 	delete[] traj.sad;
 	delete[] traj.fad;
