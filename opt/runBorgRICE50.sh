@@ -25,7 +25,7 @@ done
 
 # emodps
 NFE=50000
-NVAR=74
+NVAR=114
 NOBJ=1
 EPS=0.0000000001
 UB="1.0"
