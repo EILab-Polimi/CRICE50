@@ -332,8 +332,8 @@ void RICEEconAgent::readPolicyParams(){
 	if (params.adaptType == ADWITCH){
 		policy.p_param.policyInput += 3;
 		for (int adaptoutput = 0; adaptoutput < 3; adaptoutput++){
-		    policy.p_param.mIn.push_back(0.0);
-		    policy.p_param.MIn.push_back(0.3);			
+		    policy.p_param.mOut.push_back(0.0);
+		    policy.p_param.MOut.push_back(0.1);			
 		}
 	}
 
@@ -848,9 +848,9 @@ void RICEEconAgent::nextAction(){
 				traj.miu[t] = policy.output[0];
 				traj.s[t] = policy.output[1];
 				if (params.adaptType == ADWITCH){
-					traj.fad[t] = policy.output[2];
-					traj.ia[t] = policy.output[3];
-					traj.iac[t] = policy.output[4];
+					traj.fad[t] = std::min(0.1, std::max(0.0, policy.output[2]));
+					traj.ia[t] = std::min(0.1, std::max(0.0, policy.output[3]));
+					traj.iac[t] = std::min(0.1, std::max(0.0, policy.output[2]));
 				}
 
 				// if savings are fixed
