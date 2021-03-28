@@ -4,4 +4,4 @@ prstp			0.015
 ineqav			0.50
 RPCutoffMetric	MEAN		(MEAN / MEDIAN)
 utility 		COOP		(COOP / NON-COOP)
-DecisionMakers	BAU			(BAU / INPUT_STATIC / INPUT_POLICY)
+DecisionMakers	INPUT_POLICY			(BAU / INPUT_STATIC / INPUT_POLICY)

@@ -310,6 +310,13 @@ void RICEEconAgent::readPolicyParams(){
 	    policy.p_param.mIn.push_back(i1);
 	    policy.p_param.MIn.push_back(i2);
 	}
+	if (params.adaptType == ADWITCH){
+		policy.p_param.policyInput += 2;
+		for (int adaptinput = 0; adaptinput < 2; adaptinput++){
+		    policy.p_param.mIn.push_back(0.0);
+		    policy.p_param.MIn.push_back(10.0);			
+		}
+	}
 	// read output number and bounds
 	double o1, o2;
 	while (sJunk!="<NUM_OUTPUT>"){
@@ -322,6 +329,14 @@ void RICEEconAgent::readPolicyParams(){
     	policy.p_param.mOut.push_back(o1);
     	policy.p_param.MOut.push_back(o2);
     }
+	if (params.adaptType == ADWITCH){
+		policy.p_param.policyInput += 3;
+		for (int adaptoutput = 0; adaptoutput < 3; adaptoutput++){
+		    policy.p_param.mIn.push_back(0.0);
+		    policy.p_param.MIn.push_back(0.3);			
+		}
+	}
+
     // read number of nodes
 	while (sJunk!="<POLICY_STRUCTURE>"){
 		in >>sJunk;
@@ -375,7 +390,19 @@ void RICEEconAgent::readPolicyParams(){
 }
 // return number of variables
 int RICEEconAgent::getNVars(){
-	return policy.nvars;
+	int nvars;
+	if (params.DMType == INPUT_STATIC){
+		if (params.adaptType == ADWITCH){
+			nvars = horizon * 5;
+		}
+		else{
+			nvars = horizon * 2;
+		}
+	} 
+	if (params.DMType == INPUT_POLICY){
+		nvars = policy.nvars;
+	}
+	return nvars;
 }
 // read exogenous baseline trajectories
 void RICEEconAgent::readBaseline(int hrzn){
@@ -667,6 +694,12 @@ void RICEEconAgent::setAgentVariables(double* vars){
 				vars += 2;
 				traj.miu[tidx] = vars[0];
 				traj.s[tidx] = vars[1];
+				if (params.adaptType == ADWITCH){
+					vars += 3;
+					traj.fad[t] = vars[0];
+					traj.ia[t] = vars[1];
+					traj.iac[t] = vars[2];					
+				}
 			}
 		}
 	}
@@ -754,24 +787,36 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 }
 void RICEEconAgent::computeAdaptation(){
 	if (params.adaptType == ADWITCH){
-		traj.fad[t] = traj.fad[t] * traj.ygross[t];
-		traj.ia[t] = traj.ia[t] * traj.ygross[t];
-		traj.iac[t] = traj.iac[t] * traj.ygross[t];
-		traj.adcosts[t] = traj.fad[t] + traj.ia[t] + traj.iac[t];
-		traj.act[t] = params.beta1_ad * pow( params.beta2_ad * pow(traj.fad[t], params.rho_adact) + \
-			(1 - params.beta2_ad) * pow(traj.sad[t], params.rho_adact), params.beta3_ad / params.rho_adact);
-		traj.ac[t] = pow( params.phi_ad * pow(traj.sac[t], params.rho_adcap) + \
-			(1 - params.phi_ad) * pow(traj.gac[t], params.rho_adcap), 1 / params.rho_adcap);
-
-		traj.adapt[t] = pow( params.miu_ad * pow(traj.act[t], params.rho_ad) + \
-			(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), 1 / params.rho_ad);
+		// compute adaptation costs
+		traj.adcosts[t] = traj.ygross[t] * 
+			(traj.fad[t] + traj.ia[t] + traj.iac[t]);
+		
+		// compute adaptation action
+		traj.act[t] = params.beta1_ad * 
+			pow(params.beta2_ad * 
+			pow(traj.fad[t] * traj.ygross[t], params.rho_adact) + \
+			(1 - params.beta2_ad) * 
+			pow(traj.sad[t], params.rho_adact), 
+			params.beta3_ad / params.rho_adact);
+		// compute adaptation capacity
+		traj.ac[t] = pow(params.phi_ad * pow(traj.sac[t], params.rho_adcap) + \
+			(1 - params.phi_ad) * pow(traj.gac[t], params.rho_adcap), 
+			1 / params.rho_adcap);
+		// compute adaptation total
+		traj.adapt[t] = pow(params.miu_ad * pow(traj.act[t], params.rho_ad) + \
+			(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), 
+			1 / params.rho_ad);
+		// compute residual damages
 		traj.rd[t] = traj.damages[t] / (1 + traj.adapt[t]);
 
-		traj.sad[t+1] = traj.sad[t] * (1 - params.dk_adsad) + traj.ia[t];
-		traj.sac[t+1] = traj.sac[t] * (1 - params.dk_adsac) + traj.iac[t];
-		traj.gac[t+1] = traj.gac[t] * (traj.tfp[ssp][t+1]/traj.tfp[ssp][t]); //actually exogenous grows as tfp	
+		// update adaptation stocks (capital and specific capacity)
+		traj.sad[t+1] = traj.sad[t] * (1 - params.dk_adsad) + \
+			traj.ia[t] * traj.ygross[t];
+		traj.sac[t+1] = traj.sac[t] * (1 - params.dk_adsac) + \
+			traj.iac[t] * traj.ygross[t];
+		traj.gac[t+1] = traj.gac[t] * (traj.tfp[ssp][t+1]/traj.tfp[ssp][t]); //actually exogenous grows with tfp growth rate	
 	}
-	else{
+	else{ // without adaptation
 		traj.rd[t] = traj.damages[t];
 		traj.adcosts[t] = 0.0;
 	}
@@ -793,17 +838,33 @@ void RICEEconAgent::nextAction(){
 				for (int s = 0; s < nGlobalStates; s++){
 					policy.input.push_back(globalStates[s]);
 				}
+				if (params.adaptType == ADWITCH){
+					policy.input.push_back(traj.sad[t] / policy.input[0] * pow(10,6));
+					policy.input.push_back(traj.sac[t] / policy.input[0] * pow(10,6));
+				}
 				policy.input.push_back(t);
 				
 				policy.output = policy.Policy->get_NormOutput(policy.input);
 				traj.miu[t] = policy.output[0];
 				traj.s[t] = policy.output[1];
+				if (params.adaptType == ADWITCH){
+					traj.fad[t] = policy.output[2];
+					traj.ia[t] = policy.output[3];
+					traj.iac[t] = policy.output[4];
+				}
+
+				// if savings are fixed
 				traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
 				break;
 			case BAU:
-				traj.miu[t] = std::min(traj.miu_up[t], 0.1 * (double) t);
+				// traj.miu[t] = std::min(traj.miu_up[t], 0.1 * (double) t);
 				traj.miu[t] = 0.0;
 				traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
+				if (params.adaptType == ADWITCH){
+					traj.fad[t] = 0.0;
+					traj.ia[t] = 0.0;
+					traj.iac[t] = 0.0;
+				}				
 				break;
 			case INPUT_STATIC:
 				// no need to do anything here

@@ -116,7 +116,7 @@ void Econ::readParams(){
 void Econ::setEconVariables(double* vars){
 	if (params.DMType == INPUT_STATIC){
 		for (int ag=0; ag < agents; ag++){
-			agents_ptr[ag]->setAgentVariables(vars + ag * horizon * 2);
+			agents_ptr[ag]->setAgentVariables(vars + ag * agents_ptr[ag]->getNVars());
 		}
 	}
 	else if (params.DMType == INPUT_POLICY){

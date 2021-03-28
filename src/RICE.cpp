@@ -79,7 +79,9 @@ RICE::RICE(){
 				"insert an available ModelType for Climate" 
 				<< std::endl;
 	}
+
 	econ = new Econ(horizon);
+
 	if (econ->params.DMType == INPUT_POLICY){
 		econ->initializeStates(econ->getNStates() +
 			climate->getNStates() + carbon->getNStates());
