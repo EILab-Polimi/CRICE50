@@ -6,7 +6,7 @@ data = pd.read_csv("./simulationOutput.txt", sep='\t')
 pd.set_option('precision',10)
 #select field to plot
 # field = ['E','E']
-field = ['TATM','TOCEAN', 'E', 'MAT'] #
+field = ['TATM','TOCEAN', 'E', 'MIUjpn', 'IACjpn'] #
 
 print(data[field].describe)
 for el in field:
@@ -34,4 +34,4 @@ data[tatms].plot()
 # print(data[effks].min().min(), data[effks].max().max())
 
 
-plt.show()
+# plt.show()

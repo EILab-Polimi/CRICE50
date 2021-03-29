@@ -330,7 +330,7 @@ void RICEEconAgent::readPolicyParams(){
     	policy.p_param.MOut.push_back(o2);
     }
 	if (params.adaptType == ADWITCH){
-		policy.p_param.policyInput += 3;
+		policy.p_param.policyOutput += 3;
 		for (int adaptoutput = 0; adaptoutput < 3; adaptoutput++){
 		    policy.p_param.mOut.push_back(0.0);
 		    policy.p_param.MOut.push_back(0.1);			
@@ -787,6 +787,16 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 }
 void RICEEconAgent::computeAdaptation(){
 	if (params.adaptType == ADWITCH){
+		// traj.fad[t] = 0.03;
+		// traj.ia[t] = 0.03;
+		// traj.iac[t] = 0.03;
+		if (t==0){
+			traj.sad[t] = 0.0;
+			traj.sac[t] = 0.0;
+			traj.fad[t] = 0.0;
+			traj.ia[t] = 0.0;
+			traj.iac[t] = 0.0;
+		}
 		// compute adaptation costs
 		traj.adcosts[t] = traj.ygross[t] * 
 			(traj.fad[t] + traj.ia[t] + traj.iac[t]);
@@ -838,19 +848,19 @@ void RICEEconAgent::nextAction(){
 				for (int s = 0; s < nGlobalStates; s++){
 					policy.input.push_back(globalStates[s]);
 				}
-				if (params.adaptType == ADWITCH){
-					policy.input.push_back(traj.sad[t] / policy.input[0] * pow(10,6));
-					policy.input.push_back(traj.sac[t] / policy.input[0] * pow(10,6));
-				}
 				policy.input.push_back(t);
+				if (params.adaptType == ADWITCH){
+					policy.input.push_back(traj.sad[t] / traj.k[t] * 100.0);
+					policy.input.push_back(traj.sac[t] / traj.k[t] * 100.0);
+				}
 				
 				policy.output = policy.Policy->get_NormOutput(policy.input);
 				traj.miu[t] = policy.output[0];
 				traj.s[t] = policy.output[1];
 				if (params.adaptType == ADWITCH){
-					traj.fad[t] = std::min(0.1, std::max(0.0, policy.output[2]));
-					traj.ia[t] = std::min(0.1, std::max(0.0, policy.output[3]));
-					traj.iac[t] = std::min(0.1, std::max(0.0, policy.output[2]));
+					traj.fad[t] = policy.output[2];
+					traj.ia[t] = policy.output[3];
+					traj.iac[t] = policy.output[4];
 				}
 
 				// if savings are fixed
@@ -878,6 +888,11 @@ void RICEEconAgent::nextAction(){
 		}
 		traj.miu[t] = std::max(0.0, std::min(traj.miu_up[t], std::min(traj.miu[t-1] + 0.2, traj.miu[t])));
 		traj.s[t] = std::max(0.001, std::min(0.999, traj.s[t]));
+		if (params.adaptType == ADWITCH){
+			traj.fad[t] = std::min(0.1, std::max(0.0, traj.fad[t]));
+			traj.ia[t] = std::min(0.1, std::max(0.0, traj.ia[t]));
+			traj.iac[t] = std::min(0.1, std::max(0.0, traj.iac[t]));			
+		}
 	}
 	else{
 		traj.miu[0] = 0.0;
@@ -1081,8 +1096,18 @@ void RICEEconAgent::writeHeader(std::fstream& output){
 		"KOMEGA" << name << "\t" << 
 		"BASEGROWTHCAP" << name << "\t" << 
 		"YNET_ESTIMATED" << name << "\t" << 
-		"IMPACT" << name << "\t" 
-			;
+		"IMPACT" << name << "\t" <<
+		"ADAPT" << name << "\t" <<
+		"RD" << name << "\t" <<
+		"ACT" << name << "\t" <<
+		"SAD" << name << "\t" <<
+		"FAD" << name << "\t" <<
+		"IA" << name << "\t" <<
+		"IAC" << name << "\t" <<
+		"AC" << name << "\t" <<
+		"SAC" << name << "\t" <<
+		"GAC" << name << "\t" <<
+		"ADCOSTS" << name << "\t" ;
 	t = 0;
 }
 // writes timestep
@@ -1118,8 +1143,18 @@ void RICEEconAgent::writeStep(std::fstream& output){
 		traj.komega[t] << "\t" <<
 		traj.basegrowthcap[t] << "\t" <<
 		traj.ynet_estimated[t] << "\t" <<
-		traj.impact[t] << "\t" 
-			;
+		traj.impact[t] << "\t" <<
+		traj.adapt[t] << "\t" <<
+		traj.rd[t] << "\t" <<
+		traj.act[t] << "\t" <<
+		traj.sad[t] << "\t" <<
+		traj.fad[t] << "\t" <<
+		traj.ia[t] << "\t" <<
+		traj.iac[t] << "\t" <<
+		traj.ac[t] << "\t" <<
+		traj.sac[t] << "\t" <<
+		traj.gac[t] << "\t" <<
+		traj.adcosts[t] << "\t" ;
 	t++;
 }
 // frees allocated memory
