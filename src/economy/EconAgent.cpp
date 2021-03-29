@@ -1078,10 +1078,6 @@ void RICEEconAgent::nextAction(){
 				for (int s = 0; s < nGlobalStates; s++){
 					policy.input.push_back(globalStates[s]);
 				}
-				if (params.adaptType == ADWITCH){
-					policy.input.push_back(traj.sad[t] / policy.input[0] * pow(10,6));
-					policy.input.push_back(traj.sac[t] / policy.input[0] * pow(10,6));
-				}
 				policy.input.push_back(t);
 				if (params.adaptType == ADWITCH){
 					if (params.embedding==EMB_YES){
