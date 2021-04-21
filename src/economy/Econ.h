@@ -28,6 +28,7 @@ public:
 	EconParams params;
 	double* e;
 	double* cemutotper;
+	double* RPCutoff;
 	double* globalStates;
 	double* toCarbon;
 	double* toClimate;
@@ -36,6 +37,7 @@ public:
 	int nGlobalStates;
 	double* econStates;
 	double utility;
+	double* prctiles;
 	void readParams();
 	void updateGlobalStates();
 	void initializeStates(int numGlobalStates);
@@ -47,6 +49,8 @@ public:
 	void updateLinks();
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);	
+	double computeGini();	
+	double* computePrctiles();	
 	void econDelete();
 };
 

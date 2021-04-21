@@ -38,8 +38,10 @@ Econ::Econ(int hrzn){
 	horizon = hrzn;
 	e = new double[horizon+1];
 	cemutotper = new double[horizon + 1];
+	RPCutoff = new double[horizon + 1];
 	agents_ptr = new EconAgent * [agents];
 	toCarbon = new double[1];
+	prctiles = new double[4];
 	t = 0;
 	std::fstream in;
 	std::string line;
@@ -241,6 +243,33 @@ void Econ::writeStep(std::fstream& output){
 	t++;
 	return;
 }
+// computes Gini coefficient for 2100
+double Econ::computeGini(){
+	double num = 0.0, denum= 0.0;
+	for (int i=0; i < agents; i++){
+		for (int j=0; j < agents; j++){
+			num += std::abs(agents_ptr[i]->getGDPpc(17) - agents_ptr[j]->getGDPpc(17));
+			denum += agents_ptr[j]->getGDPpc(17);
+		}
+	}
+	return num/(2*denum);
+}
+// computes GDPpc percentiles for 2100
+double* Econ::computePrctiles(){
+	std::vector<double> GDPpcDist;
+	for (int ag=0; ag < agents; ag++){
+		int bins = round(agents_ptr[ag]->getPop(17));
+		for (int n=0; n < bins; n++){
+			GDPpcDist.push_back(agents_ptr[ag]->getGDPpc(17));
+		}
+	}
+	std::sort(GDPpcDist.begin(), GDPpcDist.end());
+	*(prctiles) = GDPpcDist[round(GDPpcDist.size()/100*90)] * 1000.0;
+	*(prctiles+1) = GDPpcDist[round(GDPpcDist.size()/100*80)] * 1000.0;
+	*(prctiles+2) = GDPpcDist[round(GDPpcDist.size()/100*20)] * 1000.0;
+	*(prctiles+3) = GDPpcDist[round(GDPpcDist.size()/100*10)] * 1000.0;
+	return prctiles;
+}
 // frees allocated memory
 void Econ::econDelete(){
 	for (int nag=0; nag < agents; nag++){
@@ -250,7 +279,9 @@ void Econ::econDelete(){
 	delete[] agents_ptr;
 	delete[] e;
 	delete[] cemutotper;
+	delete[] RPCutoff;
 	delete[] globalStates;
 	delete[] toCarbon;
+	delete[] prctiles;
 	return;
 }
