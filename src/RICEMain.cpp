@@ -70,7 +70,6 @@ void GetFilesInDirectory(std::vector<std::string> &out, const std::string &direc
 #endif
 }
 
-
 int main(int argc, char* argv[])
 {	
 	clock_t start, end;
@@ -169,6 +168,17 @@ int main(int argc, char* argv[])
 				MOEA_Write(objs, NULL);
 			}
 		}
+		else{
+			MOEA_Init(nobjs, 0);
+			while (MOEA_Next_solution() == MOEA_SUCCESS) {
+				MOEA_Read_doubles(nvars, vars);
+				riceptr->setVariables(vars);
+				riceptr->simulate();
+				objs[0] =  - riceptr->econ->utility;
+				MOEA_Write(objs, NULL);
+			}
+		}
+		riceptr->writeSimulation();
 	}
 	// ==== POST PROCESSING ==========
     // std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;

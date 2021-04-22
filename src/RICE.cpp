@@ -165,7 +165,6 @@ void RICE::updateGlobalStates(){
 	for (int n=nstart ; n < nstart + nCarbonStates; n++) {
 		econ->globalStates[n] = carbonStates[n - nstart];
 	}
-
 	return;
 }
 // simulates one step of the model
@@ -190,7 +189,6 @@ void RICE::nextStep(){
 // simulates all the horizon
 void RICE::simulate(){
 	resetTidx();
-
 	for (int time=0 ; time < horizon; time++){
 		nextStep();
 	} 
