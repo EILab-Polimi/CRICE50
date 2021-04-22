@@ -18,6 +18,7 @@ public:
 	int objs;
 	ModelType carbon_model;
 	ModelType climate_model;
+	int robustness;
 	Carbon* carbon;					// pointer to carbon module active in the model
 	Climate* climate;				// pointer to climate module active in the model
 	Econ* econ;						// pointer to economic module active in the model
@@ -30,6 +31,9 @@ public:
 	void simulate();
 	void resetTidx();
 	void writeSimulation();
+	void setSsp(int ssp);
+	void setDamages(int damages);
+	void reportObjs(std::string nameSol, int ssp, int damages, std::fstream& robustnessOutput);
 	void RICE_delete();
 };
 

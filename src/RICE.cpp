@@ -41,6 +41,10 @@ RICE::RICE(){
 		in >>sJunk;
 	}
 	in >> objs;
+	while (sJunk!="robustness"){
+		in >> sJunk;
+	}
+	in >> robustness;
 	switch(carbon_model){
 		case WITCH:
 			carbon = new WITCHCarbon(horizon);
@@ -109,7 +113,6 @@ void RICE::createLinks(){
 	climate->fromEcon = econ->toClimate;
 	return;
 }
-
 //returns number of objectives
 int RICE::getNObjs(){
 	return objs;
@@ -121,7 +124,7 @@ int RICE::getNVars(){
 		nvars = econ->getNVars();
 	}
 	else{
-		nvars = horizon*econ->agents * 2;		
+		nvars = (horizon - 1) * econ->agents * 2;		
 	}
 	return nvars;
 } 
@@ -144,7 +147,6 @@ void RICE::updateGlobalStates(){
 	for (int n=nstart ; n < nstart + nCarbonStates; n++) {
 		econ->globalStates[n] = carbonStates[n - nstart];
 	}
-
 	return;
 }
 // simulates one step of the model
@@ -161,7 +163,6 @@ void RICE::nextStep(){
 // simulates all the horizon
 void RICE::simulate(){
 	resetTidx();
-
 	for (int time=0 ; time < horizon; time++){
 		// std::cout << "\tSimulation time step " << t << ", year " << 2015+t*5 << std::endl;
 		nextStep();
@@ -220,6 +221,37 @@ void RICE::writeSimulation(){
 	} 
 	output.close();
 	return;	
+}
+// sets ssp
+void RICE::setSsp(int ssp){
+	for (int ag=0; ag < econ->agents; ag++){
+		econ->agents_ptr[ag]->setSsp(ssp);
+	}
+	return;
+}
+// sets damages
+void RICE::setDamages(int damages){
+	for (int ag=0; ag < econ->agents; ag++){
+		econ->agents_ptr[ag]->setDamages(damages);
+	}
+	return;
+}
+// report objectives
+void RICE::reportObjs(std::string nameSol, int ssp, int damages, std::fstream& robustnessOutput){
+	double tatmpeak = 0.0;
+	for (int tidx=0; tidx < horizon; tidx++){
+		tatmpeak = std::max(climate->tatm[tidx], tatmpeak);
+	}
+	double gini = 0.0;
+	gini = econ->computeGini();
+	double* prctiles;
+	prctiles = econ->computePrctiles(); 
+	robustnessOutput << nameSol << "\t" << ssp  << "\t" << damages << "\t" << 
+		econ->utility << "\t" << climate->tatm[17] << "\t" <<
+		tatmpeak << "\t" << gini << "\t" <<
+		*(prctiles) << "\t" <<  *(prctiles+1) << "\t" << 
+		*(prctiles+2) << "\t" <<  *(prctiles+3) << std::endl;
+	return;
 }
 // frees allocated memory
 void RICE::RICE_delete(){

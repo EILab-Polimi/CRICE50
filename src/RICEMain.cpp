@@ -13,6 +13,60 @@ TODO: Here we will put authors and license
 #include <string>
 #include <math.h>
 #include <fstream>
+#include <dirent.h>
+#include <sys/stat.h>
+
+// Reads a list of files in a directory
+void GetFilesInDirectory(std::vector<std::string> &out, const std::string &directory)
+{
+#ifdef WINDOWS
+    HANDLE dir;
+    WIN32_FIND_DATA file_data;
+
+    if ((dir = FindFirstFile((directory + "/*").c_str(), &file_data)) == INVALID_HANDLE_VALUE)
+        return; /* No files found */
+
+    do {
+        const std::string file_name = file_data.cFileName;
+        const std::string full_file_name = directory + "/" + file_name;
+        const bool is_directory = (file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+
+        if (file_name[0] == '.')
+            continue;
+
+        if (is_directory)
+            continue;
+
+        out.push_back(full_file_name);
+    } while (FindNextFile(dir, &file_data));
+
+    FindClose(dir);
+#else
+    DIR *dir;
+    struct dirent *ent;
+    class stat st;
+
+    dir = opendir(directory.c_str());
+    while ((ent = readdir(dir)) != NULL) {
+        const std::string file_name = ent->d_name;
+        const std::string full_file_name = directory + "/" + file_name;
+
+        if (file_name[0] == '.')
+            continue;
+
+        if (stat(full_file_name.c_str(), &st) == -1)
+            continue;
+
+        const bool is_directory = (st.st_mode & S_IFDIR) != 0;
+
+        if (is_directory)
+            continue;
+
+        out.push_back(full_file_name);
+    }
+    closedir(dir);
+#endif
+}
 
 int main(int argc, char* argv[])
 {	
@@ -42,42 +96,78 @@ int main(int argc, char* argv[])
 	double objs[nobjs];
 	double vars[nvars];
 
-	// ==== SIMULATION EXECUTION ==========
-	if (riceptr->econ->params.DMType == BAU){
-		riceptr->simulate();				
-		std::cout << riceptr->econ->utility << std::endl;	
+	if (riceptr->robustness == 1){
+	    end = clock();
+
+	    std::cout << "reading input files: time elapsed: " << ((end - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+	    std::cout << "starting simulations" << std::endl;
+		// get list of solution files to be simulated 
+		std::vector<std::string> listFiles;
+		listFiles.reserve(484);
+		std::string solDir = "./RICE50++_Inputs";
+		GetFilesInDirectory(listFiles, solDir);
+		// file streams:  input & output  
+		std::fstream solFile;
+		std::fstream robustnessOutput;
+		// write header
+		robustnessOutput.open("./robustnessOutput.txt", std::ios_base::out);
+		robustnessOutput << "Solution\tSSP\tDamages\t" << 
+			"Welfare\tT(2100)\tTmax\tGini(2100)\t" <<
+			"90thGDPpc(2100)\t80thGDPpc(2100)\t" << 
+			"20thGDPpc(2100)\t10thGDPpc(2100)\t" << std::endl;
+
+		for (int nfiles = 0; nfiles < listFiles.size() ; nfiles++){
+			// get file name
+			std::string nameSol = listFiles[nfiles];
+			nameSol.erase( nameSol.begin(), nameSol.begin() + 18 );
+			nameSol.erase( nameSol.end() - 4, nameSol.end() );
+			// open solution file to be simulated
+			solFile.open(listFiles[nfiles], std::ios_base::in);
+			if (!solFile) {
+				std::cerr << "Error: file could not be opened" << std::endl;
+	    		exit(1);
+	    	}
+	    	// read file into variables
+			for (int varidx = 0; varidx < nvars ; varidx++){
+				solFile >> vars[varidx];
+			}
+			solFile.close();
+			// set the variables read above
+			riceptr->setVariables(vars);
+			for (int ssp = 1; ssp <= 5; ssp++){
+				// set ssp
+				riceptr->setSsp(ssp);
+				for (int damages = BURKESR; damages < DAMAGEERR; damages++){
+					// set damages
+					riceptr->setDamages(damages);
+					// simulate
+					riceptr->simulate();
+					// report
+					riceptr->reportObjs(nameSol, ssp, damages, robustnessOutput);
+				}
+			} 
+		}
+		robustnessOutput.close();			
 	}
 	else{
-		MOEA_Init(nobjs, 0);
-		while (MOEA_Next_solution() == MOEA_SUCCESS) {
-			MOEA_Read_doubles(nvars, vars);
-			riceptr->setVariables(vars);
-			riceptr->simulate();
-			objs[0] =  - riceptr->econ->utility;
-			MOEA_Write(objs, NULL);
+		// ==== SIMULATION EXECUTION ==========
+		if (riceptr->econ->params.DMType == BAU){
+			riceptr->simulate();				
+			std::cout << riceptr->econ->utility << std::endl;	
 		}
+		else{
+			MOEA_Init(nobjs, 0);
+			while (MOEA_Next_solution() == MOEA_SUCCESS) {
+				MOEA_Read_doubles(nvars, vars);
+				riceptr->setVariables(vars);
+				riceptr->simulate();
+				objs[0] =  - riceptr->econ->utility;
+				MOEA_Write(objs, NULL);
+			}
+		}
+		riceptr->writeSimulation();
 	}
-
-
-	// DRAFT CODE FOR MULTIPLE ITERATIONS
-	// for (int iter=0; iter<10; iter++){
-	//    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
-	//    std::cout << "Simulating: " << std::endl;
-
-	//    std::cout << "time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
-
-	//    riceptr->resetTidx();
-		// riceptr->simulate();
-	// }
-
-    // std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
-    // std::cout << "Writing output data: " << std::endl;
-
 	// ==== POST PROCESSING ==========
-
-	// export simulation results in output file
-
-	riceptr->writeSimulation();
     // std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
     // std::cout << "Freeing memory: " << std::endl;
 	// delete memory used by RICE 

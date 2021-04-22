@@ -394,10 +394,10 @@ int RICEEconAgent::getNVars(){
 	int nvars;
 	if (params.DMType == INPUT_STATIC){
 		if (params.adaptType == ADWITCH){
-			nvars = horizon * 5;
+			nvars = (horizon - 1) * 5;
 		}
 		else{
-			nvars = horizon * 2;
+			nvars = (horizon - 1) * 2;
 		}
 	} 
 	if (params.DMType == INPUT_POLICY){
@@ -722,14 +722,14 @@ void RICEEconAgent::setAgentVariables(double* vars){
 	if (params.DMType == INPUT_STATIC){
 		for (int tidx=0; tidx < horizon; tidx++){
 			if (tidx > 0) {
-				vars += 2;
 				traj.miu[tidx] = vars[0];
 				traj.s[tidx] = vars[1];
+				vars += 2;
 				if (params.adaptType == ADWITCH){
-					vars += 3;
 					traj.fad[t] = vars[0];
 					traj.ia[t] = vars[1];
 					traj.iac[t] = vars[2];					
+					vars += 3;
 				}
 			}
 		}
