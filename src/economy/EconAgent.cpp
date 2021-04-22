@@ -84,6 +84,7 @@ void RICEEconAgent::allocate(){
 	// traj.tfp = new double[5][horizon + 1];
 	// traj.gdpbase = new double[5][horizon + 1];
 	// traj.sigma = new double[5][horizon + 1];
+	// traj.eind_bau = new double[5][horizon + 1];
 	traj.gdp = new double[horizon + 1];
 	traj.eind = new double[horizon + 1];
 	traj.e = new double[horizon + 1];	
@@ -259,8 +260,8 @@ void RICEEconAgent::readParams(){
 	params.beta_bhm_lrdp_2 = 0.0001513;
 	params.beta_bhm_lrdr = -0.0026918;
 	params.beta_bhm_lrdr_2 = -0.000022;
-	params.beta_djo_r = 0.0261;
-	params.beta_djo_p = 0.0261 - 0.01655;
+	params.beta_djo_r = 0.00261;
+	params.beta_djo_p = 0.00261 - 0.01655;
 	params.beta_k = -0.0586;
 	in.open("./settings/AdaptCoeffOrigED57.txt", std::ios_base::in);
 	if (!in){
@@ -408,6 +409,34 @@ int RICEEconAgent::getNVars(){
 void RICEEconAgent::readBaseline(int hrzn){
 	std::fstream in;
 	std::string line;
+	//eind_bau
+	traj.eind_bau = new double * [5];
+	for (int idxssp=0; idxssp<5; idxssp++){
+		traj.eind_bau[idxssp] = new double[hrzn + 1];
+	}
+	in.open("./data_ed57/data_baseline/ssp_eind_bau.csv");
+	if (!in){
+		std::cout << "The BAU industrial emissions file specified could not be found!" << std::endl;
+	    exit(1);
+	}
+	while(std::getline(in, line)){
+		line.erase(std::remove(line.begin(), line.end(), '"'), line.end());
+		std::istringstream s(line);
+		std::string field;
+		std::string splitline[4];
+		std::string idxssp;
+		int count = 0;
+		while (std::getline(s, field, ',')){
+			splitline[count] = field;
+			count++;
+		}
+		if (!splitline[2].compare(name) && stoi(splitline[1])<=hrzn){
+			idxssp = splitline[0][3];
+			traj.eind_bau[stoi(idxssp)-1][stoi(splitline[1])-1] = stod(splitline[3]);
+		}
+	}
+	in.close();
+
 	// carbon intensity
 	traj.sigma = new double * [5];
 	for (int idxssp=0; idxssp<5; idxssp++){
@@ -463,6 +492,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 		}
 	}
 	in.close();
+
 	//tfp
 	traj.tfp = new double * [5];
 	for (int idxssp=0; idxssp<5; idxssp++){
@@ -490,6 +520,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 		}
 	}
 	in.close();
+	
 	//gdpbase
 	traj.gdpbase = new double * [5];
 	for (int idxssp=0; idxssp<5; idxssp++){
@@ -754,7 +785,8 @@ void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
 	// compute abatecost
 	traj.abatecost[t] = traj.mx[t] *
 		( (traj.ax[t] * pow(traj.miu[t],2) / 2) + 
-			(traj.bx[t] * pow(traj.miu[t],5) / 5)) / 1000.0;
+			(traj.bx[t] * pow(traj.miu[t],5) / 5)) *
+			traj.eind_bau[ssp][t] / 1000.0;
 	traj.cprice[t] = traj.mx[t] *
 		( (traj.ax[t] * pow(traj.miu[t],2)) + 
 			(traj.bx[t] * pow(traj.miu[t],4)));
@@ -926,7 +958,7 @@ void RICEEconAgent::computeDamages(double RPCutoff){
 		else if (params.damagesType == BURKESR_DIFF){
 			//BURKE - SR diff
 			if (params.indRPCutoff == BASEGDP){
-				if (RPCutoff > traj.gdpbase[ssp][t]){
+				if (RPCutoff[t] >= traj.gdpbase[ssp][t] / traj.pop[ssp][t]){
 					traj.impact[t] = params.beta_bhm_srdp* traj.tatm_local[t] + 
 						params.beta_bhm_srdp_2* pow(traj.tatm_local[t],2)
 						- params.beta_bhm_srdp* params.base_tatm 
@@ -940,7 +972,7 @@ void RICEEconAgent::computeDamages(double RPCutoff){
 				}
 			}
 			else if (params.indRPCutoff == GDP){
-				if (RPCutoff > traj.y[t-1]){
+				if (RPCutoff[t] >= traj.y[t-1] / traj.pop[ssp][t]){
 					traj.impact[t] = params.beta_bhm_srdp* traj.tatm_local[t] + 
 						params.beta_bhm_srdp_2* pow(traj.tatm_local[t],2)
 						- params.beta_bhm_srdp* params.base_tatm 
@@ -957,7 +989,7 @@ void RICEEconAgent::computeDamages(double RPCutoff){
 		else if (params.damagesType == BURKELR_DIFF){
 			//BURKE - LR diff
 			if (params.indRPCutoff == BASEGDP){
-				if (RPCutoff > traj.gdpbase[ssp][t]){
+				if (RPCutoff[t] >= traj.gdpbase[ssp][t] / traj.pop[ssp][t]){
 					traj.impact[t] = params.beta_bhm_lrdp* traj.tatm_local[t] + 
 						params.beta_bhm_lrdp_2* pow(traj.tatm_local[t],2)
 						- params.beta_bhm_lrdp* params.base_tatm 
@@ -971,7 +1003,7 @@ void RICEEconAgent::computeDamages(double RPCutoff){
 				}
 			}
 			else if (params.indRPCutoff == GDP){
-				if (RPCutoff > traj.y[t-1]){
+				if (RPCutoff[t] >= traj.y[t-1] / traj.pop[ssp][t]){
 					traj.impact[t] = params.beta_bhm_lrdp* traj.tatm_local[t] + 
 						params.beta_bhm_lrdp_2* pow(traj.tatm_local[t],2)
 						- params.beta_bhm_lrdp* params.base_tatm 
@@ -988,7 +1020,7 @@ void RICEEconAgent::computeDamages(double RPCutoff){
 		else if (params.damagesType == DJO){
 			//DJO
 			if (params.indRPCutoff == BASEGDP){
-				if (RPCutoff > traj.gdpbase[ssp][t]){
+				if (RPCutoff[0] >= traj.gdpbase[ssp][0] / traj.pop[ssp][0]){
 					traj.impact[t] = params.beta_djo_p * 
 						(traj.tatm_local[t] - params.base_tatm); 
 				}
@@ -998,7 +1030,7 @@ void RICEEconAgent::computeDamages(double RPCutoff){
 				}
 			}
 			else if (params.indRPCutoff == GDP){
-				if (RPCutoff > traj.y[t-1]){
+				if (RPCutoff[t] >= traj.y[t-1] / traj.pop[ssp][t]){
 					traj.impact[t] = params.beta_djo_p * 
 						(traj.tatm_local[t] - params.base_tatm); 
 				}
@@ -1011,8 +1043,8 @@ void RICEEconAgent::computeDamages(double RPCutoff){
 		else if (params.damagesType == KAHN){
 			//KAHN
 			double tatm_mavg = 0.0;
-			for (int tidx=1; tidx<7; tidx++){
-				if (t-tidx < 6){
+			for (int tidx=0; tidx<6; tidx++){
+				if (t-tidx < 0){
 					tatm_mavg += params.base_tatm;				
 				}
 				else{
@@ -1063,12 +1095,17 @@ double RICEEconAgent::getPop(int tidx){
 double RICEEconAgent::getCPC(int tidx){
 	return traj.cpc[tidx];
 }
+// get gdp per capita
+double RICEEconAgent::getGDPpc(int tidx){
+	return traj.y[tidx] / traj.pop[ssp][tidx];
+}
 // writes header
 void RICEEconAgent::writeHeader(std::fstream& output){
 	output << "POP" << name << "\t" <<
 		"TFP" << name << "\t" <<
 		"GDPBASE" << name << "\t" <<
 		"SIGMA" << name << "\t" <<
+		"EINDBAU" << name << "\t" <<
 		"MX" << name << "\t" <<
 		"AX" << name << "\t" <<
 		"BX" << name << "\t" <<
@@ -1116,6 +1153,7 @@ void RICEEconAgent::writeStep(std::fstream& output){
 		traj.tfp[ssp][t] << "\t" <<
 		traj.gdpbase[ssp][t] << "\t" <<
 		traj.sigma[ssp][t] << "\t" <<
+		traj.eind_bau[ssp][t] << "\t" <<
 		traj.mx[t] << "\t" <<
 		traj.ax[t] << "\t" <<
 		traj.bx[t] << "\t" <<
@@ -1157,9 +1195,20 @@ void RICEEconAgent::writeStep(std::fstream& output){
 		traj.adcosts[t] << "\t" ;
 	t++;
 }
+// sets ssp 
+void RICEEconAgent::setSsp(int ssps){
+	ssp = ssps-1;
+	return;
+}
+// sets damages type
+void RICEEconAgent::setDamages(int damages){
+	params.damagesType = static_cast<DamagesType>(damages);
+	return;
+}
 // frees allocated memory
 void RICEEconAgent::econAgentDelete(){
 	for (int idxssp=0; idxssp<5;idxssp++){
+		delete[] traj.eind_bau[idxssp];
 		delete[] traj.pop[idxssp];
 		delete[] traj.tfp[idxssp];
 		delete[] traj.gdpbase[idxssp];

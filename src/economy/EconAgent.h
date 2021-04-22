@@ -26,12 +26,15 @@ public:
 	virtual double getEmissions(int tidx) = 0;
 	virtual double getPop(int tidx) = 0;
 	virtual double getCPC(int tidx) = 0;
+	virtual double getGDPpc(int tidx) = 0;
 	virtual int getNVars() = 0;
 	virtual	void setBAUDMType() = 0;
 	virtual void nextStep(double* tatm, double RPCutoff) = 0;
 	virtual void setAgentVariables(double* vars) = 0;
 	virtual void writeHeader(std::fstream& output) = 0;
 	virtual void writeStep(std::fstream& output) = 0;
+	virtual void setSsp(int ssp) = 0;
+	virtual void setDamages(int damages) = 0;
 	virtual void econAgentDelete() = 0;
 };
 
@@ -88,6 +91,7 @@ struct RICEEconAgentTraj{
 	double** tfp;
 	double** gdpbase;
 	double** sigma;
+	double** eind_bau;
 	double* gdp;
 	double* eind;
 	double* e;	
@@ -157,6 +161,7 @@ public:
 	double getEmissions(int tidx);
 	double getPop(int tidx);
 	double getCPC(int tidx);
+	double getGDPpc(int tidx);
 	int getNVars();
 	void setBAUDMType();
 	void nextStep(double* tatm, double RPCutoff);
@@ -166,6 +171,8 @@ public:
 	void nextAction();
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
+	void setSsp(int ssps);
+	void setDamages(int damages);
 	void econAgentDelete();
 };
 
