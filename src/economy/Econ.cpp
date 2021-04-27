@@ -165,16 +165,17 @@ void Econ::nextStep(){
 	}
 	// sort values and compute cutoff
 	std::sort(RPCutoffValues,RPCutoffValues+agents);
-	double RPCutoff = 0.0;
+	// double RPCutoff = 0.0;
+	RPCutoff[t] = 0.0;
 	switch (params.RPCutoffMetric){
 		case MEAN:
 			for (int ag=0; ag < agents; ag++){
-				RPCutoff += RPCutoffValues[ag];
+				RPCutoff[t] += RPCutoffValues[ag];
 			}
-			RPCutoff = RPCutoff / agents;
+			RPCutoff[t] = RPCutoff[t] / agents;
 			break;
 		case MEDIAN:
-			RPCutoff = RPCutoffValues[agents/2];
+			RPCutoff[t] = RPCutoffValues[agents/2];
 			break;
 		case METRICERR:
 			std::cerr <<

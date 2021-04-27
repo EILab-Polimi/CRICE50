@@ -757,7 +757,7 @@ void RICEEconAgent::setBAUDMType(){
 	params.DMType = BAU;
 }
 // simulates one time step
-void RICEEconAgent::nextStep(double* tatm, double RPCutoff){
+void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 	//take action first based on available information 
 	// (especially in adaptive decision making setting)
 	// eventually consider 30°C limit
@@ -935,7 +935,7 @@ void RICEEconAgent::nextAction(){
 	// }
 	return;	
 }
-void RICEEconAgent::computeDamages(double RPCutoff){
+void RICEEconAgent::computeDamages(double* RPCutoff){
 	if (params.damagesType == NO){
 		traj.damages[t] = 0.0;	
 		traj.damfrac[t] = 0.0;	
