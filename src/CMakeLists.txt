@@ -1,0 +1,5 @@
+add_subdirectory(moeaframework)
+add_subdirectory(carbon)
+add_subdirectory(climate)
+add_subdirectory(economy)
+add_library(rice RICE.cpp RICE.h)

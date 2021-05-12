@@ -1,0 +1,1 @@
+add_library(moeas ann_mo.cpp ann_mo.h ann.cpp ann.h moeaframework.c moeaframework.h ncRBF.cpp ncRBF.h param_function.cpp param_function.h param_policy.cpp param_policy.h pwLinear.cpp pwLinear.h rbf.cpp rbf.h utils.cpp utils.h)

@@ -1,0 +1,1 @@
+add_library(economies Econ.cpp Econ.h EconAgent.cpp EconAgent.h)

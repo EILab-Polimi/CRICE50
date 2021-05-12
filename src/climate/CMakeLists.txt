@@ -1,0 +1,1 @@
+add_library(climates Climate.cpp Climate.h)
