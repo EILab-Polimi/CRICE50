@@ -7,6 +7,7 @@
 TODO: Here we will put authors and license
 */
 #include "RICE.h"
+#include "./optimizer/Optimizer.h"
 #include "./moeaframework/moeaframework.h"
 #include <iostream>
 #include <time.h>
@@ -16,7 +17,7 @@ TODO: Here we will put authors and license
 #include <dirent.h>
 #include <sys/stat.h>
 
-// Reads a list of files in a directory
+// Reads a list of files in a directory - used for robustness analysis
 void GetFilesInDirectory(std::vector<std::string> &out, const std::string &directory)
 {
 #ifdef WINDOWS
@@ -68,6 +69,63 @@ void GetFilesInDirectory(std::vector<std::string> &out, const std::string &direc
 #endif
 }
 
+/*
+Perform robustness analysis simulations and writes them to file
+*/
+void RobustnessAnalysis(RICE* riceptr, int nvars, double* vars){
+	// get list of solution files to be simulated 
+	std::vector<std::string> listFiles;
+	listFiles.reserve(484);
+	std::string solDir = "./RICE50++_Inputs";
+	GetFilesInDirectory(listFiles, solDir);
+	// file streams:  input & output  
+	std::fstream solFile;
+	std::fstream robustnessOutput;
+	// write header
+	robustnessOutput.open("./robustnessOutput.txt", std::ios_base::out);
+	robustnessOutput << "Solution\tSSP\tDamages\t" << 
+		"Welfare\tT(2100)\tTmax\tGini(2100)\t" <<
+		"90thGDPpc(2100)\t80thGDPpc(2100)\t" << 
+		"20thGDPpc(2100)\t10thGDPpc(2100)\t" << std::endl;
+
+	for (int nfiles = 0; nfiles < listFiles.size() ; nfiles++){
+		// get file name
+		std::string nameSol = listFiles[nfiles];
+		nameSol.erase( nameSol.begin(), nameSol.begin() + 18 );
+		nameSol.erase( nameSol.end() - 4, nameSol.end() );
+		// open solution file to be simulated
+		solFile.open(listFiles[nfiles], std::ios_base::in);
+		if (!solFile) {
+			std::cerr << "Error: file could not be opened" << std::endl;
+    		exit(1);
+    	}
+    	// read file into variables
+		for (int varidx = 0; varidx < nvars ; varidx++){
+			solFile >> vars[varidx];
+		}
+		solFile.close();
+		// set the variables read above
+		riceptr->setVariables(vars);
+		for (int ssp = 1; ssp <= 5; ssp++){
+			// set ssp
+			riceptr->setSsp(ssp);
+			for (int damages = BURKESR; damages < DAMAGEERR; damages++){
+				// set damages
+				riceptr->setDamages(damages);
+				// simulate
+				riceptr->simulate();
+				// report
+				riceptr->reportObjs(nameSol, ssp, damages, robustnessOutput);
+			}
+		} 
+	}
+	robustnessOutput.close();			
+	return;
+}
+
+/*
+Main function
+*/
 int main(int argc, char* argv[])
 {	
 	clock_t start, end;
@@ -98,62 +156,20 @@ int main(int argc, char* argv[])
 
 	if (riceptr->robustness == 1){
 	    end = clock();
-
 	    std::cout << "reading input files: time elapsed: " << ((end - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
 	    std::cout << "starting simulations" << std::endl;
-		// get list of solution files to be simulated 
-		std::vector<std::string> listFiles;
-		listFiles.reserve(484);
-		std::string solDir = "./RICE50++_Inputs";
-		GetFilesInDirectory(listFiles, solDir);
-		// file streams:  input & output  
-		std::fstream solFile;
-		std::fstream robustnessOutput;
-		// write header
-		robustnessOutput.open("./robustnessOutput.txt", std::ios_base::out);
-		robustnessOutput << "Solution\tSSP\tDamages\t" << 
-			"Welfare\tT(2100)\tTmax\tGini(2100)\t" <<
-			"90thGDPpc(2100)\t80thGDPpc(2100)\t" << 
-			"20thGDPpc(2100)\t10thGDPpc(2100)\t" << std::endl;
-
-		for (int nfiles = 0; nfiles < listFiles.size() ; nfiles++){
-			// get file name
-			std::string nameSol = listFiles[nfiles];
-			nameSol.erase( nameSol.begin(), nameSol.begin() + 18 );
-			nameSol.erase( nameSol.end() - 4, nameSol.end() );
-			// open solution file to be simulated
-			solFile.open(listFiles[nfiles], std::ios_base::in);
-			if (!solFile) {
-				std::cerr << "Error: file could not be opened" << std::endl;
-	    		exit(1);
-	    	}
-	    	// read file into variables
-			for (int varidx = 0; varidx < nvars ; varidx++){
-				solFile >> vars[varidx];
-			}
-			solFile.close();
-			// set the variables read above
-			riceptr->setVariables(vars);
-			for (int ssp = 1; ssp <= 5; ssp++){
-				// set ssp
-				riceptr->setSsp(ssp);
-				for (int damages = BURKESR; damages < DAMAGEERR; damages++){
-					// set damages
-					riceptr->setDamages(damages);
-					// simulate
-					riceptr->simulate();
-					// report
-					riceptr->reportObjs(nameSol, ssp, damages, robustnessOutput);
-				}
-			} 
-		}
-		robustnessOutput.close();			
+		RobustnessAnalysis(riceptr, nvars, vars);
 	}
 	else{
 		// ==== SIMULATION EXECUTION ==========
 		if (riceptr->econ->params.DMType == BAU){
 			riceptr->simulate();				
 			std::cout << riceptr->econ->utility << std::endl;	
+		}
+		else if (riceptr->econ->params.utilityType == NON_COOP){
+			std::cout << "here goes the optimizer" << std::endl;
+			Optimizer opt = Optimizer(riceptr);
+			opt.run();
 		}
 		else{
 			MOEA_Init(nobjs, 0);
@@ -164,6 +180,9 @@ int main(int argc, char* argv[])
 				objs[0] =  - riceptr->econ->utility;
 				MOEA_Write(objs, NULL);
 			}
+			Optimizer opt = Optimizer(riceptr);
+			opt.run();
+		
 		}
 		riceptr->writeSimulation();
 	}

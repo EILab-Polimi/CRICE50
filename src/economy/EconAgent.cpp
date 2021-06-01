@@ -11,6 +11,7 @@
 #include "../moeaframework/pwLinear.h"
 #include "../moeaframework/ncRBF.h"
 #include "../moeaframework/ann_mo.h"
+#include <torch/torch.h>
 
 DamagesType stringToDamagesType(std::string input){
 	if (input == "NO") return NO;
@@ -387,6 +388,31 @@ void RICEEconAgent::readPolicyParams(){
 	policy.input.resize(policy.p_param.policyInput);
 	policy.output.resize(policy.p_param.policyOutput);
 
+	// TORCH POLICY
+	std::vector<float> vecmin(policy.p_param.policyInput), 
+		vecmax(policy.p_param.policyInput);
+	std::copy(policy.p_param.mIn.begin(),policy.p_param.mIn.end(), 
+		vecmin.begin());
+	std::copy(policy.p_param.MIn.begin(),policy.p_param.MIn.end(), 
+		vecmax.begin());
+	policy.minInput = torch::from_blob(vecmin.data(), 
+		{policy.p_param.policyInput, 1}).clone();
+	policy.maxInput = torch::from_blob(vecmax.data(), 
+		{policy.p_param.policyInput, 1}).clone();
+	vecmin.clear();
+	vecmin.resize(policy.p_param.policyOutput);
+	vecmax.clear();
+	vecmax.resize(policy.p_param.policyOutput);
+	std::copy(policy.p_param.mOut.begin(),policy.p_param.mOut.end(), 
+		vecmin.begin());
+	std::copy(policy.p_param.MOut.begin(),policy.p_param.MOut.end(), 
+		vecmax.begin());
+	policy.minOutput = torch::from_blob(vecmin.data(), 
+		{policy.p_param.policyOutput, 1}).clone();
+	policy.maxOutput = torch::from_blob(vecmax.data(), 
+		{policy.p_param.policyOutput, 1}).clone();
+	policy.TorchPolicy = new Net(policy.p_param.policyInput, 
+		policy.p_param.policyStr, policy.p_param.policyOutput); 
 	return;
 }
 // return number of variables
@@ -740,6 +766,24 @@ void RICEEconAgent::setAgentVariables(double* vars){
 	}
 	return;
 }
+// get AgentTorchPolicy
+Net* RICEEconAgent::getAgentTorchPolicy(){
+	Net* nnet = policy.TorchPolicy;
+	return nnet;
+}
+// get LogProb
+std::vector<torch::Tensor> RICEEconAgent::getLogProb(){
+	return policy.logprobs;
+}
+// get Rewards
+std::vector<torch::Tensor> RICEEconAgent::getRewards(){
+	return policy.rewards;
+}
+// set AgentTorchPolicy
+void RICEEconAgent::setAgentTorchPolicy(Net* nnet){
+	policy.TorchPolicy = nnet;
+	return;
+}
 // returns value for Rich Poor Cutoff
 double RICEEconAgent::getValueForRPCutoff(){
 	switch (params.indRPCutoff){
@@ -758,6 +802,12 @@ void RICEEconAgent::setBAUDMType(){
 }
 // simulates one time step
 void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
+	if (t==0){
+		policy.states.clear();
+		policy.actions.clear();
+		policy.logprobs.clear();
+		policy.rewards.clear();
+	}
 	//take action first based on available information 
 	// (especially in adaptive decision making setting)
 	// eventually consider 30°C limit
@@ -812,6 +862,10 @@ void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 		(1.0 - params.elasmu) - 1.0;
 	traj.cemutotper[t] = traj.pop[ssp][t] * traj.periodu[t] * 
 		(1.0 / pow(1.0 + params.prstp, 5*t));
+	std::vector<float> rew = {- (float) (traj.cemutotper[t]/(1.0 / pow(1.0 + params.prstp, 5*t)))};
+	torch::Tensor reward = torch::from_blob(rew.data(), {1});
+	policy.rewards.push_back(reward);
+	// policy.rewards[t] =  - (float) (traj.cemutotper[t]/(1.0 / pow(1.0 + params.prstp, 5*t)));
 	utility += traj.cemutotper[t];
 	// std::cout << "\t\tHere the region " << name << " evolves to the step " << t+1 << " emitting (GtCO2):" << e[t] << std::endl;
 	t++;
@@ -867,67 +921,127 @@ void RICEEconAgent::computeAdaptation(){
 // take next action
 void RICEEconAgent::nextAction(){
 	// set decision variables
-	if (t>0){
-		switch (params.DMType){
-			case INPUT_POLICY:
-				// retrieve states or input to the policy
-				policy.input.clear();
-				policy.output.clear();
-				// inputs: effK, tatm_local, tatm, tocean, mat, mup, mlo, time
-				policy.input.push_back(traj.k[t]/(traj.tfp[ssp][t] * traj.pop[ssp][t])); //as in DICE
-				// policy.input.push_back(traj.y[t - 1]/(traj.tfp[ssp][t - 1] * traj.pop[ssp][t - 1])); //maybe better (?)
-				policy.input.push_back(traj.tatm_local[t]);
-				for (int s = 0; s < nGlobalStates; s++){
-					policy.input.push_back(globalStates[s]);
-				}
-				policy.input.push_back(t);
-				if (params.adaptType == ADWITCH){
-					policy.input.push_back(traj.sad[t] / traj.k[t] * 100.0);
-					policy.input.push_back(traj.sac[t] / traj.k[t] * 100.0);
-				}
-				
-				policy.output = policy.Policy->get_NormOutput(policy.input);
-				traj.miu[t] = policy.output[0];
-				traj.s[t] = policy.output[1];
-				if (params.adaptType == ADWITCH){
-					traj.fad[t] = policy.output[2];
-					traj.ia[t] = policy.output[3];
-					traj.iac[t] = policy.output[4];
-				}
+	switch (params.DMType){
+		case INPUT_POLICY:{
+			// retrieve states or input to the policy
+			policy.input.clear();
+			policy.output.clear();
+			// inputs: effK, tatm_local, tatm, tocean, mat, mup, mlo, time
+			policy.input.push_back(traj.k[t]/(traj.tfp[ssp][t] * traj.pop[ssp][t])); //as in DICE
+			// policy.input.push_back(traj.y[t - 1]/(traj.tfp[ssp][t - 1] * traj.pop[ssp][t - 1])); //maybe better (?)
+			policy.input.push_back(traj.tatm_local[t]);
+			for (int s = 0; s < nGlobalStates; s++){
+				policy.input.push_back(globalStates[s]);
+			}
+			policy.input.push_back(t);
+			if (params.adaptType == ADWITCH){
+				policy.input.push_back(traj.sad[t] / traj.k[t] * 100.0);
+				policy.input.push_back(traj.sac[t] / traj.k[t] * 100.0);
+			}
+			
+			// policy.output = policy.Policy->get_NormOutput(policy.input);
+			// traj.miu[t] = policy.output[0];
+			// traj.s[t] = policy.output[1];
+			// if (params.adaptType == ADWITCH){
+			// 	traj.fad[t] = policy.output[2];
+			// 	traj.ia[t] = policy.output[3];
+			// 	traj.iac[t] = policy.output[4];
+			// }
 
-				// if savings are fixed
-				traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
-				break;
-			case BAU:
-				// traj.miu[t] = std::min(traj.miu_up[t], 0.1 * (double) t);
-				traj.miu[t] = 0.0;
-				traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
-				if (params.adaptType == ADWITCH){
-					traj.fad[t] = 0.0;
-					traj.ia[t] = 0.0;
-					traj.iac[t] = 0.0;
-				}				
-				break;
-			case INPUT_STATIC:
-				// no need to do anything here
-				// miu, s & other decs. vars are fixed 
-				// at the beginning of simulation
-				// std::cerr << "not developed yet" << std::endl;
-				// exit(1);
-				break;
-			case DMERR:
-				std::cerr << "Please insert an available option for DMType" << std::endl;
+			// if savings are fixed
+			traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
+
+			//TORCHLIB
+
+			// create input tensor
+			std::vector<float> Tinput(policy.input.begin(), policy.input.end());
+			auto x = torch::from_blob(Tinput.data(), {8,1});
+			x = (x - policy.minInput) / (policy.maxInput - policy.minInput);
+			x = x.reshape({1,8});
+			x.requires_grad_(true);
+			policy.states.push_back(x);
+
+			// get next action mu and sigma
+			auto Toutput = policy.TorchPolicy->forward(x);
+			Toutput.requires_grad_(true);
+			auto mu = Toutput.index({0,0}).clone();
+			// mu = (mu -0.0 ) / (1.2 - 0.0);
+			// mu = (mu + 1.0) / (1.0 + 1.0);
+			mu.requires_grad_(true);
+			auto sigma = Toutput.index({0,1}).clone();
+			sigma.requires_grad_(true);
+			sigma = (sigma + 10.0) / (10.0 + 10.0);
+			sigma = torch::nn::functional::softplus(sigma);
+			// if (isnan(sigma.item<double>())){
+			// 	auto one = torch::ones({1});
+			// 	sigma = one*0.01;
+			// }
+			auto sample = torch::normal(mu.item<double>(), sigma.item<double>(), {1});
+			sample.requires_grad_(true);
+			policy.actions.push_back(sample);
+
+			// get actoin's log probability
+			auto pdf = (1.0 / (sigma.clone() * std::sqrt(2*M_PI))) * torch::exp(-0.5 * torch::pow((sample-mu.clone()) / sigma.clone(), 2));
+			// auto pdf = (1.0 / (0.3 * std::sqrt(2*M_PI))) * torch::exp(-0.5 * torch::pow((sample-mu.clone()) /0.3, 2));
+			pdf.requires_grad_(true);
+			// // Toutput = (Toutput - policy.minOutput) / (policy.maxOutput - policy.minOutput);
+			auto log = torch::log(pdf);
+			log.requires_grad_(true);
+			// std::cout << log[0] << std::endl;
+			// policy.logprob.index_put({t},log[0]);
+			policy.logprobs.push_back(log);
+
+			// policy.logprob[t] = torch::log(pdf);
+			// log[0].clone();
+
+			// std::cout << policy.logprob << std::endl;
+
+			traj.miu[t] = std::min(1.2, std::max(0.0, sample[0].item<double>()));
+			// traj.miu[t] = std::min(1.2, std::max(0.0, Toutput[0].item<double>()));
+			// traj.s[t] = Toutput[1].item<double>();
+			// if (params.adaptType == ADWITCH){
+			// 	traj.fad[t] = Toutput[2].item<double>();
+			// 	traj.ia[t] = Toutput[3].item<double>();
+			// 	traj.iac[t] = Toutput[4].item<double>();
+			// }
+
+			// if savings are fixed
+			traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
+
+			break;
 		}
-		traj.miu[t] = std::max(0.0, std::min(traj.miu_up[t], std::min(traj.miu[t-1] + 0.2, traj.miu[t])));
-		traj.s[t] = std::max(0.001, std::min(0.999, traj.s[t]));
-		if (params.adaptType == ADWITCH){
-			traj.fad[t] = std::min(0.1, std::max(0.0, traj.fad[t]));
-			traj.ia[t] = std::min(0.1, std::max(0.0, traj.ia[t]));
-			traj.iac[t] = std::min(0.1, std::max(0.0, traj.iac[t]));			
+		case BAU: {
+			// traj.miu[t] = std::min(traj.miu_up[t], 0.1 * (double) t);
+			traj.miu[t] = 0.0;
+			traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
+			if (params.adaptType == ADWITCH){
+				traj.fad[t] = 0.0;
+				traj.ia[t] = 0.0;
+				traj.iac[t] = 0.0;
+			}				
+			break;
+		}
+		case INPUT_STATIC: {
+			// no need to do anything here
+			// miu, s & other decs. vars are fixed 
+			// at the beginning of simulation
+			// std::cerr << "not developed yet" << std::endl;
+			// exit(1);
+			break;
+		}
+		case DMERR: {
+			std::cerr << "Please insert an available option for DMType" << std::endl;
 		}
 	}
-	else{
-		traj.miu[0] = 0.0;
+	traj.miu[t] = std::max(0.0, std::min(traj.miu_up[t], std::min(traj.miu[t-1] + 0.2, traj.miu[t])));
+	traj.s[t] = std::max(0.001, std::min(0.999, traj.s[t]));
+	if (params.adaptType == ADWITCH){
+		traj.fad[t] = std::min(0.1, std::max(0.0, traj.fad[t]));
+		traj.ia[t] = std::min(0.1, std::max(0.0, traj.ia[t]));
+		traj.iac[t] = std::min(0.1, std::max(0.0, traj.iac[t]));			
+	}
+	if (t==0){
+		traj.miu[t] = 0.0;
 	}
 	traj.miu[1] = 0.03;
 	// if (t >= horizon - 10){

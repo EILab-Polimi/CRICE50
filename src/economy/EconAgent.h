@@ -3,6 +3,22 @@
 #include <string>
 #include <fstream>
 #include "../moeaframework/param_function.h"
+#include <torch/torch.h> 
+
+struct Net : torch::nn::Module{
+	Net(int ninput, int nnodes, int noutput){
+		fc1 = register_module("input", torch::nn::Linear(ninput, nnodes));
+		fc2 = register_module("output", torch::nn::Linear(nnodes, noutput));
+	}
+
+	torch::Tensor forward(torch::Tensor x) {
+		x = torch::tanh(fc1->forward(x));
+		x = fc2->forward(x);
+		return x;
+	}
+
+	torch::nn::Linear fc1{nullptr}, fc2{nullptr};
+};
 
 enum DamagesType {NO, BURKESR, BURKELR, 
 	BURKESR_DIFF, BURKELR_DIFF, 
@@ -36,6 +52,10 @@ public:
 	virtual void setSsp(int ssp) = 0;
 	virtual void setDamages(int damages) = 0;
 	virtual void econAgentDelete() = 0;
+	virtual void setAgentTorchPolicy(Net* nnet) = 0;
+	virtual Net* getAgentTorchPolicy() = 0;
+	virtual std::vector<torch::Tensor> getLogProb() = 0;
+	virtual std::vector<torch::Tensor> getRewards() = 0;
 };
 
 struct RICEEconAgentParams{
@@ -140,6 +160,15 @@ struct EconAgentPolicy{
 	std::param_function* Policy;
 	std::vector<double> input, output;
 	int nvars;
+	Net* TorchPolicy;
+	std::vector<torch::Tensor> states;
+	std::vector<torch::Tensor> actions;
+	std::vector<torch::Tensor> logprobs;
+	std::vector<torch::Tensor> rewards;
+	torch::Tensor minInput;
+	torch::Tensor maxInput;
+	torch::Tensor minOutput;
+	torch::Tensor maxOutput;
 };
 
 class RICEEconAgent: public EconAgent{
@@ -174,6 +203,10 @@ public:
 	void setSsp(int ssps);
 	void setDamages(int damages);
 	void econAgentDelete();
+	void setAgentTorchPolicy(Net* nnet);
+	Net* getAgentTorchPolicy();
+	std::vector<torch::Tensor> getLogProb();
+	std::vector<torch::Tensor> getRewards();
 };
 
 #endif
