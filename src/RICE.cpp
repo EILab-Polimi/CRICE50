@@ -239,7 +239,7 @@ void RICE::setDamages(int damages){
 // report objectives
 void RICE::reportObjs(std::string nameSol, int ssp, int damages, std::fstream& robustnessOutput){
 	double tatmpeak = 0.0;
-	for (int tidx=0; tidx < horizon; tidx++){
+	for (int tidx=0; tidx <= 17; tidx++){
 		tatmpeak = std::max(climate->tatm[tidx], tatmpeak);
 	}
 	double gini = 0.0;
