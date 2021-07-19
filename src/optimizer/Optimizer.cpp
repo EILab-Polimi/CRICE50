@@ -2,7 +2,6 @@
 #include "../RICE.h"
 #include <torch/torch.h>
 
-
 Optimizer::Optimizer(RICE* ricep){	
 	riceptr = ricep;
 }
