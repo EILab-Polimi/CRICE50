@@ -6,7 +6,7 @@ data = pd.read_csv("./simulationOutput.txt", sep='\t')
 pd.set_option('precision',10)
 #select field to plot
 # field = ['E','E']
-field = ['TATM','TOCEAN', 'E', 'MIUjpn', 'IACjpn'] #
+field = ['TATM','TOCEAN', 'E', 'MIUjpn', 'DAMAGESbra','IACbra'] #
 
 print(data[field].describe)
 for el in field:

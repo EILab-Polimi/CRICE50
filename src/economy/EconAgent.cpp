@@ -282,7 +282,7 @@ void RICEEconAgent::readParams(){
 	in >> params.beta2_ad;
 	in >> params.beta3_ad;
 	in >> traj.gac[0];
-
+	params.adapteff = 1.0;
 	in.close();
 	return;
 }
@@ -845,7 +845,7 @@ void RICEEconAgent::computeAdaptation(){
 			(1 - params.phi_ad) * pow(traj.gac[t], params.rho_adcap), 
 			1 / params.rho_adcap);
 		// compute adaptation total
-		traj.adapt[t] = pow(params.miu_ad * pow(traj.act[t], params.rho_ad) + \
+		traj.adapt[t] = params.adapteff * pow(params.miu_ad * pow(traj.act[t], params.rho_ad) + \
 			(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), 
 			1 / params.rho_ad);
 		// compute residual damages
@@ -1203,6 +1203,11 @@ void RICEEconAgent::setSsp(int ssps){
 // sets damages type
 void RICEEconAgent::setDamages(int damages){
 	params.damagesType = static_cast<DamagesType>(damages);
+	return;
+}
+// sets adaptation efficiency
+void RICEEconAgent::setAdaptEff(double adapteff){
+	params.adapteff = adapteff;
 	return;
 }
 // frees allocated memory

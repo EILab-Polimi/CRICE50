@@ -171,6 +171,7 @@ void RICE::simulate(){
 	// 	<< econ->utility << std::endl;;
 	return;
 }
+// resets indices for new simulation
 void RICE::resetTidx(){
 	t = 0;
 	econ->t = 0;
@@ -236,6 +237,13 @@ void RICE::setDamages(int damages){
 	}
 	return;
 }
+// sets adaptation efficiency
+void RICE::setAdaptEff(double adapteff){
+	for (int ag=0; ag < econ->agents; ag++){
+		econ->agents_ptr[ag]->setAdaptEff(adapteff);
+	}
+	return;
+}
 // report objectives
 void RICE::reportObjs(std::string nameSol, int ssp, int damages, std::fstream& robustnessOutput){
 	double tatmpeak = 0.0;
@@ -251,6 +259,36 @@ void RICE::reportObjs(std::string nameSol, int ssp, int damages, std::fstream& r
 		tatmpeak << "\t" << gini << "\t" <<
 		*(prctiles) << "\t" <<  *(prctiles+1) << "\t" << 
 		*(prctiles+2) << "\t" <<  *(prctiles+3) << std::endl;
+	return;
+}
+// simulates over uncertainties
+void RICE::simulateUnc(double* objs){
+	objs[0] = pow(10,10);
+	objs[1] = 0.0;
+	objs[2] = 0.0;
+	for (int ssp = 1; ssp <= 5; ssp++){
+		// set ssp
+		setSsp(ssp);
+		for (int damages = BURKESR; damages < DAMAGEERR; damages++){
+			// set damages
+			setDamages(damages);
+			for (int adapteff = 0; adapteff <= 5; adapteff++){
+				double y2C = 0.0;
+				setAdaptEff(adapteff*0.2);
+				simulate();
+				objs[0] = std::max(- econ->utility, objs[0]);
+				for (int tidx = 0; tidx < horizon; tidx++){
+					if (climate->tatm[tidx] > 2.0){
+						y2C += 5.0;
+					}
+				}
+				objs[1] = std::max(y2C, objs[1]);
+				objs[2] = std::max(econ->computeGini(), objs[2]);
+				// std::cout << ssp << "\t" << damages << "\t" << adapteff << std::endl;
+				// std::cout << econ->utility << "\t" << y2C << "\t" << econ->computeGini() << std::endl;
+			}
+		}
+	}
 	return;
 }
 // frees allocated memory

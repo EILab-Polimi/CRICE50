@@ -4,6 +4,7 @@
 PROBLEM=RICE50++
 NAMEFILE=optRICE50
 EMODPS=/Users/angelocarlino/models/emodps
+# EMODPS=/home/acarlino/emodps
 # Optimization setting
 NSEEDS=1
 
@@ -24,10 +25,10 @@ do
 done
 
 # emodps
-NFE=50000
+NFE=1000
 NVAR=114
-NOBJ=1
-EPS=0.0000000001
+NOBJ=3
+EPS=0.000000001,4,0.005
 UB="1.0"
 LB="0.0"
 for S in $(seq 2 $NVAR)

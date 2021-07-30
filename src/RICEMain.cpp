@@ -155,13 +155,23 @@ int main(int argc, char* argv[])
 			riceptr->simulate();				
 			std::cout << riceptr->econ->utility << std::endl;	
 		}
+		// else{
+		// 	MOEA_Init(nobjs, 0);
+		// 	while (MOEA_Next_solution() == MOEA_SUCCESS) {
+		// 		MOEA_Read_doubles(nvars, vars);
+		// 		riceptr->setVariables(vars);
+		// 		riceptr->simulate();
+		// 		objs[0] =  - riceptr->econ->utility;
+		// 		MOEA_Write(objs, NULL);
+		// 	}
+		// }
 		else{
 			MOEA_Init(nobjs, 0);
 			while (MOEA_Next_solution() == MOEA_SUCCESS) {
 				MOEA_Read_doubles(nvars, vars);
 				riceptr->setVariables(vars);
-				riceptr->simulate();
-				objs[0] =  - riceptr->econ->utility;
+				riceptr->simulateUnc(objs);
+				// objs[0] =  - riceptr->econ->utility;
 				MOEA_Write(objs, NULL);
 			}
 		}
@@ -170,7 +180,7 @@ int main(int argc, char* argv[])
 	// ==== POST PROCESSING ==========
     // std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
     // std::cout << "Freeing memory: " << std::endl;
-	// delete memory used by RICE 
+	// delete memory used by RICE
 	riceptr->RICE_delete();
 
 	// end

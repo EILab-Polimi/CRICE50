@@ -35,6 +35,7 @@ public:
 	virtual void writeStep(std::fstream& output) = 0;
 	virtual void setSsp(int ssp) = 0;
 	virtual void setDamages(int damages) = 0;
+	virtual void setAdaptEff(double adapteff) = 0;
 	virtual void econAgentDelete() = 0;
 };
 
@@ -84,6 +85,7 @@ struct RICEEconAgentParams{
 	double beta1_ad;
 	double beta2_ad;
 	double beta3_ad;
+	double adapteff;
 };
 
 struct RICEEconAgentTraj{
@@ -173,6 +175,7 @@ public:
 	void writeStep(std::fstream& output);
 	void setSsp(int ssps);
 	void setDamages(int damages);
+	void setAdaptEff(double adapteff);
 	void econAgentDelete();
 };
 

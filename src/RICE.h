@@ -29,10 +29,12 @@ public:
 	void updateGlobalStates();
 	void nextStep();
 	void simulate();
+	void simulateUnc(double* objs);
 	void resetTidx();
 	void writeSimulation();
 	void setSsp(int ssp);
 	void setDamages(int damages);
+	void setAdaptEff(double adapteff);
 	void reportObjs(std::string nameSol, int ssp, int damages, std::fstream& robustnessOutput);
 	void RICE_delete();
 };

@@ -2,5 +2,5 @@ horizon			58
 tstep			5
 carbon_model	WITCH			(WITCH / DICE / FAIR)	
 climate_model	WITCH		(WITCH / DICE / GEOFFROY)
-objectives		1
+objectives		3
 robustness 		0
