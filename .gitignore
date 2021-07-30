@@ -66,4 +66,6 @@ tools/data_temp/*
 # RICE50++
 RICE50++
 simulationOutput.txt
-*/BorgOutput/*
+
+# results files
+**/BorgOutput/**
