@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <algorithm>
 
 // convert input string to enum
 ModelType stringToModelType(std::string input){
