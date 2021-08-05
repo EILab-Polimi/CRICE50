@@ -59,6 +59,8 @@ tools/data_temp/*
 # Mac
 */.DS_Store
 
+opt/Hydrocalc/BorgOutput
+opt/BorgOutput
 
 # Java
 *.jar

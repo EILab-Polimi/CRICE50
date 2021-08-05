@@ -788,9 +788,9 @@ void RICEEconAgent::setAgentTorchPolicy(Net* nnet){
 double RICEEconAgent::getValueForRPCutoff(){
 	switch (params.indRPCutoff){
 		case BASEGDP:
-			return traj.gdpbase[ssp][t];
+			return traj.gdpbase[ssp][t] / traj.pop[ssp][t];;
 		case GDP:
-			return traj.y[t-1];
+			return traj.y[t-1] / traj.pop[ssp][t];;
 		case RPINDERR:
 			std::cerr << "Please insert a valid option for RPCutoff" << std::endl;
 			exit(1);
