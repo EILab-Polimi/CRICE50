@@ -59,6 +59,9 @@ tools/data_temp/*
 # Mac
 .DS_Store
 
+#output
+rntdynamics_*.txt
+
 # RICE50++
 RICE50++
 simulationOutput.txt
