@@ -58,8 +58,9 @@ def patch_violinplot():
 # sobj = ['SO_det', 'SO_sto', 'SO_ad', 'SO_ad_sto', 'SO_ad_sto_MO','EMODPS']
 # sobj = ['SO_ad_sto_maxmin', 'SO_ad_sto_MO_maxmin','EMODPS_maxmin']
 # sobj = ['SO_ad_sto', 'SO_ad_sto_MO','EMODPS']
-nseeds = 5
+nseeds = 10
 nobjs = 3
+nobjs = 8
 path = './'
 RNTS = {}
 srand = np.random.randint(0,1e6)
@@ -193,12 +194,32 @@ for el in sols:
 		if el[0] > el2[0]:
 			if el[1] >= el2[1]:
 				if el[2] >= el2[2]:
-					flag = 1
+					if el[3] >= el2[3]:
+						if el[4] >= el2[4]:
+							if el[5] >= el2[5]:
+								if el[6] >= el2[6]:
+									if el[7] >= el2[7]:
+										flag = 1
+		# if el[0] > 2*1e-6:
+		# 	flag = 1
+		# if el[3] > 100:
+		# 	flag = 1
+		# if el[7] > 50:
+		# 	flag = 1
+		# if el[1] > el2[1]:
+		# 	if el[0] >= el2[0]:
+		# 		if el[2] >= el2[2]:
+		# 			flag = 1
+		# if el[2] > el2[2]:
+		# 	if el[1] >= el2[1]:
+		# 		if el[0] >= el2[0]:
+		# 			flag = 1
 	if flag==0:
 		solsnew.append(el)
 
-sols = pd.DataFrame(sols, columns=['Welfare','Years above 2°C','Gini'])
-fig = px.parallel_coordinates(sols, color='Gini',
+sols = pd.DataFrame(solsnew, columns=['Welfare','Welfare-MDN','Y1.5°C','Y1.5°C-MDN','90:10','90:10-MDN','NET','NET-MDN'])
+# sols = sols[['Welfare-MDN','Y1.5°C-MDN','90:10-MDN','NET-MDN']]
+fig = px.parallel_coordinates(sols, color='Y1.5°C-MDN',
     color_continuous_scale=px.colors.diverging.Tealrose)
 # ,
     # color_continuous_midpoint=2)

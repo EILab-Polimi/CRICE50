@@ -6,7 +6,7 @@ NAMEFILE=optRICE50
 EMODPS=/Users/angelocarlino/models/emodps
 # EMODPS=/home/acarlino/emodps
 # Optimization setting
-NSEEDS=1
+NSEEDS=5
 
 # static intertemporal optimization
 NFE=1000
@@ -27,8 +27,8 @@ done
 # emodps
 NFE=1000
 NVAR=114
-NOBJ=3
-EPS=0.000000001,4,0.005
+NOBJ=8
+EPS=0.00000001,0.00000001,4,4,0.5,0.5,10,10
 UB="1.0"
 LB="0.0"
 for S in $(seq 2 $NVAR)
@@ -38,33 +38,35 @@ do
 done
 
 
-# optimization
-for SEED in $(seq 1 $NSEEDS)
-do
-OUTFILE=./opt/BorgOutput/${NAMEFILE}_${SEED}.out
-RUNFILE=./opt/BorgOutput/rntdynamics_${SEED}.txt
-cd ..
-${EMODPS}/borg/borg.exe -n ${NFE} -v ${NVAR} -o ${NOBJ} -s ${SEED} -l ${LB} -u ${UB} -e ${EPS} -f ${OUTFILE} -R ${RUNFILE} -F 1000 ${PROBLEM}
-done
-echo "optimization terminated"
-
-# MYPATH="$(pwd)/BorgOutput/"
-# FILENAME=optADCDICE2016
-# START_COLUMN=201
-# FINISH_COLUMN=201
-# NUM_SEEDS=$NSEEDS
-
-# for ((S=1; S<=$NUM_SEEDS; S++))
+# # optimization
+# for SEED in $(seq 1 $NSEEDS)
 # do
-#  echo "Processing SEED $S"
-#  sed '/^\#/ d' ${MYPATH}${FILENAME}_${S}.out > temp.out
-#  cat temp.out | cut -d ' ' -f ${START_COLUMN}-${FINISH_COLUMN} > ${MYPATH}${FILENAME}_${S}_obj.txt
-#  rm temp.out
+# OUTFILE=./opt/BorgOutput/${NAMEFILE}_${SEED}.out
+# RUNFILE=./opt/BorgOutput/rntdynamics_${SEED}.txt
+# cd ..
+# ${EMODPS}/borg/borg.exe -n ${NFE} -v ${NVAR} -o ${NOBJ} -s ${SEED} -l ${LB} -u ${UB} -e ${EPS} -f ${OUTFILE} -R ${RUNFILE} -F 1000 ${PROBLEM}
 # done
+# echo "optimization terminated"
 
-# # Extract reference set
+cd ..
 
-# JAVA_ARGS="-classpath ./src/MOEAFramework-1.17-Executable.jar:."
+MYPATH="$(pwd)/opt/Hydrocalc/BorgOutput/"
+FILENAME=optRICE50
+START_COLUMN=115
+FINISH_COLUMN=117
+NUM_SEEDS=$NSEEDS
+ 
+for ((S=1; S<=$NUM_SEEDS; S++))
+do
+ echo "Processing SEED $S"
+ sed '/^\#/ d' ${MYPATH}${FILENAME}_${S}.out > temp.out
+ cat temp.out | cut -d ' ' -f ${START_COLUMN}-${FINISH_COLUMN} > ${MYPATH}${FILENAME}_${S}_obj.txt
+ rm temp.out
+done
+
+# Extract reference set
+
+JAVA_ARGS="-classpath ./src/moeaframework/MOEAFramework-1.17-Executable.jar:."
 
 
-# java ${JAVA_ARGS} org.moeaframework.util.ReferenceSetMerger -e ${EPS} -o ${MYPATH}${FILENAME}.reference ${MYPATH}${FILENAME}*_obj.txt
+java ${JAVA_ARGS} org.moeaframework.util.ReferenceSetMerger -e ${EPS} -o ${MYPATH}${FILENAME}.reference ${MYPATH}${FILENAME}*_obj.txt
