@@ -686,35 +686,7 @@ void RICEEconAgent::readBaseline(int hrzn){
 		}
 	}
 	in.close();
-	// traj.abatecost = new double[hrzn + 1];
-	// traj.i = new double[hrzn + 1];
-	// traj.ygross = new double[hrzn + 1];
-	// traj.ynet = new double[hrzn + 1];
-	// traj.y = new double[hrzn + 1];
-	// traj.damages = new double[hrzn + 1];
-	// traj.c = new double[hrzn + 1];
-	// traj.cpc = new double[hrzn + 1];
-	// traj.ri = new double[hrzn + 1];
-	// traj.cprice = new double[hrzn + 1];
-	// traj.periodu = new double[hrzn + 1];
-	// traj.cemutotper = new double[hrzn + 1];	
-	// traj.omega = new double[hrzn + 1];
 	traj.omega[0] = 0.0;
-	// traj.tatm_local = new double[hrzn + 1];
-	// traj.damfrac = new double[hrzn + 1];
-	// traj.komega = new double[hrzn + 1];
-	// traj.basegrowthcap = new double[hrzn + 1];
-	// traj.ynet_estimated = new double[hrzn + 1];
-	// traj.impact = new double[hrzn + 1];
-	// traj.adapt = new double[hrzn + 1];
-	// traj.act = new double[hrzn + 1];
-	// traj.sad = new double[hrzn + 1];
-	// traj.fad = new double[hrzn + 1];
-	// traj.ia = new double[hrzn + 1];
-	// traj.iac = new double[hrzn + 1];
-	// traj.ac = new double[hrzn + 1];
-	// traj.gac = new double[hrzn + 1];
-	// traj.sac = new double[hrzn + 1];
 	return;
 }
 // set agent's decision variables
@@ -744,9 +716,9 @@ void RICEEconAgent::setAgentVariables(double* vars){
 double RICEEconAgent::getValueForRPCutoff(){
 	switch (params.indRPCutoff){
 		case BASEGDP:
-			return traj.gdpbase[ssp][t];
+			return traj.gdpbase[ssp][t] / traj.pop[ssp][t];
 		case GDP:
-			return traj.y[t-1];
+			return traj.y[t-1] / traj.pop[ssp][t];
 		case RPINDERR:
 			std::cerr << "Please insert a valid option for RPCutoff" << std::endl;
 			exit(1);

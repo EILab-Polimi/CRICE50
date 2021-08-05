@@ -1,7 +1,7 @@
 CC = gcc
 CXX = g++
 ARGS = -O3 -Wall
-CXXFLAGS = -c -O3 -Wall -std=-c++0x
+CXXFLAGS = -c -O3 -Wall -std=c++0x
 EMODPS = ./src/moeaframework
 
 all: RICE50++

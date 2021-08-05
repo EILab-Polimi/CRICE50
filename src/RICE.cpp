@@ -263,9 +263,14 @@ void RICE::reportObjs(std::string nameSol, int ssp, int damages, std::fstream& r
 }
 // simulates over uncertainties
 void RICE::simulateUnc(double* objs){
-	objs[0] = pow(10,10);
-	objs[1] = 0.0;
-	objs[2] = 0.0;
+	// objs[0] =  - pow(10,10);
+	// objs[1] = 0.0;
+	// objs[2] = 0.0;
+	// double* percentiles;
+	std::vector<double> welfare;
+	std::vector<double> y15c;
+	std::vector<double> ineq;
+	std::vector<double> net;
 	for (int ssp = 1; ssp <= 5; ssp++){
 		// set ssp
 		setSsp(ssp);
@@ -273,22 +278,40 @@ void RICE::simulateUnc(double* objs){
 			// set damages
 			setDamages(damages);
 			for (int adapteff = 0; adapteff <= 5; adapteff++){
-				double y2C = 0.0;
+				double y15C = 0.0;
 				setAdaptEff(adapteff*0.2);
 				simulate();
-				objs[0] = std::max(- econ->utility, objs[0]);
+				welfare.push_back(-econ->utility);
+				// objs[0] = std::max(- econ->utility, objs[0]);
 				for (int tidx = 0; tidx < horizon; tidx++){
-					if (climate->tatm[tidx] > 2.0){
-						y2C += 5.0;
+					if (climate->tatm[tidx] > 1.5){
+						y15C += 5.0;
 					}
 				}
-				objs[1] = std::max(y2C, objs[1]);
-				objs[2] = std::max(econ->computeGini(), objs[2]);
-				// std::cout << ssp << "\t" << damages << "\t" << adapteff << std::endl;
-				// std::cout << econ->utility << "\t" << y2C << "\t" << econ->computeGini() << std::endl;
+				// objs[1] = std::max(y15C, objs[1]);
+				y15c.push_back(y15C);
+				// percentiles = econ->computePrctiles7525();
+				// ineq.push_back(percentiles[0] / percentiles[3]);
+				// objs[2] = std::max(econ->computeGini(), objs[2]);
+				ineq.push_back(econ->computePrctiles7525());
+				net.push_back(econ->computeNET());
+				std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
+					<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
 			}
 		}
 	}
+	objs[0] = *std::max_element(welfare.begin(), welfare.end());
+	std::nth_element(welfare.begin(), welfare.begin() + welfare.size() / 2, welfare.end());
+	objs[1] = welfare[welfare.size() / 2];
+	objs[2] = *std::max_element(y15c.begin(), y15c.end());
+	std::nth_element(y15c.begin(), y15c.begin() + y15c.size() / 2, y15c.end());
+	objs[3] = y15c[y15c.size() / 2];
+	objs[4] = *std::max_element(ineq.begin(), ineq.end());
+	std::nth_element(ineq.begin(), ineq.begin() + ineq.size() / 2, ineq.end());
+	objs[5] = ineq[ineq.size() / 2];
+	objs[6] = *std::max_element(net.begin(), net.end());
+	std::nth_element(net.begin(), net.begin() + net.size() / 2, net.end());
+	objs[7] = net[net.size() / 2];
 	return;
 }
 // frees allocated memory

@@ -7,6 +7,7 @@
 #include <sstream>
 #include <algorithm>
 #include <math.h>
+#include <cmath>
 
 RPMetricType stringToRPMetricType(std::string input){
 	if (input == "MEAN") return MEAN;
@@ -270,6 +271,39 @@ double* Econ::computePrctiles(){
 	*(prctiles+2) = GDPpcDist[round(GDPpcDist.size()/100*20)] * 1000.0;
 	*(prctiles+3) = GDPpcDist[round(GDPpcDist.size()/100*10)] * 1000.0;
 	return prctiles;
+}
+// computes GDPpc percentiles for 2100
+double Econ::computePrctiles7525(){
+	double ineq = 0.0;
+	*(prctiles) = 0.0;
+	*(prctiles+1) = 0.0;
+	*(prctiles+2) = 0.0;
+	*(prctiles+3) = 0.0;
+	for (int tidx=12; tidx<23; tidx++){
+		std::vector<double> GDPpcDist;
+		for (int ag=0; ag < agents; ag++){
+			int bins = round(agents_ptr[ag]->getPop(tidx));
+			for (int n=0; n < bins; n++){
+				GDPpcDist.push_back(agents_ptr[ag]->getGDPpc(tidx));
+			}
+		}
+		std::sort(GDPpcDist.begin(), GDPpcDist.end());
+		*(prctiles) = GDPpcDist[round(GDPpcDist.size()/100*90)] * 1000.0 / 11.0;
+		// *(prctiles+1) += GDPpcDist[round(GDPpcDist.size()/100*80)] * 1000.0 / 11.0;
+		// *(prctiles+2) += GDPpcDist[round(GDPpcDist.size()/100*20)] * 1000.0 / 11.0;
+		*(prctiles+3) = GDPpcDist[round(GDPpcDist.size()/100*10)] * 1000.0 / 11.0 ;
+		ineq += prctiles[0]/prctiles[3] / 11.0;
+	}
+	return ineq;
+}
+double Econ::computeNET(){
+	double NET = 0.0;
+	for (int tidx=0; tidx <= 27; tidx++){
+		for (int ag=0; ag < agents; ag++){
+			NET += std::max(0.0, - agents_ptr[ag]->getEmissions(tidx));
+		}
+	}
+	return NET;
 }
 // frees allocated memory
 void Econ::econDelete(){

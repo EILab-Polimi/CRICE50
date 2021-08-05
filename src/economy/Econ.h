@@ -50,7 +50,9 @@ public:
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);	
 	double computeGini();	
-	double* computePrctiles();	
+	double* computePrctiles();
+	double computePrctiles7525();
+	double computeNET();
 	void econDelete();
 };
 

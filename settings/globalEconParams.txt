@@ -2,6 +2,6 @@ nagents			57
 elasmu			1.45
 prstp			0.015
 ineqav			0.50
-RPCutoffMetric	MEAN		(MEAN / MEDIAN)
+RPCutoffMetric	MEDIAN		(MEAN / MEDIAN)
 utility 		COOP		(COOP / NON-COOP)
 DecisionMakers	INPUT_POLICY			(BAU / INPUT_STATIC / INPUT_POLICY)
