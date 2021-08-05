@@ -471,9 +471,9 @@ void RICEEconAgent::readBaseline(int hrzn){
 double RICEEconAgent::getValueForRPCutoff(){
 	switch (params.indRPCutoff){
 		case BASEGDP:
-			return traj.gdpbase[ssp][t];
+			return traj.gdpbase[ssp][t] / traj.pop[ssp][t];
 		case GDP:
-			return traj.y[t-1];
+			return traj.y[t-1] / traj.pop[ssp][t];
 		case RPINDERR:
 			std::cerr << "Please insert a valid option for RPCutoff" << std::endl;
 			exit(1);
@@ -576,7 +576,7 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 		else if (params.damagesType == BURKESR_DIFF){
 			//BURKE - SR diff
 			if (params.indRPCutoff == BASEGDP){
-				if (RPCutoff > traj.gdpbase[ssp][t]){
+				if (RPCutoff > traj.gdpbase[ssp][t] / traj.pop[ssp][t];){
 					traj.impact[t] = params.beta_bhm_srdp* traj.tatm_local[t] + 
 						params.beta_bhm_srdp_2* pow(traj.tatm_local[t],2)
 						- params.beta_bhm_srdp* params.base_tatm 
@@ -590,7 +590,7 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 				}
 			}
 			else if (params.indRPCutoff == GDP){
-				if (RPCutoff > traj.y[t-1]){
+				if (RPCutoff > traj.y[t-1] / traj.pop[ssp][t];){
 					traj.impact[t] = params.beta_bhm_srdp* traj.tatm_local[t] + 
 						params.beta_bhm_srdp_2* pow(traj.tatm_local[t],2)
 						- params.beta_bhm_srdp* params.base_tatm 
@@ -607,7 +607,7 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 		else if (params.damagesType == BURKELR_DIFF){
 			//BURKE - LR diff
 			if (params.indRPCutoff == BASEGDP){
-				if (RPCutoff > traj.gdpbase[ssp][t]){
+				if (RPCutoff > traj.gdpbase[ssp][t] / traj.pop[ssp][t];){
 					traj.impact[t] = params.beta_bhm_lrdp* traj.tatm_local[t] + 
 						params.beta_bhm_lrdp_2* pow(traj.tatm_local[t],2)
 						- params.beta_bhm_lrdp* params.base_tatm 
@@ -621,7 +621,7 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 				}
 			}
 			else if (params.indRPCutoff == GDP){
-				if (RPCutoff > traj.y[t-1]){
+				if (RPCutoff > traj.y[t-1] / traj.pop[ssp][t];){
 					traj.impact[t] = params.beta_bhm_lrdp* traj.tatm_local[t] + 
 						params.beta_bhm_lrdp_2* pow(traj.tatm_local[t],2)
 						- params.beta_bhm_lrdp* params.base_tatm 
@@ -638,7 +638,7 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 		else if (params.damagesType == DJO){
 			//DJO
 			if (params.indRPCutoff == BASEGDP){
-				if (RPCutoff > traj.gdpbase[ssp][t]){
+				if (RPCutoff > traj.gdpbase[ssp][t] / traj.pop[ssp][t];){
 					traj.impact[t] = params.beta_djo_p * 
 						(traj.tatm_local[t] - params.base_tatm); 
 				}
@@ -648,7 +648,7 @@ void RICEEconAgent::computeDamages(double* tatm, double RPCutoff){
 				}
 			}
 			else if (params.indRPCutoff == GDP){
-				if (RPCutoff > traj.y[t-1]){
+				if (RPCutoff > traj.y[t-1] / traj.pop[ssp][t];){
 					traj.impact[t] = params.beta_djo_p * 
 						(traj.tatm_local[t] - params.base_tatm); 
 				}
