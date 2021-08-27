@@ -33,5 +33,6 @@ data[effks].plot()
 data[tatms].plot()
 # print(data[effks].min().min(), data[effks].max().max())
 
+print(data.iloc[[x for x in range(6)]]['E'].sum()*5)
 
 plt.show()

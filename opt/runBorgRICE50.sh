@@ -6,7 +6,7 @@ NAMEFILE=optRICE50
 EMODPS=/Users/angelocarlino/models/emodps
 # EMODPS=/home/acarlino/emodps
 # Optimization setting
-NSEEDS=5
+NSEEDS=10
 
 # static intertemporal optimization
 NFE=1000
@@ -28,7 +28,7 @@ done
 NFE=1000
 NVAR=114
 NOBJ=8
-EPS=0.00000001,0.00000001,4,4,0.5,0.5,10,10
+EPS=0.0000001,0.0000001,4,4,1.0,0.5,10,10
 UB="1.0"
 LB="0.0"
 for S in $(seq 2 $NVAR)
@@ -53,7 +53,7 @@ cd ..
 MYPATH="$(pwd)/opt/Hydrocalc/BorgOutput/"
 FILENAME=optRICE50
 START_COLUMN=115
-FINISH_COLUMN=117
+FINISH_COLUMN=122
 NUM_SEEDS=$NSEEDS
  
 for ((S=1; S<=$NUM_SEEDS; S++))

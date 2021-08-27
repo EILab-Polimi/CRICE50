@@ -6,6 +6,7 @@ import matplotlib.font_manager as font_manager
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 
 sns.set_style('whitegrid')
 # sns.set_context('paper')
@@ -58,7 +59,7 @@ def patch_violinplot():
 # sobj = ['SO_det', 'SO_sto', 'SO_ad', 'SO_ad_sto', 'SO_ad_sto_MO','EMODPS']
 # sobj = ['SO_ad_sto_maxmin', 'SO_ad_sto_MO_maxmin','EMODPS_maxmin']
 # sobj = ['SO_ad_sto', 'SO_ad_sto_MO','EMODPS']
-nseeds = 10
+nseeds = 5
 nobjs = 3
 nobjs = 8
 path = './'
@@ -200,9 +201,11 @@ for el in sols:
 								if el[6] >= el2[6]:
 									if el[7] >= el2[7]:
 										flag = 1
-		# if el[0] > 2*1e-6:
+		# if el[4] > 60:
 		# 	flag = 1
-		# if el[3] > 100:
+		# if el[3] > 120:
+		# 	flag = 1
+		# if el[1] > 1.15*1e-6:
 		# 	flag = 1
 		# if el[7] > 50:
 		# 	flag = 1
@@ -219,20 +222,77 @@ for el in sols:
 
 sols = pd.DataFrame(solsnew, columns=['Welfare','Welfare-MDN','Y1.5°C','Y1.5°C-MDN','90:10','90:10-MDN','NET','NET-MDN'])
 # sols = sols[['Welfare-MDN','Y1.5°C-MDN','90:10-MDN','NET-MDN']]
-fig = px.parallel_coordinates(sols, color='Y1.5°C-MDN',
-    color_continuous_scale=px.colors.diverging.Tealrose)
+# fig = px.parallel_coordinates(sols, color='90:10-MDN',
+#     color_continuous_scale=px.colors.diverging.Tealrose)
+# fig.show()
+vec = sols
+fig = go.Figure(data = 
+	go.Parcoords(
+		line = dict(color = vec['90:10-MDN'],
+			colorscale = 'Tealrose',
+			showscale = True),
+		dimensions = list([
+			dict(range = [vec['Welfare-MDN'].min(), vec['Welfare'].max()],
+				label = 'Welfare', values = vec['Welfare']),
+				# range = [0.0, 1.0],
+				# values = (vec['Welfare'] - vec['Welfare'].min()) /\
+				# (vec['Welfare'].max() - vec['Welfare'].min()) ),
+			dict(range = [vec['Welfare-MDN'].min(), vec['Welfare'].max()],
+				label = 'Welfare-MDN', values = vec['Welfare-MDN']),
+				# range = [0.0, 1.0],
+				# values = (vec['Welfare-MDN'] - vec['Welfare-MDN'].min()) /\
+				# (vec['Welfare'].max() - vec['Welfare-MDN'].min()) ),
+			dict(range = [vec['Y1.5°C-MDN'].min(), vec['Y1.5°C'].max()],
+				label = 'Y1.5°C', values = vec['Y1.5°C']),
+			dict(range = [vec['Y1.5°C-MDN'].min(), vec['Y1.5°C'].max()],
+				label = 'Y1.5°C-MDN', values = vec['Y1.5°C-MDN']),
+			dict(range = [vec['90:10-MDN'].min(), vec['90:10'].max()],
+				label = '90:10', values = vec['90:10']),
+			dict(range = [vec['90:10-MDN'].min(), vec['90:10'].max()],
+				label = '90:10-MDN', values = vec['90:10-MDN']),
+			dict(range = [vec['NET-MDN'].min(), vec['NET'].max()],
+				label = 'NET', values = vec['NET']),
+			dict(range = [vec['NET-MDN'].min(), vec['NET'].max()],
+				constraintrange = [vec['NET-MDN'].min(),50],
+				label = 'NET-MDN', values = vec['NET-MDN']),
+			# dict(range = [1, 5],
+			# 	tickvals = [x for x in range(1,6)],
+			# 	ticktext = ssps,
+			# 	label = 'SSP-Welfare', values = vec['SSP-Welfare']),
+			# dict(range = [1, 6],
+			# 	tickvals = [x for x in range(1,7)],
+			# 	ticktext = damages,
+			# 	label = 'Damages-Welfare', values = vec['Damages-Welfare']),
+			# dict(range = [0, 5],
+			# 	tickvals = [x for x in range(6)],
+			# 	ticktext = adapteff,
+			# 	label = 'AdaptEff-Welfare', values = vec['AdaptEff-Welfare']),
+			# dict(range = [1, 5],
+			# 	tickvals = [x for x in range(1,6)],
+			# 	ticktext = ssps,
+			# 	label = 'SSP-Gini', values = vec['SSP-Gini']),
+			# dict(range = [1, 6],
+			# 	tickvals = [x for x in range(1,7)],
+			# 	ticktext = damages,
+			# 	label = 'Damages-Gini', values = vec['Damages-Gini']),
+			# dict(range = [0, 5],
+			# 	tickvals = [x for x in range(6)],
+			# 	ticktext = adapteff,
+			# 	label = 'AdaptEff-Gini', values = vec['AdaptEff-Gini']),
+			])
+		))
 # ,
     # color_continuous_midpoint=2)
 # Hide the color scale that is useless in this case
-fig.update_layout(coloraxis_showscale=False)
+# fig.update_layout(coloraxis_showscale=False)
 
 # Show the plot
 fig.show()
-# print(sols)
-f4_ax1.set_title('Convergence')
-f4_ax5.set_title('Pareto Front')
-fig4.legend(loc='lower right', ncol=nseeds)
-fig4.tight_layout()
+# # print(sols)
+# f4_ax1.set_title('Convergence')
+# f4_ax5.set_title('Pareto Front')
+# fig4.legend(loc='lower right', ncol=nseeds)
+# fig4.tight_layout()
 # RNTS[eld+elso+ela] = rnts
 
 # # # ## simulate solutions
