@@ -37,7 +37,7 @@ def simulate_traj(params, path):
 	file = pd.read_csv(path+'/simulationOutput.txt', sep='\t', usecols=[x for x in range(2517)])
 	return file
 
-nseeds = 1
+nseeds = 10
 nobjs = 8
 path = './'
 RNTS = {}
@@ -59,7 +59,7 @@ class Rnt:
 
 # runtime data & plot
 # niter = 100
-fig_cal, ax_cal = plt.subplots(1,1)
+# fig_cal, ax_cal = plt.subplots(1,1)
 color = ['C0','C1','C2']
 color = ['C0','C1','C2','C3','C4','C5','C6','C7','C8','C9','C10']
 
@@ -105,74 +105,94 @@ vecp = []
 count = 0
 sols = []
 params = []
+# for seed in range(1,nseeds+1):
+# 	try:
+# 		with open('./BorgOutput/rntdynamics_'+str(seed)+'.txt') as f:
+# 			file = f.read()
+# 		if file !='':
+# 			for line in file.split("\n"):
+# 				if "NFE" in line:
+# 					rnts[seed-1].NFE.append(int(line.split('=')[-1]))
+# 				if "SBX" in line:
+# 					rnts[seed-1].SBX.append(float(line.split('=')[-1]))
+# 				if "DE" in line:
+# 					rnts[seed-1].DE.append(float(line.split('=')[-1]))
+# 				if "PCX" in line:
+# 					rnts[seed-1].PCX.append(float(line.split('=')[-1]))
+# 				if "SPX" in line:
+# 					rnts[seed-1].SPX.append(float(line.split('=')[-1]))
+# 				if "UNDX" in line:
+# 					rnts[seed-1].UNDX.append(float(line.split('=')[-1]))
+# 				if "UM" in line:
+# 					rnts[seed-1].UM.append(float(line.split('=')[-1]))
+# 				if "Improvements" in line:
+# 					rnts[seed-1].IMP.append(int(line.split('=')[-1]))
+# 				if "Restarts" in line:
+# 					rnts[seed-1].RES.append(int(line.split('=')[-1]))
+# 				if "ArchiveSize" in line:
+# 					rnts[seed-1].ARCSIZE.append(int(line.split('=')[-1]))			
+# 				if "#" in line:
+# 					rnts[seed-1].OBJS.append(vec)
+# 					vec = []
+# 					rnts[seed-1].PARAMS.append(vecp)
+# 					vecp = []
+# 				if "//" not in line and "#" not in line and line not in ['', '\n']:
+# 					vec.append([float(x) for x in line.split(' ')[-nobjs:]])
+# 					vecp.append([float(x) for x in line.split(' ')[:-nobjs]])
+# 			[sols.append(x) for x in rnts[seed-1].OBJS[-1]]
+# 			[params.append(x) for x in rnts[seed-1].PARAMS[-1]]
+# 	except FileNotFoundError:
+# 		print('Runtime file is not present for seed ' + str(seed))
+# 	count += 1
+# solsnew = []
+# paramsnew = []
+# for el,elp in zip(sols,params):
+# 	flag = 0
+# 	for el2 in sols:
+# 		if el[0] > el2[0]:
+# 			if el[1] >= el2[1]:
+# 				if el[2] >= el2[2]:
+# 					if el[3] >= el2[3]:
+# 						if el[4] >= el2[4]:
+# 							if el[5] >= el2[5]:
+# 								if el[6] >= el2[6]:
+# 									if el[7] >= el2[7]:
+# 										flag = 1
+# 		if el[1] > 1.2*1e-6:
+# 			flag = 1
+# 		# if el[3] > 150:
+# 		# 	flag = 1
+# 		# if el[7] > 30:
+# 		# 	flag = 1
+# 	if flag==0:
+# 		solsnew.append(el)
+# 		paramsnew.append(elp)
+# objs = solsnew
+# params = paramsnew
+
+
+with open('./BorgOutput/optRICE50.reference') as f:
+	file = f.read()
+if file !='':
+	for line in file.split("\n")[:-1]:
+		vec = [float(x) for x in line.split()]
+		sols.append(vec)
+
+path = './'
+params = []
+objs = []
 for seed in range(1,nseeds+1):
-	try:
-		with open('./BorgOutput/rntdynamics_'+str(seed)+'.txt') as f:
-			file = f.read()
-		if file !='':
-			for line in file.split("\n"):
-				if "NFE" in line:
-					rnts[seed-1].NFE.append(int(line.split('=')[-1]))
-				if "SBX" in line:
-					rnts[seed-1].SBX.append(float(line.split('=')[-1]))
-				if "DE" in line:
-					rnts[seed-1].DE.append(float(line.split('=')[-1]))
-				if "PCX" in line:
-					rnts[seed-1].PCX.append(float(line.split('=')[-1]))
-				if "SPX" in line:
-					rnts[seed-1].SPX.append(float(line.split('=')[-1]))
-				if "UNDX" in line:
-					rnts[seed-1].UNDX.append(float(line.split('=')[-1]))
-				if "UM" in line:
-					rnts[seed-1].UM.append(float(line.split('=')[-1]))
-				if "Improvements" in line:
-					rnts[seed-1].IMP.append(int(line.split('=')[-1]))
-				if "Restarts" in line:
-					rnts[seed-1].RES.append(int(line.split('=')[-1]))
-				if "ArchiveSize" in line:
-					rnts[seed-1].ARCSIZE.append(int(line.split('=')[-1]))			
-				if "#" in line:
-					rnts[seed-1].OBJS.append(vec)
-					vec = []
-					rnts[seed-1].PARAMS.append(vecp)
-					vecp = []
-				if "//" not in line and "#" not in line and line not in ['', '\n']:
-					vec.append([float(x) for x in line.split(' ')[-nobjs:]])
-					vecp.append([float(x) for x in line.split(' ')[:-nobjs]])
-			[sols.append(x) for x in rnts[seed-1].OBJS[-1]]
-			[params.append(x) for x in rnts[seed-1].PARAMS[-1]]
-	except FileNotFoundError:
-		print('Runtime file is not present for seed ' + str(seed))
-	count += 1
-solsnew = []
-paramsnew = []
-for el,elp in zip(sols,params):
-	flag = 0
-	for el2 in sols:
-		if el[0] > el2[0]:
-			if el[1] >= el2[1]:
-				if el[2] >= el2[2]:
-					if el[3] >= el2[3]:
-						if el[4] >= el2[4]:
-							if el[5] >= el2[5]:
-								if el[6] >= el2[6]:
-									if el[7] >= el2[7]:
-										flag = 1
-		# if el[1] > 1.2*1e-6:
-		# 	flag = 1
-		# if el[3] > 150:
-		# 	flag = 1
-		# if el[7] > 30:
-		# 	flag = 1
-	if flag==0:
-		solsnew.append(el)
-		paramsnew.append(elp)
-objs = solsnew
-params = paramsnew
+	with open('./BorgOutput/optRICE50_'+str(seed)+'.out') as f:
+		file = f.read()
+		for el in file.split("\n")[:-1]:
+			if el[0] != "#" and [float(x) for x in el.split()[-nobjs:]] in sols:
+				params.append([float(x) for x in el.split()[:-nobjs]])
+				objs.append([float(x) for x in el.split()[-nobjs:]])
+
 columns = ['SSP','Damages','AdaptEff','Welfare','Y2C','Gini']
 welf, gini = [], []
 
-selection = np.argmax(np.array(objs).T[7])
+selection = np.argmin(np.array(objs).T[0])
 print(selection)
 params = [params[selection]]
 objs = [objs[selection]]
@@ -181,8 +201,10 @@ for sol,obj in zip(params, objs):
 	miu = output[[x for x in output.columns if 'MIU'==x[:3] or x=='YEAR']]
 	fad = output[[x for x in output.columns if 'FAD'==x[:3] or x=='YEAR']]
 	iac = output[[x for x in output.columns if 'IAC'==x[:3] or x=='YEAR']]
+	gac = output[[x for x in output.columns if 'GAC'==x[:3] or x=='YEAR']]
 	ia = output[[x for x in output.columns if ('IA'==x[:2] and "IAC"!=x[:3]) or x=='YEAR']]
 	damfrac = output[[x for x in output.columns if 'DAMFRAC'==x[:7] or x=='YEAR']]
+	cemutotper = output[[x for x in output.columns if 'CEMUTOTPER'==x[:10] and len(x) > 10 or x=='YEAR']]
 	adapt = output[[x for x in output.columns if 'ADAPT'==x[:5] or x=='YEAR']]
 	rd = output[[x for x in output.columns if 'RD'==x[:2] or x=='YEAR']]
 	gdp = output[[x for x in output.columns if ('Y'==x[:1] and x[1:4].islower()) or x=='YEAR']]
@@ -196,16 +218,20 @@ for sol,obj in zip(params, objs):
 	for el in fad.columns[1:]:
 		totalad[el] = fad[el] + ia['IA'+el[3:]] + iac['IAC'+el[3:]]
 	# ia = output[(x[:2] == 'IA') & (x not in output.columns.str.contains('IAC', case=True)) for x in output.columns]
-var = damfrac
+
+var = cemutotper
+vmin = var[var.columns[1:]].min().min()
+vmax = var[var.columns[1:]].max().max()
 shape = gpd.read_file('./shape_outfile/geo_ene57/geo_ene57.shp')
-years = [y for y in range(2020,2100,5)]
+years = [y for y in range(2020,2200,10)]
 for y in years:
-	vary = var.loc[miu['YEAR']==y]
+	vary = var.loc[var['YEAR']==y]
 	varc = [x[3:] for x in var.columns[1:]]
 	vary = vary.values[0][1:]
 	shape['VAR'] = vary
-	shape.plot(column='VAR', legend=True, legend_kwds={'format': '%.10f'})
-
+	shape.plot(column='VAR', legend=True, legend_kwds={'format': '%.10f'}, vmin=vmin, vmax=vmax, figsize=(15,5), linewidth=0)
+	plt.xticks([])
+	plt.yticks([])
 plt.show()
 
-# plt.show()
+

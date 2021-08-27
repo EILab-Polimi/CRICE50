@@ -31,8 +31,8 @@ def patch_violinplot():
           if isinstance(art, PolyCollection):
               art.set_edgecolor((0, 0, 0, 0))
 
-nseeds = 5
-nobjs = 3
+nseeds = 10
+nobjs = 8
 path = './'
 RNTS = {}
 srand = np.random.randint(0,1e6)
@@ -65,14 +65,18 @@ if file !='':
 		vec = [float(x) for x in line.split()]
 		sols.append(vec)
 
-sols = pd.DataFrame(sols, columns=['Welfare','Years above 2°C','Gini'])
-fig = px.parallel_coordinates(sols, color='Gini',
+sols = pd.DataFrame(sols, columns=['Welfare','Welfare-MDN','Y1.5°C','Y1.5°C-MDN','90:10','90:10-MDN','NET','NET-MDN'])
+columnstoplot = ['Welfare-MDN','Y1.5°C-MDN','90:10-MDN','NET-MDN'] #['Welfare','Welfare-MDN','Y1.5°C','Y1.5°C-MDN','90:10','90:10-MDN','NET','NET-MDN']
+columnstoplot = ['Welfare','Y1.5°C','90:10','NET']
+sols = sols[columnstoplot]
+# sols = sols.loc[sols['Welfare']<2e-6]
+fig = px.parallel_coordinates(sols, color=columnstoplot[-1],
     color_continuous_scale=px.colors.diverging.Tealrose, width=1200, height=800)
 # ,
     # color_continuous_midpoint=2)
 # Hide the color scale that is useless in this case
 fig.update_layout(coloraxis_showscale=False)
-pio.write_image(fig, './parallel.pdf', scale=3, width=1200, height=600)
+# pio.write_image(fig, './parallel.pdf', scale=3, width=1200, height=600)
 # Show the plot
 fig.show()
 # print(sols)

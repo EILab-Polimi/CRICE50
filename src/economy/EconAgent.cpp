@@ -815,11 +815,11 @@ void RICEEconAgent::computeAdaptation(){
 		// compute adaptation capacity
 		traj.ac[t] = pow(params.phi_ad * pow(traj.sac[t], params.rho_adcap) + \
 			(1 - params.phi_ad) * pow(traj.gac[t], params.rho_adcap), 
-			1 / params.rho_adcap);
+			1.0 / params.rho_adcap);
 		// compute adaptation total
 		traj.adapt[t] = params.adapteff * pow(params.miu_ad * pow(traj.act[t], params.rho_ad) + \
 			(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), 
-			1 / params.rho_ad);
+			1.0 / params.rho_ad);
 		// compute residual damages
 		traj.rd[t] = traj.damages[t] / (1 + traj.adapt[t]);
 
