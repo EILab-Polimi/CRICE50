@@ -47,6 +47,11 @@ Adaptation stringToAdaptation(std::string input){
 	if (input == "OFF") return NOADAPT;	
 	return ADAPTERR;
 }
+Embedding stringToEmbedding(std::string input){
+	if (input == "YES") return EMB_YES;
+	if (input == "NO") return EMB_NO;	
+	return EMBERR;
+}
 
 // constructor
 EconAgent::EconAgent(){
@@ -67,10 +72,11 @@ RICEEconAgent::~RICEEconAgent(){
 }
 // custom constructor:
 // read params, exog. trajectories and allocate
-RICEEconAgent::RICEEconAgent(int hrzn, std::string regname, DecisionMakers DMType){
+RICEEconAgent::RICEEconAgent(int hrzn, std::string regname, DecisionMakers DMType, int idx){
 	t = 0;
 	horizon = hrzn;
 	name = regname;
+	id_name = idx;
 	params.DMType = DMType;
 	allocate();
 	readParams();
@@ -201,6 +207,16 @@ void RICEEconAgent::readParams(){
 	}
 	in >> line;
 	params.adaptType = stringToAdaptation(line);
+	while (sJunk!="AdaptEff"){
+		in >>sJunk;
+	}
+	in >> params.adapteff;
+	params.adaptType = stringToAdaptation(line);
+	while (sJunk!="Embedding"){
+		in >>sJunk;
+	}
+	in >> line;
+	params.embedding = stringToEmbedding(line);
 	in.close();
 
 	in.open("./settings/globalEconParams.txt", std::ios_base::in);
@@ -282,7 +298,6 @@ void RICEEconAgent::readParams(){
 	in >> params.beta2_ad;
 	in >> params.beta3_ad;
 	in >> traj.gac[0];
-	params.adapteff = 1.0;
 	in.close();
 	return;
 }
@@ -291,7 +306,7 @@ void RICEEconAgent::readPolicyParams(){
 	std::string sJunk = "";
 	in.open("./settings/settingsAgentPolicy.txt", std::ios_base::in);
 	if (!in){
-		std::cout << "The EconAgentParams settings file could not be found!" << std::endl;
+		std::cout << "The EconAgent policy settings file could not be found!" << std::endl;
 	    exit(1);
 	}
 	// read policy type (RBF/ANN/...)
@@ -312,10 +327,18 @@ void RICEEconAgent::readPolicyParams(){
 	    policy.p_param.MIn.push_back(i2);
 	}
 	if (params.adaptType == ADWITCH){
-		policy.p_param.policyInput += 2;
+		policy.p_param.policyInput += 3;
+		if (params.embedding==EMB_YES){
+		    policy.p_param.mIn.push_back(0.0);
+		    policy.p_param.MIn.push_back(1.0);						
+		}
+		else{
+		    policy.p_param.mIn.push_back(0.0);
+		    policy.p_param.MIn.push_back(15.0);			
+		}
 		for (int adaptinput = 0; adaptinput < 2; adaptinput++){
 		    policy.p_param.mIn.push_back(0.0);
-		    policy.p_param.MIn.push_back(10.0);			
+		    policy.p_param.MIn.push_back(100.0);			
 		}
 	}
 	// read output number and bounds
@@ -330,6 +353,11 @@ void RICEEconAgent::readPolicyParams(){
     	policy.p_param.mOut.push_back(o1);
     	policy.p_param.MOut.push_back(o2);
     }
+	if (params.omegaEq == SIMPLE){
+		policy.p_param.policyOutput += 1;
+	    policy.p_param.mOut.push_back(0.0);
+	    policy.p_param.MOut.push_back(1.0);			
+	}
 	if (params.adaptType == ADWITCH){
 		policy.p_param.policyOutput += 3;
 		for (int adaptoutput = 0; adaptoutput < 3; adaptoutput++){
@@ -379,6 +407,7 @@ void RICEEconAgent::readPolicyParams(){
 		default:
 			break;
 	}
+	// std::cout << policy.nvars << std::endl;
 	// save bounds in input and outputs
 	policy.Policy->setMaxInput(policy.p_param.MIn); 
 	policy.Policy->setMaxOutput(policy.p_param.MOut);
@@ -386,6 +415,63 @@ void RICEEconAgent::readPolicyParams(){
 	policy.Policy->setMinOutput(policy.p_param.mOut);	
 	policy.input.resize(policy.p_param.policyInput);
 	policy.output.resize(policy.p_param.policyOutput);
+
+
+	if (params.embedding==EMB_YES){
+		policy.e_param.tPolicy = 4;
+		policy.e_param.policyInput = 15;
+		for (int ninputs=0; ninputs < policy.e_param.policyInput; ninputs++){
+			policy.e_param.mIn.push_back(0.0);
+		    policy.e_param.MIn.push_back(1.0);		
+		}
+		policy.e_param.policyOutput = 1;
+	    policy.e_param.mOut.push_back(0.0);
+	    policy.e_param.MOut.push_back(1.0);
+		policy.e_param.policyStr = 1;
+		// allocate policy based on params
+		switch (policy.e_param.tPolicy) {
+			case 1: // RBF policy
+				policy.Embedder = new std::rbf(policy.e_param.policyInput,
+					policy.e_param.policyOutput,policy.e_param.policyStr);
+				break;
+			case 2: // ANN
+				policy.Embedder = new std::ann(policy.e_param.policyInput,
+					policy.e_param.policyOutput,policy.e_param.policyStr);
+				// policy.nvars = policy.p_param.policyOutput * 
+				// 	(policy.p_param.policyStr * 
+				// 	(policy.p_param.policyInput + 2) + 1); 
+				break;
+			case 3: // piecewise linear policy
+				policy.Embedder = new std::pwLinear(policy.e_param.policyInput,
+					policy.e_param.policyOutput,policy.e_param.policyStr);
+				break;
+			case 4:
+				policy.Embedder = new std::ncRBF(policy.e_param.policyInput,
+					policy.e_param.policyOutput,policy.e_param.policyStr);
+				policy.evars = policy.e_param.policyStr * 
+					(2 * policy.e_param.policyInput + policy.e_param.policyOutput) 
+					+ policy.e_param.policyOutput; 
+				break;
+			case 5:
+				policy.Embedder = new std::annmo(policy.e_param.policyInput,
+					policy.e_param.policyOutput,policy.e_param.policyStr);
+				// policy.evars = policy.e_param.policyStr * 
+				// 	(policy.e_param.policyInput + policy.e_param.policyOutput + 1) 
+				// 	+ policy.e_param.policyOutput; 
+				break;
+			default:
+				break;
+		}
+		// std::cout << policy.evars << std::endl;
+		// save bounds in input and outputs
+		policy.Embedder->setMaxInput(policy.e_param.MIn); 
+		policy.Embedder->setMaxOutput(policy.e_param.MOut);
+		policy.Embedder->setMinInput(policy.e_param.mIn); 
+		policy.Embedder->setMinOutput(policy.e_param.mOut);	
+		policy.e_input.resize(policy.e_param.policyInput);
+		policy.e_output.resize(policy.e_param.policyOutput);
+
+	}
 
 	return;
 }
@@ -709,8 +795,26 @@ void RICEEconAgent::setAgentVariables(double* vars){
 	else if (params.DMType == INPUT_POLICY){
 		policy.Policy->clearParameters();
 		policy.Policy->setParameters(vars);
+		if (params.embedding==EMB_YES){
+			policy.Embedder->clearParameters();
+			policy.Embedder->setParameters(vars+policy.nvars);
+			computeEmbedding();
+		}
 	}
 	return;
+}
+//compute embedding
+void RICEEconAgent::computeEmbedding(){
+	policy.e_input.clear();
+	for (int idx=0; idx < policy.e_param.policyInput; idx++){
+		if (id_name==idx){
+			policy.e_input.push_back(id_name * 1.0);
+		}
+		else{
+			policy.e_input.push_back(0.0);
+		}
+	}
+	policy.e_output = policy.Embedder->get_NormOutput(policy.e_input);
 }
 // returns value for Rich Poor Cutoff
 double RICEEconAgent::getValueForRPCutoff(){
@@ -821,7 +925,12 @@ void RICEEconAgent::computeAdaptation(){
 			(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), 
 			1.0 / params.rho_ad);
 		// compute residual damages
-		traj.rd[t] = traj.damages[t] / (1 + traj.adapt[t]);
+		if (traj.damages[t] < 0){
+			traj.rd[t] = traj.damages[t];
+		}
+		else{
+			traj.rd[t] = traj.damages[t] / (1 + traj.adapt[t]);
+		}
 
 		// update adaptation stocks (capital and specific capacity)
 		traj.sad[t+1] = traj.sad[t] * (1 - params.dk_adsad) + \
@@ -841,12 +950,14 @@ void RICEEconAgent::nextAction(){
 	// set decision variables
 	if (t>0){
 		switch (params.DMType){
-			case INPUT_POLICY:
+			case INPUT_POLICY:{
 				// retrieve states or input to the policy
 				policy.input.clear();
 				policy.output.clear();
+				int outsize = 0;
 				// inputs: effK, tatm_local, tatm, tocean, mat, mup, mlo, time
 				policy.input.push_back(traj.k[t]/(traj.tfp[ssp][t] * traj.pop[ssp][t])); //as in DICE
+				policy.input.push_back( 1.0 / (1.0 + traj.omega[t])); //consider the new state variable omega, scale to have better bounds
 				// policy.input.push_back(traj.y[t - 1]/(traj.tfp[ssp][t - 1] * traj.pop[ssp][t - 1])); //maybe better (?)
 				policy.input.push_back(traj.tatm_local[t]);
 				for (int s = 0; s < nGlobalStates; s++){
@@ -854,23 +965,38 @@ void RICEEconAgent::nextAction(){
 				}
 				policy.input.push_back(t);
 				if (params.adaptType == ADWITCH){
+					if (params.embedding==EMB_YES){
+						policy.input.push_back(policy.e_output[0]);
+					}
+					else{
+						policy.input.push_back(id_name);
+					}
 					policy.input.push_back(traj.sad[t] / traj.k[t] * 100.0);
 					policy.input.push_back(traj.sac[t] / traj.k[t] * 100.0);
 				}
 				
 				policy.output = policy.Policy->get_NormOutput(policy.input);
-				traj.miu[t] = policy.output[0];
-				traj.s[t] = policy.output[1];
-				if (params.adaptType == ADWITCH){
-					traj.fad[t] = policy.output[2];
-					traj.ia[t] = policy.output[3];
-					traj.iac[t] = policy.output[4];
+				traj.miu[t] = policy.output[outsize];
+				outsize++;
+				if (params.omegaEq == SIMPLE){
+					traj.s[t] = policy.output[outsize];
+					outsize++;					
 				}
-
-				// if savings are fixed
-				traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
+				else{
+					// if savings are fixed
+					traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
+				}
+				if (params.adaptType == ADWITCH){
+					traj.fad[t] = policy.output[outsize];
+					outsize++;
+					traj.ia[t] = policy.output[outsize];
+					outsize++;
+					traj.iac[t] = policy.output[outsize];
+					outsize++;
+				}
 				break;
-			case BAU:
+			}
+			case BAU:{
 				// traj.miu[t] = std::min(traj.miu_up[t], 0.1 * (double) t);
 				traj.miu[t] = 0.0;
 				traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
@@ -880,16 +1006,20 @@ void RICEEconAgent::nextAction(){
 					traj.iac[t] = 0.0;
 				}				
 				break;
-			case INPUT_STATIC:
+			}
+			case INPUT_STATIC:{
 				// no need to do anything here
 				// miu, s & other decs. vars are fixed 
 				// at the beginning of simulation
 				// std::cerr << "not developed yet" << std::endl;
 				// exit(1);
 				break;
-			case DMERR:
+			}
+			case DMERR:{
 				std::cerr << "Please insert an available option for DMType" << std::endl;
+			}
 		}
+		// enforce constrainst on max min for decision variables
 		traj.miu[t] = std::max(0.0, std::min(traj.miu_up[t], std::min(traj.miu[t-1] + 0.2, traj.miu[t])));
 		traj.s[t] = std::max(0.001, std::min(0.999, traj.s[t]));
 		if (params.adaptType == ADWITCH){
@@ -901,7 +1031,9 @@ void RICEEconAgent::nextAction(){
 	else{
 		traj.miu[0] = 0.0;
 	}
-	traj.miu[1] = 0.03;
+	if (t==1){
+		traj.miu[1] = 0.03;
+	}
 	// if (t >= horizon - 10){
 	// 	traj.s[t] = params.optlr_s; 
 	// }

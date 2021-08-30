@@ -1,16 +1,14 @@
 <POLICY_CLASS>      4
-<NUM_INPUT>      8
+<NUM_INPUT>      7
 	0.0		0.06
+   0.0      2.0
 	-10.0		30.0
 	0.0		6.0
    0.0   5.0
-	500		2000
-   400      1200
-   160      800 	
+	400		2000
    0      	58 	
-<NUM_OUTPUT>      2
+<NUM_OUTPUT>      1
    0      		1.2
-   0      		1
 <POLICY_STRUCTURE>      4
 
 

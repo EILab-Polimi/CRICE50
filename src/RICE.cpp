@@ -1,4 +1,5 @@
 #include "RICE.h"
+#include <numeric>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -41,7 +42,7 @@ RICE::RICE(){
 	while (sJunk!="objectives"){
 		in >>sJunk;
 	}
-	in >> objs;
+	in >> nobjs;
 	while (sJunk!="robustness"){
 		in >> sJunk;
 	}
@@ -116,7 +117,7 @@ void RICE::createLinks(){
 }
 //returns number of objectives
 int RICE::getNObjs(){
-	return objs;
+	return nobjs;
 } 
 //returns number of variables
 int RICE::getNVars(){
@@ -264,10 +265,7 @@ void RICE::reportObjs(std::string nameSol, int ssp, int damages, std::fstream& r
 }
 // simulates over uncertainties
 void RICE::simulateUnc(double* objs){
-	// objs[0] =  - pow(10,10);
-	// objs[1] = 0.0;
-	// objs[2] = 0.0;
-	// double* percentiles;
+	std::vector<double> allobjs;
 	std::vector<double> welfare;
 	std::vector<double> y15c;
 	std::vector<double> ineq;
@@ -278,41 +276,39 @@ void RICE::simulateUnc(double* objs){
 		for (int damages = BURKESR; damages < DAMAGEERR; damages++){
 			// set damages
 			setDamages(damages);
-			for (int adapteff = 0; adapteff <= 5; adapteff++){
+			for (int adapteff = 0; adapteff <= 2; adapteff++){
 				double y15C = 0.0;
-				setAdaptEff(adapteff*0.2);
+				setAdaptEff(adapteff*0.5);
 				simulate();
 				welfare.push_back(-econ->utility);
-				// objs[0] = std::max(- econ->utility, objs[0]);
 				for (int tidx = 0; tidx < horizon; tidx++){
 					if (climate->tatm[tidx] > 1.5){
 						y15C += 5.0;
 					}
 				}
-				// objs[1] = std::max(y15C, objs[1]);
 				y15c.push_back(y15C);
-				// percentiles = econ->computePrctiles7525();
-				// ineq.push_back(percentiles[0] / percentiles[3]);
-				// objs[2] = std::max(econ->computeGini(), objs[2]);
 				ineq.push_back(econ->computePrctiles7525());
 				net.push_back(econ->computeNET());
-				std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
-					<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
+				// std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
+				// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
 			}
 		}
 	}
-	objs[0] = *std::max_element(welfare.begin(), welfare.end());
-	std::nth_element(welfare.begin(), welfare.begin() + welfare.size() / 2, welfare.end());
-	objs[1] = welfare[welfare.size() / 2];
-	objs[2] = *std::max_element(y15c.begin(), y15c.end());
-	std::nth_element(y15c.begin(), y15c.begin() + y15c.size() / 2, y15c.end());
-	objs[3] = y15c[y15c.size() / 2];
-	objs[4] = *std::max_element(ineq.begin(), ineq.end());
-	std::nth_element(ineq.begin(), ineq.begin() + ineq.size() / 2, ineq.end());
-	objs[5] = ineq[ineq.size() / 2];
-	objs[6] = *std::max_element(net.begin(), net.end());
-	std::nth_element(net.begin(), net.begin() + net.size() / 2, net.end());
-	objs[7] = net[net.size() / 2];
+	double sum = std::accumulate(std::begin(welfare), std::end(welfare), 0.0);
+	allobjs.push_back(sum / welfare.size());
+	allobjs.push_back(*std::max_element(welfare.begin(), welfare.end()));
+	sum = std::accumulate(std::begin(y15c), std::end(y15c), 0.0);
+	allobjs.push_back(sum / y15c.size());
+	allobjs.push_back(*std::max_element(y15c.begin(), y15c.end()));
+	sum = std::accumulate(std::begin(ineq), std::end(ineq), 0.0);
+	allobjs.push_back(sum / ineq.size());
+	allobjs.push_back(*std::max_element(ineq.begin(), ineq.end()));
+	for (int obj = 0; obj < nobjs; obj++){
+		objs[obj] = allobjs[obj];
+	}
+	// objs[6] = *std::max_element(net.begin(), net.end());
+	// sum = std::accumulate(std::begin(net), std::end(net), 0.0);
+	// objs[7] =  sum / net.size();
 	return;
 }
 // frees allocated memory

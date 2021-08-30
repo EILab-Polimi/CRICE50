@@ -57,14 +57,15 @@ Econ::Econ(int hrzn){
 		line.erase(std::remove(line.begin(), line.end(), '"'), line.end());
 		std::istringstream s(line);
 		std::string field;
-		std::string splitline[2];
+		std::string splitline[3];
 		int count = 0;
 		while (std::getline(s, field, ',')){
 			splitline[count] = field;
 			count++;
 		}
 		if (splitline[0].compare("n")){
-			agents_ptr[nag] = new RICEEconAgent(horizon, splitline[0], params.DMType);
+			int idx = stoi(splitline[2]);
+			agents_ptr[nag] = new RICEEconAgent(horizon, splitline[0], params.DMType, idx);
 			nag++;
 		}
 	}

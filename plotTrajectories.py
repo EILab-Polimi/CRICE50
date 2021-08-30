@@ -26,13 +26,13 @@ for reg in range(len(regions)):
 # 	# data['effK'+regions[reg]] = data[gdps[reg]] / data[pops[reg]] / data[tfps[reg]]
 	data['effK'+regions[reg]] = data[gdps[reg]] / data[pops[reg]] 
 effks = [el for el in data.columns if 'effK' in el]
-data[pops].plot()
-data[tfps].plot()
-data[gdps].plot()
-data[effks].plot()
-data[tatms].plot()
+# data[pops].plot()
+# data[tfps].plot()
+# data[gdps].plot()
+# data[effks].plot()
+# data[tatms].plot()
 # print(data[effks].min().min(), data[effks].max().max())
 
-print(data.iloc[[x for x in range(6)]]['E'].sum()*5)
+print('Total emissions: [GtCO2]'data.iloc[[x for x in range(6)]]['E'].sum()*5)
 
 plt.show()

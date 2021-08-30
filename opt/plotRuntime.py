@@ -198,6 +198,7 @@ for el in sols:
 					if el[3] >= el2[3]:
 						if el[4] >= el2[4]:
 							if el[5] >= el2[5]:
+								# flag = 1
 								if el[6] >= el2[6]:
 									if el[7] >= el2[7]:
 										flag = 1
@@ -232,12 +233,12 @@ fig = go.Figure(data =
 			colorscale = 'Tealrose',
 			showscale = True),
 		dimensions = list([
-			dict(range = [vec['Welfare-MDN'].min(), vec['Welfare'].max()],
+			dict(range = [vec['Welfare'].min(), vec['Welfare'].max()],
 				label = 'Welfare', values = vec['Welfare']),
 				# range = [0.0, 1.0],
 				# values = (vec['Welfare'] - vec['Welfare'].min()) /\
 				# (vec['Welfare'].max() - vec['Welfare'].min()) ),
-			dict(range = [vec['Welfare-MDN'].min(), vec['Welfare'].max()],
+			dict(range = [vec['Welfare-MDN'].min(), vec['Welfare-MDN'].max()],
 				label = 'Welfare-MDN', values = vec['Welfare-MDN']),
 				# range = [0.0, 1.0],
 				# values = (vec['Welfare-MDN'] - vec['Welfare-MDN'].min()) /\
@@ -246,9 +247,9 @@ fig = go.Figure(data =
 				label = 'Y1.5°C', values = vec['Y1.5°C']),
 			dict(range = [vec['Y1.5°C-MDN'].min(), vec['Y1.5°C'].max()],
 				label = 'Y1.5°C-MDN', values = vec['Y1.5°C-MDN']),
-			dict(range = [vec['90:10-MDN'].min(), vec['90:10'].max()],
+			dict(range = [vec['90:10'].min(), vec['90:10'].max()],
 				label = '90:10', values = vec['90:10']),
-			dict(range = [vec['90:10-MDN'].min(), vec['90:10'].max()],
+			dict(range = [vec['90:10-MDN'].min(), vec['90:10-MDN'].max()],
 				label = '90:10-MDN', values = vec['90:10-MDN']),
 			dict(range = [vec['NET-MDN'].min(), vec['NET'].max()],
 				label = 'NET', values = vec['NET']),

@@ -13,6 +13,7 @@ enum TempLimit {ON, OFF, TEMPLIMITERR};
 enum ElandType {ELANDBAU, ELANDOPT, ELANDERR};
 enum DecisionMakers {BAU, INPUT_STATIC, INPUT_POLICY, DMERR};
 enum Adaptation {NOADAPT, ADWITCH, ADAPTERR};
+enum Embedding {EMB_YES, EMB_NO, EMBERR};
 
 class EconAgent{
 public:
@@ -57,6 +58,7 @@ struct RICEEconAgentParams{
 	ElandType elandType;
 	DecisionMakers DMType;
 	Adaptation adaptType;
+	Embedding embedding;
 	int t_min_miu;
 	int t_max_miu;
 	double max_miu_up;
@@ -141,17 +143,21 @@ struct EconAgentPolicy{
 	std::pFunction_param p_param;
 	std::param_function* Policy;
 	std::vector<double> input, output;
-	int nvars;
+	std::pFunction_param e_param;
+	std::param_function* Embedder;
+	std::vector<double> e_input, e_output;
+	int nvars, evars;
 };
 
 class RICEEconAgent: public EconAgent{
 public:
 	RICEEconAgent();
 	~RICEEconAgent();
-	RICEEconAgent(int hrzn, std::string regname, DecisionMakers DMType);
+	RICEEconAgent(int hrzn, std::string regname, DecisionMakers DMType, int idx);
 	int horizon;
 	int ssp;
 	std::string name;
+	int id_name;
 	RICEEconAgentParams params;
 	RICEEconAgentTraj traj;
 	EconAgentPolicy policy;
@@ -177,6 +183,7 @@ public:
 	void setDamages(int damages);
 	void setAdaptEff(double adapteff);
 	void econAgentDelete();
+	void computeEmbedding();
 };
 
 #endif

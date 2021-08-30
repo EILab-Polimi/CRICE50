@@ -15,7 +15,7 @@ public:
 	int agents;						// number of economic agents interacting
 	int horizon;					// length of the horizon
 	int t;							// time instant
-	int objs;
+	int nobjs;
 	ModelType carbon_model;
 	ModelType climate_model;
 	int robustness;
