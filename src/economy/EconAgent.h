@@ -180,7 +180,10 @@ struct EconAgentPolicy{
 	std::pFunction_param p_param;
 	std::param_function* Policy;
 	std::vector<double> input, output;
-	int nvars;
+	std::pFunction_param e_param;
+	std::param_function* Embedder;
+	std::vector<double> e_input, e_output;
+	int nvars, evars;
 };
 
 class RICEEconAgent: public EconAgent{
@@ -224,6 +227,7 @@ public:
 	void setGCFFlux(double value, int tidx);
 	void reset();
 	void econAgentDelete();
+	void computeEmbedding();
 };
 
 #endif

@@ -435,7 +435,7 @@ void RICEEconAgent::readPolicyParams(){
 		for (int adaptinput = 0; adaptinput < 2; adaptinput++){
 			policy.p_param.policyInput += 1;
 		    policy.p_param.mIn.push_back(0.0);
-		    policy.p_param.MIn.push_back(10.0);			
+		    policy.p_param.MIn.push_back(100.0);			
 		}
 	}
 	// read output number and bounds
