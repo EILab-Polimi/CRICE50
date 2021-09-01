@@ -299,6 +299,19 @@ void RICEEconAgent::readParams(){
 	in >> params.beta3_ad;
 	in >> traj.gac[0];
 	in.close();
+	in.open("./settings/DamagesCoeffWITCH.txt", std::ios_base::in);
+	if (!in){
+		std::cout << "The DamagesCoeff settings file could not be found!" << std::endl;
+	    exit(1);
+	}
+	while (sJunk!=name){
+		in >>sJunk;
+	}
+	in >> params.witch_w1;
+	in >> params.witch_w2;
+	in >> params.witch_w3;
+	in >> params.witch_w4;
+	in.close();
 	return;
 }
 void RICEEconAgent::readPolicyParams(){
@@ -856,7 +869,7 @@ void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 	traj.e[t] = traj.eind[t] + traj.eland[t];
 	computeDamages(RPCutoff);	
 
-	computeAdaptation();
+	computeAdaptation(tatm);
 
 	// compute abatecost
 	traj.abatecost[t] = traj.mx[t] *
@@ -893,7 +906,7 @@ void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 	t++;
 	return;
 }
-void RICEEconAgent::computeAdaptation(){
+void RICEEconAgent::computeAdaptation(double* tatm){
 	if (params.adaptType == ADWITCH){
 		// traj.fad[t] = 0.03;
 		// traj.ia[t] = 0.03;
@@ -929,7 +942,12 @@ void RICEEconAgent::computeAdaptation(){
 			traj.rd[t] = traj.damages[t];
 		}
 		else{
-			traj.rd[t] = traj.damages[t] / (1 + traj.adapt[t]);
+			double damages_witch = traj.ygross[t] * (1.0 - 1.0 / (1.0 + 
+				params.witch_w4 + params.witch_w1 * tatm[t] +
+				 params.witch_w2 * pow(tatm[t], params.witch_w3)));
+			traj.rd[t] = traj.damages[t] / 
+				( (1 + traj.adapt[t]) * 
+					( damages_witch / traj.damages[t]) );
 		}
 
 		// update adaptation stocks (capital and specific capacity)
@@ -1023,13 +1041,18 @@ void RICEEconAgent::nextAction(){
 		traj.miu[t] = std::max(0.0, std::min(traj.miu_up[t], std::min(traj.miu[t-1] + 0.2, traj.miu[t])));
 		traj.s[t] = std::max(0.001, std::min(0.999, traj.s[t]));
 		if (params.adaptType == ADWITCH){
-			traj.fad[t] = std::min(0.1, std::max(0.0, traj.fad[t]));
-			traj.ia[t] = std::min(0.1, std::max(0.0, traj.ia[t]));
-			traj.iac[t] = std::min(0.1, std::max(0.0, traj.iac[t]));			
+			traj.fad[t] = std::min(0.1, std::min(traj.fad[t-1] + 0.05, std::max(0.0, traj.fad[t])));
+			traj.ia[t] = std::min(0.1, std::min(traj.ia[t-1] + 0.05, std::max(0.0, traj.ia[t])));
+			traj.iac[t] = std::min(0.1, std::min(traj.iac[t-1] + 0.05, std::max(0.0, traj.iac[t])));			
 		}
 	}
 	else{
-		traj.miu[0] = 0.0;
+		if (params.adaptType == ADWITCH){
+			traj.miu[0] = 0.0;
+			traj.fad[0] = 0.0;
+			traj.iac[0] = 0.0;
+			traj.ia[0] = 0.0;
+		}
 	}
 	if (t==1){
 		traj.miu[1] = 0.03;
@@ -1183,7 +1206,8 @@ void RICEEconAgent::computeDamages(double* RPCutoff){
 		traj.ynet_estimated[t] = std::min(std::max(traj.ygross[t] 
 			* (1 - traj.damfrac[t]), pow(10.0, -4.0) * traj.gdpbase[ssp][t]), 
 			2.0 * traj.gdpbase[ssp][t]);
-		traj.damages[t] = traj.ygross[t] - traj.ynet_estimated[t];	
+		traj.damages[t] = traj.ygross[t] - traj.ynet_estimated[t];
+		traj.damfrac[t] = traj.damages[t] / traj.ygross[t];	
 	}
 	return;
 }

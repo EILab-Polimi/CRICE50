@@ -88,6 +88,10 @@ struct RICEEconAgentParams{
 	double beta2_ad;
 	double beta3_ad;
 	double adapteff;
+	double witch_w1;
+	double witch_w2;
+	double witch_w3;
+	double witch_w4;
 };
 
 struct RICEEconAgentTraj{
@@ -175,7 +179,7 @@ public:
 	void nextStep(double* tatm, double* RPCutoff);
 	void setAgentVariables(double* vars);
 	void computeDamages(double* RPCutoff);
-	void computeAdaptation();
+	void computeAdaptation(double* tatm);
 	void nextAction();
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);
