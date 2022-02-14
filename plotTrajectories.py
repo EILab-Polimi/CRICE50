@@ -5,8 +5,7 @@ import seaborn as sns
 data = pd.read_csv("./simulationOutput.txt", sep='\t')
 pd.set_option('precision',10)
 #select field to plot
-# field = ['E','E']
-field = ['TATM','E'] #
+field = ['DAMAGESrsaf','RDrsaf','ADAPTrsaf','YGROSSrsaf'] #
 
 print(data[field].describe)
 for el in field:
@@ -33,6 +32,6 @@ effks = [el for el in data.columns if 'effK' in el]
 # data[tatms].plot()
 # print(data[effks].min().min(), data[effks].max().max())
 
-print('Total emissions: [GtCO2]'data.iloc[[x for x in range(6)]]['E'].sum()*5)
+print('Total emissions: [GtCO2]', data.iloc[[x for x in range(6)]]['E'].sum()*5)
 
 plt.show()

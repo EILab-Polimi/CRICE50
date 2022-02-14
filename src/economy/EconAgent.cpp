@@ -1142,6 +1142,9 @@ void RICEEconAgent::nextAction(){
 		traj.miu[t] = std::max(0.0, std::min(traj.miu_up[t], std::min(traj.miu[t-1] + 0.2, traj.miu[t])));
 		traj.s[t] = std::max(0.001, std::min(0.999, traj.s[t]));
 		if (params.adaptType == ADWITCH){
+		// 	traj.fad[t] = std::min(0.1, std::max(0.0, traj.fad[t]));
+		// 	traj.ia[t] = std::min(0.1, std::max(0.0, traj.ia[t]));
+		// 	traj.iac[t] = std::min(0.1, std::max(0.0, traj.iac[t]));
 			traj.fad[t] = std::min(0.1, std::min(traj.fad[t-1] + 0.05, std::max(0.0, traj.fad[t])));
 			traj.ia[t] = std::min(0.1, std::min(traj.ia[t-1] + 0.05, std::max(0.0, traj.ia[t])));
 			traj.iac[t] = std::min(0.1, std::min(traj.iac[t-1] + 0.05, std::max(0.0, traj.iac[t])));	
