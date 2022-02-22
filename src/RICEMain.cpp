@@ -13,66 +13,45 @@ TODO: Here we will put authors and license
 #include <string>
 #include <math.h>
 #include <fstream>
-#include <dirent.h>
-#include <sys/stat.h>
+#include <dlib/optimization.h>
+#include <dlib/global_optimization.h>
 
-// Reads a list of files in a directory
-void GetFilesInDirectory(std::vector<std::string> &out, const std::string &directory)
-{
-#ifdef WINDOWS
-    HANDLE dir;
-    WIN32_FIND_DATA file_data;
+RICE rice;
 
-    if ((dir = FindFirstFile((directory + "/*").c_str(), &file_data)) == INVALID_HANDLE_VALUE)
-        return; /* No files found */
+RICE* riceptr = &rice;
 
-    do {
-        const std::string file_name = file_data.cFileName;
-        const std::string full_file_name = directory + "/" + file_name;
-        const bool is_directory = (file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+// using namespace dlib;
 
-        if (file_name[0] == '.')
-            continue;
+typedef dlib::matrix<double,0,1> column_vector;
 
-        if (is_directory)
-            continue;
+// double flag = 0.0;
+double dlibopt_miu(const column_vector& m){
+	double vars[58*57*2];
+	for (int decs=0; decs < 58*57*2 ; decs = decs + 2){
+		*(vars + decs) = m(decs/2);
+		*(vars + decs + 1) = 0.2;
+	}
+	riceptr->setVariables(vars);
+	riceptr->simulate();
+	double obj =  riceptr->econ->utility * pow(10,10);	
+	return obj;
+}
 
-        out.push_back(full_file_name);
-    } while (FindNextFile(dir, &file_data));
-
-    FindClose(dir);
-#else
-    DIR *dir;
-    struct dirent *ent;
-    class stat st;
-
-    dir = opendir(directory.c_str());
-    while ((ent = readdir(dir)) != NULL) {
-        const std::string file_name = ent->d_name;
-        const std::string full_file_name = directory + "/" + file_name;
-
-        if (file_name[0] == '.')
-            continue;
-
-        if (stat(full_file_name.c_str(), &st) == -1)
-            continue;
-
-        const bool is_directory = (st.st_mode & S_IFDIR) != 0;
-
-        if (is_directory)
-            continue;
-
-        out.push_back(full_file_name);
-    }
-    closedir(dir);
-#endif
+double dlibopt(const column_vector& m){
+	double vars[58*57*2];
+	for (int decs=0; decs < 58*57*2 ; decs++){
+		*(vars + decs) = m(decs);
+	}
+	riceptr->setVariables(vars);
+	riceptr->simulate();
+	double obj =  riceptr->econ->utility * pow(10,10);	
+	return obj;
 }
 
 int main(int argc, char* argv[])
 {	
 	clock_t start, end;
 	start = clock();
-
 	// ==== MODEL SETTINGS ==========
 	// here we should be reading the input file
 	// and fix the settings for the simulations 
@@ -86,102 +65,95 @@ int main(int argc, char* argv[])
 	// and the associated pointer
 
     // std::cout << "Loading input data: " << std::endl;
-	RICE rice;
     // std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
-    // std::cout << "Simulating: " << std::endl;
+ //    std::cout << "Simulating: " << std::endl;
 
-	RICE* riceptr = &rice;
-	int nobjs = riceptr->getNObjs();
-	int nvars = riceptr->getNVars();	
-	double objs[nobjs];
-	double vars[nvars];
-
-	if (riceptr->robustness == 1){
-	    end = clock();
-
-	    std::cout << "reading input files: time elapsed: " << ((end - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
-	    std::cout << "starting simulations" << std::endl;
-		// get list of solution files to be simulated 
-		std::vector<std::string> listFiles;
-		listFiles.reserve(484);
-		std::string solDir = "./RICE50++_Inputs";
-		GetFilesInDirectory(listFiles, solDir);
-		// file streams:  input & output  
-		std::fstream solFile;
-		std::fstream robustnessOutput;
-		// write header
-		robustnessOutput.open("./robustnessOutput.txt", std::ios_base::out);
-		robustnessOutput << "Solution\tSSP\tDamages\t" << 
-			"Welfare\tT(2100)\tTmax\tGini(2100)\t" <<
-			"90thGDPpc(2100)\t80thGDPpc(2100)\t" << 
-			"20thGDPpc(2100)\t10thGDPpc(2100)\t" << std::endl;
-
-		for (int nfiles = 0; nfiles < listFiles.size() ; nfiles++){
-			// get file name
-			std::string nameSol = listFiles[nfiles];
-			nameSol.erase( nameSol.begin(), nameSol.begin() + 18 );
-			nameSol.erase( nameSol.end() - 4, nameSol.end() );
-			// open solution file to be simulated
-			solFile.open(listFiles[nfiles], std::ios_base::in);
-			if (!solFile) {
-				std::cerr << "Error: file could not be opened" << std::endl;
-	    		exit(1);
-	    	}
-	    	// read file into variables
-			for (int varidx = 0; varidx < nvars ; varidx++){
-				solFile >> vars[varidx];
-			}
-			solFile.close();
-			// set the variables read above
-			riceptr->setVariables(vars);
-			for (int ssp = 1; ssp <= 5; ssp++){
-				// set ssp
-				riceptr->setSsp(ssp);
-				for (int damages = BURKESR; damages < DAMAGEERR; damages++){
-					// set damages
-					riceptr->setDamages(damages);
-					// simulate
-					riceptr->simulate();
-					// report
-					riceptr->reportObjs(nameSol, ssp, damages, robustnessOutput);
-				}
-			} 
+	// ==== SIMULATION EXECUTION ==========
+	// if (argc <= 1){
+	// 	riceptr->simulate();				
+	// 	std::cout << riceptr->econ->utility << std::endl;	
+	// }
+	// else{
+	// 	MOEA_Init(nobjs, 0);
+	// 	while (MOEA_Next_solution() == MOEA_SUCCESS) {
+	// 		MOEA_Read_doubles(nvars, vars);
+	// 		riceptr->setVariables(vars);
+	// 		riceptr->simulate();
+	// 		objs[0] = riceptr->econ->utility * pow(10,10);
+	// 		MOEA_Write(objs, NULL);
+	// 	}
+	// }
+	int nvars = 58*57;
+	// int nvars = 58 * 57 * 2 ;
+	double vars[nvars*2];
+	column_vector starting_point;
+	starting_point.set_size(nvars);
+	column_vector bound1, bound2;
+	bound1.set_size(nvars);
+	bound2.set_size(nvars);
+	//optimize MIU
+	for (int ag=0; ag < 57 ; ag++){
+		for (int tidx=0; tidx < 58; tidx++){
+			starting_point(ag*57+tidx) = std::min(1.0, 0.05 * tidx);
+			bound1(ag*57+tidx) = 0.0;
+			bound2(ag*57+tidx) = 1.2;
 		}
-		robustnessOutput.close();			
 	}
-	else{
-		// ==== SIMULATION EXECUTION ==========
-		if (riceptr->econ->params.DMType == BAU){
-			riceptr->simulate();				
-			std::cout << riceptr->econ->utility << std::endl;	
-		}
-		// else{
-		// 	MOEA_Init(nobjs, 0);
-		// 	while (MOEA_Next_solution() == MOEA_SUCCESS) {
-		// 		MOEA_Read_doubles(nvars, vars);
-		// 		riceptr->setVariables(vars);
-		// 		riceptr->simulate();
-		// 		objs[0] =  - riceptr->econ->utility;
-		// 		MOEA_Write(objs, NULL);
-		// 	}
-		// }
-		else{
-			MOEA_Init(nobjs, 0);
-			while (MOEA_Next_solution() == MOEA_SUCCESS) {
-				MOEA_Read_doubles(nvars, vars);
-				riceptr->setVariables(vars);
-				// riceptr->simulateUnc(objs);
-				riceptr->simulate();
-				objs[0] =  - riceptr->econ->utility;
-				MOEA_Write(objs, NULL);
-			}
-		}
-		riceptr->writeSimulation();
+	// //optimize MIU & S
+	// for (int ag=0; ag < 57 ; ag++){
+	// 	for (int tidx=0; tidx < 58*2; tidx++){
+	// 		if (tidx%2 == 0){
+	// 			starting_point(ag*57*2+tidx) = std::min(1.0, 0.05 * tidx / 2);
+	// 			bound1(ag*58*2+tidx) = 0.0;
+	// 			bound2(ag*58*2+tidx) = 1.2;
+	// 		}
+	// 		else{
+	// 			starting_point(ag*58*2+tidx) = 0.2;
+	// 			bound1(ag*58*2+tidx) = 0.1;
+	// 			bound2(ag*58*2+tidx) = 0.7;				
+	// 		}
+	// 	}
+	// }
+	std::cout << "optimization starting: " << std::endl;
+    // find_max_using_approximate_derivatives(lbfgs_search_strategy(10*57*57),
+    //                                        objective_delta_stop_strategy(1).be_verbose(),
+    //                                        dlibopt, starting_point, 10000);
+    dlib::find_max_box_constrained(dlib::lbfgs_search_strategy(10*58*57),
+                                           dlib::objective_delta_stop_strategy(1e-5).be_verbose(),
+                                           dlibopt_miu, dlib::derivative(dlibopt_miu, 5e-2), starting_point, bound1, bound2);
+    // dlib::find_max_box_constrained(dlib::lbfgs_search_strategy(10*58*57*2),
+    //                                        dlib::objective_delta_stop_strategy(1).be_verbose(),
+    //                                        dlibopt, dlib::derivative(dlibopt), starting_point, bound1, bound2);
+    std::ofstream solution;
+    solution.open("./solution.txt");
+
+	// for (int decs=0; decs < 58*57*2 ; decs++){
+	// 	solution << starting_point(decs) << std::endl;
+	// }
+	for (int decs=0; decs < 58*57 ; decs++){
+		solution << starting_point(decs) << std::endl;
 	}
+	solution.close();
+
+    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+    std::cout << "Writing output data: " << std::endl;
+
 	// ==== POST PROCESSING ==========
-    // std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
-    // std::cout << "Freeing memory: " << std::endl;
-	// delete memory used by RICE
+
+	// export simulation results in output file
+
+	for (int decs=0; decs < 58*57*2 ; decs = decs + 2){
+		*(vars + decs) = starting_point(decs/2 );
+		*(vars + decs + 1) = 0.2;
+	}
+	riceptr->setVariables(vars);
+	riceptr->simulate();
+
+
+	riceptr->writeSimulation();
+    std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
+    std::cout << "Freeing memory: " << std::endl;
+	// delete memory used by RICE 
 	riceptr->RICE_delete();
 
 	// end

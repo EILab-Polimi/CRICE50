@@ -488,10 +488,10 @@ int RICEEconAgent::getNVars(){
 	int nvars;
 	if (params.DMType == INPUT_STATIC){
 		if (params.adaptType == ADWITCH){
-			nvars = (horizon - 1) * 5;
+			nvars = (horizon) * 5;
 		}
 		else{
-			nvars = (horizon - 1) * 2;
+			nvars = (horizon) * 2;
 		}
 	} 
 	if (params.DMType == INPUT_POLICY){
@@ -1025,6 +1025,7 @@ void RICEEconAgent::nextAction(){
 				break;
 			}
 			case INPUT_STATIC:{
+				traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
 				// no need to do anything here
 				// miu, s & other decs. vars are fixed 
 				// at the beginning of simulation

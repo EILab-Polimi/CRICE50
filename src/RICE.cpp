@@ -270,28 +270,43 @@ void RICE::simulateUnc(double* objs){
 	std::vector<double> y15c;
 	std::vector<double> ineq;
 	std::vector<double> net;
+	std::fstream outputScenario;
+	outputScenario.open("./outputScenario.txt", std::ios_base::out);
 	for (int ssp = 1; ssp <= 5; ssp++){
 		// set ssp
 		setSsp(ssp);
 		for (int damages = BURKESR; damages < DAMAGEERR; damages++){
 			// set damages
 			setDamages(damages);
-			for (int adapteff = 0; adapteff <= 2; adapteff++){
-				double y15C = 0.0;
-				setAdaptEff(adapteff*0.5);
-				simulate();
-				welfare.push_back(-econ->utility);
-				for (int tidx = 0; tidx < horizon; tidx++){
-					if (climate->tatm[tidx] > 1.5){
-						y15C += 5.0;
-					}
+
+			double y15C = 0.0;
+			simulate();
+			welfare.push_back(-econ->utility);
+			for (int tidx = 0; tidx < horizon; tidx++){
+				if (climate->tatm[tidx] > 1.5){
+					y15C += 5.0;
 				}
-				y15c.push_back(y15C);
-				ineq.push_back(econ->computePrctiles7525());
-				net.push_back(econ->computeNET());
-				// std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
-				// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
 			}
+			y15c.push_back(y15C);
+			ineq.push_back(econ->computePrctiles7525());
+			net.push_back(econ->computeNET());
+
+			// for (int adapteff = 0; adapteff <= 2; adapteff++){
+			// 	double y15C = 0.0;
+			// 	setAdaptEff(adapteff*0.5);
+			// 	simulate();
+			// 	welfare.push_back(-econ->utility);
+			// 	for (int tidx = 0; tidx < horizon; tidx++){
+			// 		if (climate->tatm[tidx] > 1.5){
+			// 			y15C += 5.0;
+			// 		}
+			// 	}
+			// 	y15c.push_back(y15C);
+			// 	ineq.push_back(econ->computePrctiles7525());
+			// 	net.push_back(econ->computeNET());
+				outputScenario << ssp << "\t" << damages << "\t"
+					<< - econ->utility << "\t" << y15C << "\t" << econ->computePrctiles7525() << std::endl;
+			// }
 		}
 	}
 	double sum = std::accumulate(std::begin(welfare), std::end(welfare), 0.0);
@@ -309,6 +324,7 @@ void RICE::simulateUnc(double* objs){
 	// objs[6] = *std::max_element(net.begin(), net.end());
 	// sum = std::accumulate(std::begin(net), std::end(net), 0.0);
 	// objs[7] =  sum / net.size();
+	outputScenario.close();
 	return;
 }
 // frees allocated memory
