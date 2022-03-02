@@ -27,6 +27,8 @@ public:
 	int horizon;
 	EconParams params;
 	double* e;
+	double* gcf;
+	double* statesVector;
 	double* cemutotper;
 	double* RPCutoff;
 	double* globalStates;

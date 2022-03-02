@@ -47,6 +47,11 @@ RICE::RICE(){
 		in >> sJunk;
 	}
 	in >> robustness;
+	while (sJunk!="writefile"){
+		in >> sJunk;
+	}
+	in >> writefile;
+	in.close();
 	switch(carbon_model){
 		case WITCH:
 			carbon = new WITCHCarbon(horizon);
@@ -276,22 +281,36 @@ void RICE::simulateUnc(double* objs){
 		for (int damages = BURKESR; damages < DAMAGEERR; damages++){
 			// set damages
 			setDamages(damages);
-			for (int adapteff = 0; adapteff <= 2; adapteff++){
-				double y15C = 0.0;
-				setAdaptEff(adapteff*0.5);
-				simulate();
-				welfare.push_back(-econ->utility);
-				for (int tidx = 0; tidx < horizon; tidx++){
-					if (climate->tatm[tidx] > 1.5){
-						y15C += 5.0;
-					}
+			double y15C = 0.0;
+			simulate();
+			welfare.push_back(-econ->utility);
+			for (int tidx = 0; tidx < horizon; tidx++){
+				if (climate->tatm[tidx] > 1.5){
+					y15C += 5.0;
 				}
-				y15c.push_back(y15C);
-				ineq.push_back(econ->computePrctiles7525());
-				net.push_back(econ->computeNET());
-				// std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
-				// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
 			}
+			y15c.push_back(y15C);
+			ineq.push_back(econ->computePrctiles7525());
+			net.push_back(econ->computeNET());
+			// std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
+			// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
+
+			// for (int adapteff = 0; adapteff <= 2; adapteff++){
+			// 	double y15C = 0.0;
+			// 	setAdaptEff(adapteff*0.5);
+			// 	simulate();
+			// 	welfare.push_back(-econ->utility);
+			// 	for (int tidx = 0; tidx < horizon; tidx++){
+			// 		if (climate->tatm[tidx] > 1.5){
+			// 			y15C += 5.0;
+			// 		}
+			// 	}
+			// 	y15c.push_back(y15C);
+			// 	ineq.push_back(econ->computePrctiles7525());
+			// 	net.push_back(econ->computeNET());
+			// 	// std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
+			// 	// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
+			// }
 		}
 	}
 	double sum = std::accumulate(std::begin(welfare), std::end(welfare), 0.0);

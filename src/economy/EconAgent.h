@@ -14,6 +14,7 @@ enum ElandType {ELANDBAU, ELANDOPT, ELANDERR};
 enum DecisionMakers {BAU, INPUT_STATIC, INPUT_POLICY, DMERR};
 enum Adaptation {NOADAPT, ADWITCH, ADAPTERR};
 enum Embedding {EMB_YES, EMB_NO, EMBERR};
+enum GCFSimType {GCF_YES, GCF_NO, GCFERR};
 
 class EconAgent{
 public:
@@ -28,6 +29,7 @@ public:
 	virtual double getPop(int tidx) = 0;
 	virtual double getCPC(int tidx) = 0;
 	virtual double getGDPpc(int tidx) = 0;
+	virtual double getAbateAdaptCost(int tidx) = 0;
 	virtual int getNVars() = 0;
 	virtual	void setBAUDMType() = 0;
 	virtual void nextStep(double* tatm, double* RPCutoff) = 0;
@@ -37,6 +39,8 @@ public:
 	virtual void setSsp(int ssp) = 0;
 	virtual void setDamages(int damages) = 0;
 	virtual void setAdaptEff(double adapteff) = 0;
+	virtual double getGCFFlux(int tidx) = 0;
+	virtual void setGCFFlux(double value, int tidx) = 0;
 	virtual void econAgentDelete() = 0;
 };
 
@@ -59,6 +63,7 @@ struct RICEEconAgentParams{
 	DecisionMakers DMType;
 	Adaptation adaptType;
 	Embedding embedding;
+	GCFSimType GCFSim;
 	int t_min_miu;
 	int t_max_miu;
 	double max_miu_up;
@@ -141,6 +146,8 @@ struct RICEEconAgentTraj{
 	double* sac;
 	double* gac;
 	double* adcosts;	
+	double* gcfFlux;
+	double* alpha_gcf;
 };
 
 struct EconAgentPolicy{
@@ -174,6 +181,7 @@ public:
 	double getPop(int tidx);
 	double getCPC(int tidx);
 	double getGDPpc(int tidx);
+	double getAbateAdaptCost(int tidx);
 	int getNVars();
 	void setBAUDMType();
 	void nextStep(double* tatm, double* RPCutoff);
@@ -186,8 +194,10 @@ public:
 	void setSsp(int ssps);
 	void setDamages(int damages);
 	void setAdaptEff(double adapteff);
-	void econAgentDelete();
 	void computeEmbedding();
+	double getGCFFlux(int tidx) ;
+	void setGCFFlux(double value, int tidx);
+	void econAgentDelete();
 };
 
 #endif

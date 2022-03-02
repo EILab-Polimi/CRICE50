@@ -38,6 +38,9 @@ Econ::Econ(int hrzn){
 	readParams();
 	horizon = hrzn;
 	e = new double[horizon+1];
+	gcf = new double[horizon+1];
+	statesVector = new double[1];
+	gcf[0] = 0.0;
 	cemutotper = new double[horizon + 1];
 	RPCutoff = new double[horizon + 1];
 	agents_ptr = new EconAgent * [agents];
@@ -141,11 +144,12 @@ void Econ::initializeStates(int numGlobalStates){
 } 
 // returns the pointer to a vector of global economic state variables
 double* Econ::getStates(){
-	return econStates;
+	statesVector[0] = gcf[t];
+	return statesVector;
 }
 // returns the pointer to a vector of global economic state variables
 int Econ::getNStates(){
-	return 0;
+	return 1;
 }
 // passes the variables needed to nextStep in carbon cycle
 void Econ::updateLinks(){
@@ -190,6 +194,7 @@ void Econ::nextStep(){
 	double pop[agents];
 	double sum_pop = 0.0, sum_cpc = 0.0;
 	double cpc[agents];
+	double gcf_in = 0.0, gcf_out = 0.0, gcf_flux = 0.0;
 	for (int ag=0; ag < agents; ag++){
 		// compute next step for the agent
 		agents_ptr[ag]->nextStep(tatm, RPCutoff);
@@ -199,7 +204,50 @@ void Econ::nextStep(){
 		sum_pop += pop[ag];
 		cpc[ag] = agents_ptr[ag]->getCPC(t);
 		sum_cpc += cpc[ag];
+		gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
+		if (gcf_flux >= 0 ){
+			gcf_in += gcf_flux;
+		}
+		else{
+			gcf_out -= gcf_flux;
+		}
 	}
+	// std::cout << t << "\t" << gcf[t] << "\t" << gcf_in << "\t" << gcf_out << std::endl;
+	double new_gcf_in = 0.0;
+	if (gcf[t] + gcf_in > 1.0 && gcf_in > 0 ){
+		for (int ag=0; ag < agents; ag++){
+			gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
+			if (gcf_flux > 0){
+				// std::cout << gcf_flux << "\t" << gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in << std::endl;
+				agents_ptr[ag]->setGCFFlux(gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in , t+1) ;
+				new_gcf_in += gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in;
+			}
+		}
+	}
+	if (gcf[t] + new_gcf_in < gcf_out && gcf_out > 0 ){
+	for (int ag=0; ag < agents; ag++){
+			gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
+			if (gcf_flux < 0){
+				// std::cout << gcf_flux << "\t" << gcf_flux * 0.9 * (gcf[t] + gcf_in) / gcf_out  << std::endl;
+				agents_ptr[ag]->setGCFFlux( std::max(- agents_ptr[ag]->getAbateAdaptCost(t), gcf_flux * 0.9 * (gcf[t] + new_gcf_in) / gcf_out ) , t+1);
+				// agents_ptr[ag]->setGCFFlux( gcf_flux * 0.9 * (gcf[t] + new_gcf_in) / gcf_out , t+1);
+			}
+		}
+	}
+	gcf_in = 0;
+	gcf_out = 0;
+	for (int ag=0; ag < agents; ag++){
+		gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
+		if (gcf_flux >= 0 ){
+			gcf_in += gcf_flux;
+		}
+		else{
+			gcf_out -= gcf_flux;
+		}
+	}
+	// std::cout << t << "\t" << gcf[t] << "\t" << gcf_in << "\t" << gcf_out << std::endl;
+	// std::cout << t << "\t" << gcf[t] << "\t" << gcf_in << "\t" << gcf_out << std::endl;
+	gcf[t+1] = gcf[t] + gcf_in - gcf_out;
 	// compute period utility and update utiltiy
 	if (params.utilityType == COOP){
 		for (int ag=0; ag < agents; ag++){
@@ -229,7 +277,7 @@ void Econ::nextStep(){
 }
 //writes header of file
 void Econ::writeHeader(std::fstream& output){
-	output << "E\tCEMUTOTPER\t";
+	output << "E\tGCF\tCEMUTOTPER\t";
 	for (int ag=0; ag < agents; ag++){
 		agents_ptr[ag]->writeHeader(output);
 	}
@@ -238,7 +286,7 @@ void Econ::writeHeader(std::fstream& output){
 }
 //writes steps to file
 void Econ::writeStep(std::fstream& output){
-	output << e[t] << "\t"
+	output << e[t] << "\t" << gcf[t] << "\t"
 		<< cemutotper[t] << "\t" ;
 	for (int ag=0; ag < agents; ag++){
 		agents_ptr[ag]->writeStep(output);
@@ -314,6 +362,8 @@ void Econ::econDelete(){
 	}
 	delete[] agents_ptr;
 	delete[] e;
+	delete[] gcf;
+	delete[] statesVector;
 	delete[] cemutotper;
 	delete[] RPCutoff;
 	delete[] globalStates;

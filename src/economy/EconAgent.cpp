@@ -52,6 +52,11 @@ Embedding stringToEmbedding(std::string input){
 	if (input == "NO") return EMB_NO;	
 	return EMBERR;
 }
+GCFSimType stringToGCFSim(std::string input){
+	if (input == "YES") return GCF_YES;
+	if (input == "NO") return GCF_NO;	
+	return GCFERR;
+}
 
 // constructor
 EconAgent::EconAgent(){
@@ -127,6 +132,7 @@ void RICEEconAgent::allocate(){
 	traj.sac = new double[horizon + 1];
 	traj.gac = new double[horizon + 1];	
 	traj.adcosts = new double[horizon + 1];	
+	traj.gcfFlux = new double[horizon + 1];	
 	return;
 }
 // read econ agent params
@@ -226,6 +232,11 @@ void RICEEconAgent::readParams(){
 		in >>sJunk;
 	}
 	in >> params.prstp;
+	while (sJunk!="GCFSim"){
+		in >>sJunk;
+	}
+	in >> line;
+	params.GCFSim = stringToGCFSim(line);
 	in.close();
 	params.optlr_s = (params.dk + .004)/(params.dk + .004*params.elasmu + params.prstp)*params.gama;
 
@@ -335,19 +346,25 @@ void RICEEconAgent::readPolicyParams(){
 	    policy.p_param.MIn.push_back(i2);
 	}
 	if (params.adaptType == ADWITCH){
-		policy.p_param.policyInput += 3;
 		if (params.embedding==EMB_YES){
+			policy.p_param.policyInput += 1;
 		    policy.p_param.mIn.push_back(0.0);
 		    policy.p_param.MIn.push_back(1.0);						
 		}
-		else{
-		    policy.p_param.mIn.push_back(0.0);
-		    policy.p_param.MIn.push_back(15.0);			
-		}
+		// else{
+		//     policy.p_param.mIn.push_back(0.0);
+		//     policy.p_param.MIn.push_back(15.0);			
+		// }
 		for (int adaptinput = 0; adaptinput < 2; adaptinput++){
+			policy.p_param.policyInput += 1;
 		    policy.p_param.mIn.push_back(0.0);
-		    policy.p_param.MIn.push_back(100.0);			
+		    policy.p_param.MIn.push_back(10.0);			
 		}
+	}
+	if (params.GCFSim == GCF_YES){
+		policy.p_param.policyInput += 1;
+	    policy.p_param.mIn.push_back(0.0);
+	    policy.p_param.MIn.push_back(1.0);						
 	}
 	// read output number and bounds
 	double o1, o2;
@@ -367,11 +384,16 @@ void RICEEconAgent::readPolicyParams(){
 	    policy.p_param.MOut.push_back(1.0);			
 	}
 	if (params.adaptType == ADWITCH){
-		policy.p_param.policyOutput += 3;
 		for (int adaptoutput = 0; adaptoutput < 3; adaptoutput++){
+			policy.p_param.policyOutput += 1;
 		    policy.p_param.mOut.push_back(0.0);
 		    policy.p_param.MOut.push_back(0.1);			
-		}
+		}	
+	}
+	if (params.GCFSim == GCF_YES){
+		policy.p_param.policyOutput += 1;
+	    policy.p_param.mOut.push_back(-0.05);
+	    policy.p_param.MOut.push_back(0.05);			
 	}
 
     // read number of nodes
@@ -445,9 +467,9 @@ void RICEEconAgent::readPolicyParams(){
 			case 2: // ANN
 				policy.Embedder = new std::ann(policy.e_param.policyInput,
 					policy.e_param.policyOutput,policy.e_param.policyStr);
-				// policy.nvars = policy.p_param.policyOutput * 
-				// 	(policy.p_param.policyStr * 
-				// 	(policy.p_param.policyInput + 2) + 1); 
+				policy.evars = policy.p_param.policyOutput * 
+					(policy.p_param.policyStr * 
+					(policy.p_param.policyInput + 2) + 1); 
 				break;
 			case 3: // piecewise linear policy
 				policy.Embedder = new std::pwLinear(policy.e_param.policyInput,
@@ -463,9 +485,9 @@ void RICEEconAgent::readPolicyParams(){
 			case 5:
 				policy.Embedder = new std::annmo(policy.e_param.policyInput,
 					policy.e_param.policyOutput,policy.e_param.policyStr);
-				// policy.evars = policy.e_param.policyStr * 
-				// 	(policy.e_param.policyInput + policy.e_param.policyOutput + 1) 
-				// 	+ policy.e_param.policyOutput; 
+				policy.evars = policy.e_param.policyStr * 
+					(policy.e_param.policyInput + policy.e_param.policyOutput + 1) 
+					+ policy.e_param.policyOutput; 
 				break;
 			default:
 				break;
@@ -496,6 +518,9 @@ int RICEEconAgent::getNVars(){
 	} 
 	if (params.DMType == INPUT_POLICY){
 		nvars = policy.nvars;
+		if (params.embedding==EMB_YES){
+			nvars += policy.evars;
+		}
 	}
 	return nvars;
 }
@@ -643,10 +668,6 @@ void RICEEconAgent::readBaseline(int hrzn){
 	}
 	in.close();
 
-	// traj.gdp = new double[hrzn + 1];
-	// traj.eind = new double[hrzn + 1];
-	// traj.e = new double[hrzn + 1];
-	// traj.k = new double[hrzn + 1];
 	//initialize k
 	in.open("./data_ed57/data_economy/k0.csv");
 	if (!in){
@@ -668,8 +689,6 @@ void RICEEconAgent::readBaseline(int hrzn){
 		}
 	}
 	in.close();
-	// traj.miu = new double[hrzn + 1];
-	// traj.miu_up = new double[hrzn + 1];
 	for (int tidx = 0; tidx < horizon ; tidx++){
 		traj.miu_up[tidx] = 1.0 + std::max(0.0, std::min(
 			(params.max_miu_up - 1.0) * 
@@ -677,7 +696,6 @@ void RICEEconAgent::readBaseline(int hrzn){
 			(params.t_max_miu - params.t_min_miu), 
 			params.max_miu_up - 1.0 ));
 	}
-	// traj.s = new double[hrzn + 1];
 	//initialize s
 	in.open("./data_ed57/data_economy/s0.csv");
 	if (!in){
@@ -700,7 +718,6 @@ void RICEEconAgent::readBaseline(int hrzn){
 	}
 	in.close();	
 	//macc multiplier
-	// traj.mx = new double[hrzn + 1];
 	in.open("./data_ed57/data_macc/mx_multiplier.csv");
 	if (!in){
 		std::cout << "The mx multiplier file could not be found!" << std::endl;
@@ -722,8 +739,6 @@ void RICEEconAgent::readBaseline(int hrzn){
 	}
 	in.close();
 	//macc coefficients
-	// traj.ax = new double[hrzn + 1];
-	// traj.bx = new double[hrzn + 1];
 	in.open("./data_ed57/data_macc/macc_coeffs.csv");
 	if (!in){
 		std::cout << "The macc coeffs file could not be found!" << std::endl;
@@ -750,7 +765,6 @@ void RICEEconAgent::readBaseline(int hrzn){
 	}
 	in.close();
 	//land use emissions
-	// traj.eland = new double[hrzn + 1];
 	switch (params.elandType){
 		case ELANDBAU:
 			in.open("./data_ed57/data_land_use/etree_bau.csv");
@@ -842,6 +856,11 @@ void RICEEconAgent::setBAUDMType(){
 }
 // simulates one time step
 void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
+	// compute ygross
+	traj.ygross[t] = traj.tfp[ssp][t] * 
+		pow(traj.k[t], params.gama) * 
+		pow(traj.pop[ssp][t]/1000.0, 1 - params.gama);
+
 	//take action first based on available information 
 	// (especially in adaptive decision making setting)
 	// eventually consider 30°C limit
@@ -853,15 +872,12 @@ void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 	}
 	nextAction();		
 
-	// compute ygross
-	traj.ygross[t] = traj.tfp[ssp][t] * 
-		pow(traj.k[t], params.gama) * 
-		pow(traj.pop[ssp][t]/1000.0, 1 - params.gama);
 
 	// compute emissions
 	traj.eind[t] = traj.sigma[ssp][t] * 
 		traj.ygross[t] * (1 - traj.miu[t]);
 	traj.e[t] = traj.eind[t] + traj.eland[t];
+
 	computeDamages(RPCutoff);	
 
 	computeAdaptation(tatm);
@@ -879,6 +895,9 @@ void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 	// traj.ynet[t] = traj.ygross[t] - traj.damages[t];
 	// traj.y[t] = std::max(0.01, traj.ynet[t] - traj.abatecost[t]); //avoid damages making negative gdp
 	traj.ynet[t] = traj.ygross[t] - traj.rd[t];
+	if (params.GCFSim==GCF_YES){
+		traj.ynet[t] -= traj.gcfFlux[t] ;
+	}
 	traj.y[t] = std::max(0.01, traj.ynet[t] - traj.abatecost[t] - traj.adcosts[t]); //avoid damages making negative gdp
 	traj.i[t] = traj.s[t] * traj.y[t];
 	traj.c[t] = traj.y[t] - traj.i[t];
@@ -911,10 +930,14 @@ void RICEEconAgent::computeAdaptation(double* tatm){
 			traj.iac[t] = 0.0;
 		}
 		else{
+			// if ( traj.adapt[t-1] > 9 ){
+			// 	traj.ia[t] = std::min(0.001, traj.ia[t]);
+			// 	traj.iac[t] = std::min(0.001, traj.iac[t]);
+			// 	traj.fad[t] = std::min(0.001, traj.fad[t]);
+			// }
 			// compute adaptation costs
 			traj.adcosts[t] = traj.ygross[t] * 
 				(traj.fad[t] + traj.ia[t] + traj.iac[t]);
-			
 			// compute adaptation action
 			traj.act[t] = params.beta1_ad * 
 				pow(params.beta2_ad * 
@@ -934,19 +957,27 @@ void RICEEconAgent::computeAdaptation(double* tatm){
 				(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), 
 				1.0 / params.rho_ad);
 			// compute residual damages
-			if (traj.damages[t] < 0){
-				traj.rd[t] = traj.damages[t];
-			}
-			else{
+			// if (traj.damages[t] < 0){
+			// 	traj.rd[t] = traj.damages[t];
+			// }
+			// else{
+				// traj.adapt[t] = 0.0;
 				double omega_witch = params.witch_w4 + params.witch_w1 * tatm[t] +
 					 params.witch_w2 * pow(tatm[t], params.witch_w3);
-				traj.rd[t] = std::min(traj.damages[t], 
-					std::max(0.0, traj.damages[t] - 
-						params.adapteff * traj.ygross[t] * 
-						omega_witch / (1.0 + omega_witch) *
-						traj.adapt[t] / (1.0 + traj.adapt[t]) ) );
+				// std::cout << omega_witch << std::endl;
+				// traj.rd[t] = traj.damages[t] - 
+				// 	params.adapteff * traj.ygross[t] * 
+				// 	omega_witch / (1.0 + omega_witch) *
+				// 	traj.adapt[t] / (1.0 + traj.adapt[t]) ; 
+				traj.rd[t] = std::max(0.0, 1.0 - t/27.0)*
+					( traj.damages[t] - 
+					params.adapteff * traj.ygross[t] * 
+					omega_witch / (1.0 + omega_witch) *
+					traj.adapt[t] / (1.0 + traj.adapt[t]) ) + 
+					std::max(0.0, std::min(1.0, t/27.0)) * 
+					traj.damages[t] / (1.0 + traj.adapt[t]);
 				// traj.rd[t] = traj.damages[t] / (1.0 + traj.adapt[t]) ; // old version
-			}
+			// }
 
 			// update adaptation stocks (capital and specific capacity)
 			traj.sad[t+1] = traj.sad[t] * (1 - params.dk_adsad) + \
@@ -972,26 +1003,31 @@ void RICEEconAgent::nextAction(){
 				policy.input.clear();
 				policy.output.clear();
 				int outsize = 0;
-				// inputs: effK, tatm_local, tatm, tocean, mat, mup, mlo, time
+				// inputs: effK, omega, tatm_local, tatm, tocean, mat, mup, mlo, time
 				policy.input.push_back(traj.k[t]/(traj.tfp[ssp][t] * traj.pop[ssp][t])); //as in DICE
 				policy.input.push_back( 1.0 / (1.0 + traj.omega[t])); //consider the new state variable omega, scale to have better bounds
 				// policy.input.push_back(traj.y[t - 1]/(traj.tfp[ssp][t - 1] * traj.pop[ssp][t - 1])); //maybe better (?)
 				policy.input.push_back(traj.tatm_local[t]);
-				for (int s = 0; s < nGlobalStates; s++){
-					policy.input.push_back(globalStates[s]);
-				}
+				// for (int s = 0; s < nGlobalStates; s++){
+				// 	if (s == 1 || s == 3){
+				// 		policy.input.push_back(globalStates[s]);
+				// 	}
+				// }
 				policy.input.push_back(t);
 				if (params.adaptType == ADWITCH){
 					if (params.embedding==EMB_YES){
 						policy.input.push_back(policy.e_output[0]);
 					}
-					else{
-						policy.input.push_back(id_name);
-					}
+					// else{
+					// 	policy.input.push_back(id_name);
+					// }
 					policy.input.push_back(traj.sad[t] / traj.k[t] * 100.0);
 					policy.input.push_back(traj.sac[t] / traj.k[t] * 100.0);
 				}
-				
+				if (params.GCFSim == GCF_YES){
+					policy.input.push_back(globalStates[0]);
+				}
+
 				policy.output = policy.Policy->get_NormOutput(policy.input);
 				traj.miu[t] = policy.output[outsize];
 				outsize++;
@@ -1010,6 +1046,13 @@ void RICEEconAgent::nextAction(){
 					outsize++;
 					traj.iac[t] = policy.output[outsize];
 					outsize++;
+				}
+				if (params.GCFSim == GCF_YES){
+					traj.gcfFlux[t+1] = policy.output[outsize];
+					outsize++;					
+				}
+				else{
+					traj.gcfFlux[t+1] = 0.0;					
 				}
 				break;
 			}
@@ -1037,7 +1080,8 @@ void RICEEconAgent::nextAction(){
 			}
 		}
 		// enforce constrainst on max min for decision variables
-		traj.miu[t] = std::max(0.0, std::min(traj.miu_up[t], std::min(traj.miu[t-1] + 0.2, traj.miu[t])));
+		// traj.miu[t] = std::max(0.0, std::min(std::min(traj.miu_up[t], traj.miu[t-1]+0.2), traj.miu[t]));
+		traj.miu[t] = std::max(0.0, std::min(traj.miu_up[t], traj.miu[t]));
 		traj.s[t] = std::max(0.001, std::min(0.999, traj.s[t]));
 		if (params.adaptType == ADWITCH){
 		// 	traj.fad[t] = std::min(0.1, std::max(0.0, traj.fad[t]));
@@ -1045,7 +1089,10 @@ void RICEEconAgent::nextAction(){
 		// 	traj.iac[t] = std::min(0.1, std::max(0.0, traj.iac[t]));
 			traj.fad[t] = std::min(0.1, std::min(traj.fad[t-1] + 0.05, std::max(0.0, traj.fad[t])));
 			traj.ia[t] = std::min(0.1, std::min(traj.ia[t-1] + 0.05, std::max(0.0, traj.ia[t])));
-			traj.iac[t] = std::min(0.1, std::min(traj.iac[t-1] + 0.05, std::max(0.0, traj.iac[t])));			
+			traj.iac[t] = std::min(0.1, std::min(traj.iac[t-1] + 0.05, std::max(0.0, traj.iac[t])));	
+		}
+		if (params.GCFSim == GCF_YES){
+			traj.gcfFlux[t+1] = std::max(-0.05, std::min(0.05, traj.gcfFlux[t+1]) ) * traj.ygross[t];			
 		}
 	}
 	else{
@@ -1054,6 +1101,10 @@ void RICEEconAgent::nextAction(){
 			traj.fad[0] = 0.0;
 			traj.iac[0] = 0.0;
 			traj.ia[0] = 0.0;
+		}
+		if (params.GCFSim == GCF_YES){
+			traj.gcfFlux[0] = 0.0;
+			traj.gcfFlux[1] = 0.0;
 		}
 	}
 	if (t==1){
@@ -1229,6 +1280,10 @@ double RICEEconAgent::getCPC(int tidx){
 double RICEEconAgent::getGDPpc(int tidx){
 	return traj.y[tidx] / traj.pop[ssp][tidx];
 }
+// get total abatement and adaoptation policy costs
+double RICEEconAgent::getAbateAdaptCost(int tidx){
+	return traj.abatecost[tidx] + traj.adcosts[tidx];
+}
 // writes header
 void RICEEconAgent::writeHeader(std::fstream& output){
 	output << "POP" << name << "\t" <<
@@ -1274,7 +1329,8 @@ void RICEEconAgent::writeHeader(std::fstream& output){
 		"AC" << name << "\t" <<
 		"SAC" << name << "\t" <<
 		"GAC" << name << "\t" <<
-		"ADCOSTS" << name << "\t" ;
+		"ADCOSTS" << name << "\t" <<
+		"GCFFLUX" << name << "\t" ;
 	t = 0;
 }
 // writes timestep
@@ -1322,8 +1378,18 @@ void RICEEconAgent::writeStep(std::fstream& output){
 		traj.ac[t] << "\t" <<
 		traj.sac[t] << "\t" <<
 		traj.gac[t] << "\t" <<
-		traj.adcosts[t] << "\t" ;
+		traj.adcosts[t] << "\t" <<
+		traj.gcfFlux[t] << "\t" ;
 	t++;
+}
+// sets ssp 
+double RICEEconAgent::getGCFFlux(int tidx){
+	return traj.gcfFlux[tidx];
+}
+// sets ssp 
+void RICEEconAgent::setGCFFlux(double value, int tidx){
+	traj.gcfFlux[tidx] = value;
+	return;
 }
 // sets ssp 
 void RICEEconAgent::setSsp(int ssps){
@@ -1393,5 +1459,6 @@ void RICEEconAgent::econAgentDelete(){
 	delete[] traj.sac;
 	delete[] traj.gac;
 	delete[] traj.adcosts;
+	delete[] traj.gcfFlux;
 	return;
 }
