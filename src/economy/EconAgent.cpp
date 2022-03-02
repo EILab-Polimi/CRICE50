@@ -435,8 +435,13 @@ void RICEEconAgent::readPolicyParams(){
 		for (int adaptinput = 0; adaptinput < 2; adaptinput++){
 			policy.p_param.policyInput += 1;
 		    policy.p_param.mIn.push_back(0.0);
-		    policy.p_param.MIn.push_back(100.0);			
+		    policy.p_param.MIn.push_back(10.0);			
 		}
+	}
+	if (params.GCFSim == GCF_YES){
+		policy.p_param.policyInput += 1;
+	    policy.p_param.mIn.push_back(0.0);
+	    policy.p_param.MIn.push_back(1.0);						
 	}
 	// read output number and bounds
 	double o1, o2;
@@ -934,7 +939,6 @@ void RICEEconAgent::setBAUDMType(){
 // simulates one time step
 void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 	// compute ygross
-
 	traj.ygross[t] = traj.tfp[ssp][t] * 
 		pow(traj.k[t], params.gama) * 
 		pow(traj.pop[ssp][t]/1000.0, 1 - params.gama);
@@ -1008,6 +1012,11 @@ void RICEEconAgent::computeAdaptation(double* tatm){
 			traj.iac[t] = 0.0;
 		}
 		else{
+			// if ( traj.adapt[t-1] > 9 ){
+			// 	traj.ia[t] = std::min(0.001, traj.ia[t]);
+			// 	traj.iac[t] = std::min(0.001, traj.iac[t]);
+			// 	traj.fad[t] = std::min(0.001, traj.fad[t]);
+			// }
 			// compute adaptation costs
 			traj.adcosts[t] = traj.ygross[t] * 
 				(traj.fad[t] + traj.ia[t] + traj.iac[t]);
@@ -1075,9 +1084,11 @@ void RICEEconAgent::nextAction(){
 					policy.input.push_back( 1.0 / (1.0 + traj.omega[t])); //consider the new state variable omega, scale to have better bounds
 				}
 				policy.input.push_back(traj.tatm_local[t]);
-				for (int s = 0; s < nGlobalStates; s++){
-					policy.input.push_back(globalStates[s]);
-				}
+				// for (int s = 0; s < nGlobalStates; s++){
+				// 	if (s == 1 || s == 3){
+				// 		policy.input.push_back(globalStates[s]);
+				// 	}
+				// }
 				policy.input.push_back(t);
 				if (params.adaptType == ADWITCH){
 					if (params.embedding==EMB_YES){
@@ -1139,7 +1150,8 @@ void RICEEconAgent::nextAction(){
 			}
 		}
 		// enforce constrainst on max min for decision variables
-		traj.miu[t] = std::max(0.0, std::min(traj.miu_up[t], std::min(traj.miu[t-1] + 0.2, traj.miu[t])));
+		// traj.miu[t] = std::max(0.0, std::min(std::min(traj.miu_up[t], traj.miu[t-1]+0.2), traj.miu[t]));
+		traj.miu[t] = std::max(0.0, std::min(traj.miu_up[t], traj.miu[t]));
 		traj.s[t] = std::max(0.001, std::min(0.999, traj.s[t]));
 		if (params.adaptType == ADWITCH){
 		// 	traj.fad[t] = std::min(0.1, std::max(0.0, traj.fad[t]));

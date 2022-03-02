@@ -228,6 +228,9 @@ public:
 	void reset();
 	void econAgentDelete();
 	void computeEmbedding();
+	double getGCFFlux(int tidx) ;
+	void setGCFFlux(double value, int tidx);
+	void econAgentDelete();
 };
 
 #endif

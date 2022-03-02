@@ -93,6 +93,7 @@ int main(int argc, char* argv[])
 	int nvars = riceptr->getNVars();	
 	double objs[nobjs];
 	double vars[nvars];
+	// std::cout << nvars << std::endl;
 
 	int nobjs = riceptr->getNObjs();
 	int nvars = riceptr->getNVars();	
@@ -179,7 +180,9 @@ int main(int argc, char* argv[])
 				MOEA_Write(objs, NULL);
 			}
 		}
-		riceptr->writeSimulation();
+		if (riceptr->writefile == 1){
+			riceptr->writeSimulation();
+		}
 	}
 	// ==== POST PROCESSING ==========
     // std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;

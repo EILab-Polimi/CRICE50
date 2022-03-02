@@ -273,7 +273,6 @@ void Econ::nextStep(){
 			gcf_out -= gcf_flux;
 		}
 	}
-
 	gcf[t+1] = gcf[t] + gcf_in - gcf_out;
 	// compute period utility and update utiltiy
 	if (params.utilityType == COOP){
