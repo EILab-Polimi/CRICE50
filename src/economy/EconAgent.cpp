@@ -348,7 +348,7 @@ void RICEEconAgent::readPolicyParams(){
 	if (params.embedding==EMB_YES){
 		policy.p_param.policyInput += 1;
 	    policy.p_param.mIn.push_back(0.0);
-	    policy.p_param.MIn.push_back(1.0);						
+	    policy.p_param.MIn.push_back(1.0);
 	}
 	if (params.adaptType == ADWITCH){
 		for (int adaptinput = 0; adaptinput < 2; adaptinput++){
@@ -388,11 +388,11 @@ void RICEEconAgent::readPolicyParams(){
 		}	
 	}
 	///// EMPTY GCF - no money can be stored
-	// if (params.GCFSim == GCF_YES){
-	// 	policy.p_param.policyOutput += 1;
-	//     policy.p_param.mOut.push_back(-0.05);
-	//     policy.p_param.MOut.push_back(0.05);			
-	// }
+	if (params.GCFSim == GCF_YES){
+		policy.p_param.policyOutput += 1;
+	    policy.p_param.mOut.push_back(-0.1);
+	    policy.p_param.MOut.push_back(0.1);			
+	}
 
     // read number of nodes
 	while (sJunk!="<POLICY_STRUCTURE>"){
