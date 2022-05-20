@@ -13,4 +13,4 @@ max_miu_up		1.20		(maximum possible value for emission control rate)
 t_max_miu		2200 		(first year where miu = max_miu_up is possible)
 Adaptation		ON			(ON / OFF)
 AdaptEff		1.0
-Embedding		NO			(YES/NO)
+Embedding		YES			(YES/NO)

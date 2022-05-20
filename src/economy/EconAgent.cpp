@@ -345,27 +345,24 @@ void RICEEconAgent::readPolicyParams(){
 	    policy.p_param.mIn.push_back(i1);
 	    policy.p_param.MIn.push_back(i2);
 	}
+	if (params.embedding==EMB_YES){
+		policy.p_param.policyInput += 1;
+	    policy.p_param.mIn.push_back(0.0);
+	    policy.p_param.MIn.push_back(1.0);						
+	}
 	if (params.adaptType == ADWITCH){
-		if (params.embedding==EMB_YES){
-			policy.p_param.policyInput += 1;
-		    policy.p_param.mIn.push_back(0.0);
-		    policy.p_param.MIn.push_back(1.0);						
-		}
-		// else{
-		//     policy.p_param.mIn.push_back(0.0);
-		//     policy.p_param.MIn.push_back(15.0);			
-		// }
 		for (int adaptinput = 0; adaptinput < 2; adaptinput++){
 			policy.p_param.policyInput += 1;
 		    policy.p_param.mIn.push_back(0.0);
 		    policy.p_param.MIn.push_back(10.0);			
 		}
 	}
-	if (params.GCFSim == GCF_YES){
-		policy.p_param.policyInput += 1;
-	    policy.p_param.mIn.push_back(0.0);
-	    policy.p_param.MIn.push_back(1.0);						
-	}
+	///// EMPTY GCF - no money can be stored
+	// if (params.GCFSim == GCF_YES){
+	// 	policy.p_param.policyInput += 1;
+	//     policy.p_param.mIn.push_back(0.0);
+	//     policy.p_param.MIn.push_back(1.0);						
+	// }
 	// read output number and bounds
 	double o1, o2;
 	while (sJunk!="<NUM_OUTPUT>"){
@@ -390,11 +387,12 @@ void RICEEconAgent::readPolicyParams(){
 		    policy.p_param.MOut.push_back(0.1);			
 		}	
 	}
-	if (params.GCFSim == GCF_YES){
-		policy.p_param.policyOutput += 1;
-	    policy.p_param.mOut.push_back(-0.05);
-	    policy.p_param.MOut.push_back(0.05);			
-	}
+	///// EMPTY GCF - no money can be stored
+	// if (params.GCFSim == GCF_YES){
+	// 	policy.p_param.policyOutput += 1;
+	//     policy.p_param.mOut.push_back(-0.05);
+	//     policy.p_param.MOut.push_back(0.05);			
+	// }
 
     // read number of nodes
 	while (sJunk!="<POLICY_STRUCTURE>"){
@@ -1008,11 +1006,9 @@ void RICEEconAgent::nextAction(){
 				policy.input.push_back( 1.0 / (1.0 + traj.omega[t])); //consider the new state variable omega, scale to have better bounds
 				// policy.input.push_back(traj.y[t - 1]/(traj.tfp[ssp][t - 1] * traj.pop[ssp][t - 1])); //maybe better (?)
 				policy.input.push_back(traj.tatm_local[t]);
-				// for (int s = 0; s < nGlobalStates; s++){
-				// 	if (s == 1 || s == 3){
-				// 		policy.input.push_back(globalStates[s]);
-				// 	}
-				// }
+				for (int s = 0; s < nGlobalStates; s++){
+					policy.input.push_back(globalStates[s]);
+				}
 				policy.input.push_back(t);
 				if (params.adaptType == ADWITCH){
 					if (params.embedding==EMB_YES){
@@ -1024,9 +1020,10 @@ void RICEEconAgent::nextAction(){
 					policy.input.push_back(traj.sad[t] / traj.k[t] * 100.0);
 					policy.input.push_back(traj.sac[t] / traj.k[t] * 100.0);
 				}
-				if (params.GCFSim == GCF_YES){
-					policy.input.push_back(globalStates[0]);
-				}
+				///// EMPTY GCF - no money can be stored
+				// if (params.GCFSim == GCF_YES){
+				// 	policy.input.push_back(globalStates[0]);
+				// }
 
 				policy.output = policy.Policy->get_NormOutput(policy.input);
 				traj.miu[t] = policy.output[outsize];

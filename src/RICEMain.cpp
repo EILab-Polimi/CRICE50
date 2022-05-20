@@ -89,7 +89,6 @@ int main(int argc, char* argv[])
 	RICE rice;
     // std::cout << "total time elapsed: " << ((clock() - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
     // std::cout << "Simulating: " << std::endl;
-
 	RICE* riceptr = &rice;
 	int nobjs = riceptr->getNObjs();
 	int nvars = riceptr->getNVars();	
@@ -171,9 +170,9 @@ int main(int argc, char* argv[])
 			while (MOEA_Next_solution() == MOEA_SUCCESS) {
 				MOEA_Read_doubles(nvars, vars);
 				riceptr->setVariables(vars);
-				// riceptr->simulateUnc(objs);
-				riceptr->simulate();
-				objs[0] =  - riceptr->econ->utility;
+				riceptr->simulateUnc(objs);
+				// riceptr->simulate();
+				// objs[0] =  - riceptr->econ->utility;
 				MOEA_Write(objs, NULL);
 			}
 		}

@@ -149,7 +149,8 @@ double* Econ::getStates(){
 }
 // returns the pointer to a vector of global economic state variables
 int Econ::getNStates(){
-	return 1;
+	// return 1; ony if GCF is capable of storing
+	return 0;
 }
 // passes the variables needed to nextStep in carbon cycle
 void Econ::updateLinks(){
@@ -205,6 +206,11 @@ void Econ::nextStep(){
 		cpc[ag] = agents_ptr[ag]->getCPC(t);
 		sum_cpc += cpc[ag];
 		gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
+		// enforcing money required is below sum of mitigation and adaptation costs
+		if (gcf_flux < 0){
+			agents_ptr[ag]->setGCFFlux( std::max( - agents_ptr[ag]->getAbateAdaptCost(t), gcf_flux) , t+1) ;
+		}
+		gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
 		if (gcf_flux >= 0 ){
 			gcf_in += gcf_flux;
 		}
@@ -212,28 +218,48 @@ void Econ::nextStep(){
 			gcf_out -= gcf_flux;
 		}
 	}
-	// std::cout << t << "\t" << gcf[t] << "\t" << gcf_in << "\t" << gcf_out << std::endl;
-	double new_gcf_in = 0.0;
-	if (gcf[t] + gcf_in > 1.0 && gcf_in > 0 ){
+	// std::cout << t << "\t" << gcf[t] << "\t" << gcf_in << "\t" << gcf_out << std::endl;		
+	/// enforcing that money transfers sum to zero
+	/// reducing flows of money to receiving countries if they are asking too much
+	if (gcf_out < gcf_in){
+		for (int ag=0; ag < agents; ag++){
+			gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
+			if (gcf_flux < 0){
+				// std::cout << gcf_flux << "\t" << gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in << std::endl;
+				agents_ptr[ag]->setGCFFlux(gcf_flux * gcf_in / gcf_out , t+1) ;
+			}
+		}		
+	}
+	/// reducing flows of money from giving countries if they are giving too much
+	else{
 		for (int ag=0; ag < agents; ag++){
 			gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
 			if (gcf_flux > 0){
 				// std::cout << gcf_flux << "\t" << gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in << std::endl;
-				agents_ptr[ag]->setGCFFlux(gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in , t+1) ;
-				new_gcf_in += gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in;
+				agents_ptr[ag]->setGCFFlux(gcf_flux *  gcf_out / gcf_in , t+1) ;
 			}
-		}
+		}				
 	}
-	if (gcf[t] + new_gcf_in < gcf_out && gcf_out > 0 ){
-	for (int ag=0; ag < agents; ag++){
-			gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
-			if (gcf_flux < 0){
-				// std::cout << gcf_flux << "\t" << gcf_flux * 0.9 * (gcf[t] + gcf_in) / gcf_out  << std::endl;
-				agents_ptr[ag]->setGCFFlux( std::max(- agents_ptr[ag]->getAbateAdaptCost(t), gcf_flux * 0.9 * (gcf[t] + new_gcf_in) / gcf_out ) , t+1);
-				// agents_ptr[ag]->setGCFFlux( gcf_flux * 0.9 * (gcf[t] + new_gcf_in) / gcf_out , t+1);
-			}
-		}
-	}
+	// if (gcf[t] + gcf_in > 1.0 && gcf_in > 0 ){
+	// 	for (int ag=0; ag < agents; ag++){
+	// 		gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
+	// 		if (gcf_flux > 0){
+	// 			// std::cout << gcf_flux << "\t" << gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in << std::endl;
+	// 			agents_ptr[ag]->setGCFFlux(gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in , t+1) ;
+	// 			new_gcf_in += gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in;
+	// 		}
+	// 	}
+	// }
+	// if (gcf[t] + new_gcf_in < gcf_out && gcf_out > 0 ){
+	// for (int ag=0; ag < agents; ag++){
+	// 		gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
+	// 		if (gcf_flux < 0){
+	// 			// std::cout << gcf_flux << "\t" << gcf_flux * 0.9 * (gcf[t] + gcf_in) / gcf_out  << std::endl;
+	// 			agents_ptr[ag]->setGCFFlux( std::max(- agents_ptr[ag]->getAbateAdaptCost(t), gcf_flux * 0.9 * (gcf[t] + new_gcf_in) / gcf_out ) , t+1);
+	// 			// agents_ptr[ag]->setGCFFlux( gcf_flux * 0.9 * (gcf[t] + new_gcf_in) / gcf_out , t+1);
+	// 		}
+	// 	}
+	// }
 	gcf_in = 0;
 	gcf_out = 0;
 	for (int ag=0; ag < agents; ag++){

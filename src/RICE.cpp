@@ -52,6 +52,7 @@ RICE::RICE(){
 	}
 	in >> writefile;
 	in.close();
+
 	switch(carbon_model){
 		case WITCH:
 			carbon = new WITCHCarbon(horizon);
@@ -71,6 +72,7 @@ RICE::RICE(){
 				"insert an available ModelType for Carbon" 
 				<< std::endl;
 	}
+
 	switch(climate_model){
 		case WITCH:
 			climate = new WITCHClimate(horizon);

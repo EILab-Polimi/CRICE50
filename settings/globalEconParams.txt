@@ -5,3 +5,4 @@ ineqav			0.50
 RPCutoffMetric	MEDIAN		(MEAN / MEDIAN)
 utility 		COOP		(COOP / NON-COOP)
 DecisionMakers	INPUT_POLICY			(BAU / INPUT_STATIC / INPUT_POLICY)
+GCFSim 			YES
