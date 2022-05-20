@@ -262,6 +262,26 @@ void Econ::nextStep(){
 			}
 		}				
 	}
+	// if (gcf[t] + gcf_in > 1.0 && gcf_in > 0 ){
+	// 	for (int ag=0; ag < agents; ag++){
+	// 		gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
+	// 		if (gcf_flux > 0){
+	// 			// std::cout << gcf_flux << "\t" << gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in << std::endl;
+	// 			agents_ptr[ag]->setGCFFlux(gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in , t+1) ;
+	// 			new_gcf_in += gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in;
+	// 		}
+	// 	}
+	// }
+	// if (gcf[t] + new_gcf_in < gcf_out && gcf_out > 0 ){
+	// for (int ag=0; ag < agents; ag++){
+	// 		gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
+	// 		if (gcf_flux < 0){
+	// 			// std::cout << gcf_flux << "\t" << gcf_flux * 0.9 * (gcf[t] + gcf_in) / gcf_out  << std::endl;
+	// 			agents_ptr[ag]->setGCFFlux( std::max(- agents_ptr[ag]->getAbateAdaptCost(t), gcf_flux * 0.9 * (gcf[t] + new_gcf_in) / gcf_out ) , t+1);
+	// 			// agents_ptr[ag]->setGCFFlux( gcf_flux * 0.9 * (gcf[t] + new_gcf_in) / gcf_out , t+1);
+	// 		}
+	// 	}
+	// }
 	gcf_in = 0;
 	gcf_out = 0;
 	for (int ag=0; ag < agents; ag++){
