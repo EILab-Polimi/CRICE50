@@ -1093,8 +1093,8 @@ void RICEEconAgent::nextAction(){
 		}
 	}
 	else{
+		traj.miu[0] = 0.0;
 		if (params.adaptType == ADWITCH){
-			traj.miu[0] = 0.0;
 			traj.fad[0] = 0.0;
 			traj.iac[0] = 0.0;
 			traj.ia[0] = 0.0;
