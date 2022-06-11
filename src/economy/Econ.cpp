@@ -242,7 +242,6 @@ void Econ::nextStep(){
 			gcf_out -= gcf_flux;
 		}
 	}
-
 	/// enforcing that money transfers sum to zero
 	/// reducing flows of money to receiving countries if they are asking too much
 	if (gcf_out > gcf_in){

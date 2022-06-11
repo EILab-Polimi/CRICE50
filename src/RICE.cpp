@@ -84,7 +84,6 @@ RICE::RICE(){
 				<< std::endl;
 	}
 
-
  	switch(climate_model){
 		case WITCH:
 			climate = new WITCHClimate(horizon);
@@ -319,29 +318,29 @@ void RICE::simulateUnc(double* objs){
 						writeSimulation(filename);
 					}
 				}
-			}
-			y15c.push_back(y15C);
-			ineq.push_back(econ->computePrctiles7525());
-			net.push_back(econ->computeNET());
-			// std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
-			// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
+				y15c.push_back(y15C);
+				ineq.push_back(econ->computePrctiles7525());
+				net.push_back(econ->computeNET());
+				// std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
+				// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
 
-			// for (int adapteff = 0; adapteff <= 2; adapteff++){
-			// 	double y15C = 0.0;
-			// 	setAdaptEff(adapteff*0.5);
-			// 	simulate();
-			// 	welfare.push_back(-econ->utility);
-			// 	for (int tidx = 0; tidx < horizon; tidx++){
-			// 		if (climate->tatm[tidx] > 1.5){
-			// 			y15C += 5.0;
-			// 		}
-			// 	}
-			// 	y15c.push_back(y15C);
-			// 	ineq.push_back(econ->computePrctiles7525());
-			// 	net.push_back(econ->computeNET());
-			// 	// std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
-			// 	// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
-			// }
+				// for (int adapteff = 0; adapteff <= 2; adapteff++){
+				// 	double y15C = 0.0;
+				// 	setAdaptEff(adapteff*0.5);
+				// 	simulate();
+				// 	welfare.push_back(-econ->utility);
+				// 	for (int tidx = 0; tidx < horizon; tidx++){
+				// 		if (climate->tatm[tidx] > 1.5){
+				// 			y15C += 5.0;
+				// 		}
+				// 	}
+				// 	y15c.push_back(y15C);
+				// 	ineq.push_back(econ->computePrctiles7525());
+				// 	net.push_back(econ->computeNET());
+				// 	// std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
+				// 	// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
+				// }
+			}
 		}
 	}
 	// simulate only scenario set in the settings file

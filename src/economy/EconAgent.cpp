@@ -940,6 +940,7 @@ void RICEEconAgent::setBAUDMType(){
 // simulates one time step
 void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 	// compute ygross
+
 	traj.ygross[t] = traj.tfp[ssp][t] * 
 		pow(traj.k[t], params.gama) * 
 		pow(traj.pop[ssp][t]/1000.0, 1 - params.gama);
@@ -947,11 +948,21 @@ void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 	//take action first based on available information 
 	// (especially in adaptive decision making setting)
 	// eventually consider 30°C limit
-	if (params.tempLimit == ON){
-		traj.tatm_local[t] = std::min(30.0, params.alpha_tatm + params.beta_tatm * tatm[t]);
+	if (params.annual_climate == 0){
+		if (params.tempLimit == ON){
+			traj.tatm_local[t] = std::min(30.0, params.alpha_tatm + params.beta_tatm * tatm[t]);
+		}
+		else{
+			traj.tatm_local[t] = params.alpha_tatm + params.beta_tatm * tatm[t];	
+		}
 	}
 	else{
-		traj.tatm_local[t] = params.alpha_tatm + params.beta_tatm * tatm[t];	
+		if (params.tempLimit == ON){
+			traj.tatm_local[t] = std::min(30.0, params.alpha_tatm + params.beta_tatm * tatm[t/5]);
+		}
+		else{
+			traj.tatm_local[t] = params.alpha_tatm + params.beta_tatm * tatm[t/5];	
+		}
 	}
 	nextAction();		
 
@@ -1150,7 +1161,7 @@ void RICEEconAgent::nextAction(){
 		}
 		// enforce constrainst on max min for decision variables
 		// traj.miu[t] = std::max(0.0, std::min(std::min(traj.miu_up[t], traj.miu[t-1]+0.2), traj.miu[t]));
-		traj.miu[t] = std::max(0.0, std::min(traj.miu_up[t], traj.miu[t]));
+		traj.miu[t] = std::max(0.0, std::min(traj.miu_up[t], std::min(traj.miu[t-1] + 0.2, traj.miu[t])));
 		traj.s[t] = std::max(0.001, std::min(0.999, traj.s[t]));
 		if (params.adaptType == ADWITCH){
 		// 	traj.fad[t] = std::min(0.1, std::max(0.0, traj.fad[t]));
