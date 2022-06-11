@@ -399,170 +399,167 @@ FAIRCarbon::~FAIRCarbon(){
 }
 // allocates the carbon component
 FAIRCarbon::FAIRCarbon(int hrzn){
-	mat = new double[hrzn + 1];  // Carbon concentration increase in Atmosphere [GtC from 1750]
-	c_cycle = new double[hrzn + 1][4];  // Carbon concentration increase in Atmosphere [GtC from 1750]
-	cca_tot = new double[hrzn + 1];
-	alpha = new double[hrzn + 1];
-	forc = new double[hrzn + 1];  // Increase in Radiative Forcing [W/m2 from 1900]
-	forcoth = new double[hrzn + 1];
+	params.horizon = hrzn;
+	params.r0       = 35.0;
+	params.rc       = 0.019;
+	params.rt       = 4.165;
+	params.iirf_h   = 100.0;
+	params.iirf_max = 97.0;
+	params.iirf = 0.0;
+	alpha = new double[params.horizon+1];
+	params.ppm_to_gtc = 2.124;
+	params.a[0] = 0.2173;
+	params.a[1] = 0.2240;
+	params.a[2] = 0.2824;
+	params.a[3] = 0.2763;
+	params.tau[0] = 1000000;
+	params.tau[1] = 394.4;
+	params.tau[2] = 36.54;
+	params.tau[3] = 4.304;
+	params.f2x = 3.71;
+	carbon_boxes = new double*[params.horizon+1];
+	for (int subt = 0; subt < params.horizon+1; subt++){
+		carbon_boxes[subt] = new double[4];
+	}
+	carbon_boxes[0][0] = 58.71337292; // * ppm_to_gtc; //127.159
+	carbon_boxes[0][1] = 43.28685286; // * ppm_to_gtc; //93.313;
+	carbon_boxes[0][2] = 18.44893718; // * ppm_to_gtc; //37.840;
+	carbon_boxes[0][3] = 3.81581747; // * ppm_to_gtc; //7.721
+	taunew = 0.0;
+	params.c_pi = 278.0; // * 2.124;
+	c = new double[params.horizon+1];
+	c[0] = params.c_pi;
+	for (int idx = 0; idx < 4; idx++){
+		c[0] += carbon_boxes[0][idx];
+	}
+	c_acc = new double[params.horizon+1];
+	c_acc[0] = 305.1673751542558; //value in 2015 // * ppm_to_gtc; //597.0; //(400+197)
+	forc = new double[params.horizon+1];
+	forc[0] = 0.0;
+
+	params.ranges[0] = 0.0;
+	params.ranges[1] = 2000.0;
+	params.ranges[2] = -1.0;
+	params.ranges[3] = 10.0;
+	params.nnprms[0] = -6.66006035e+02;
+	params.nnprms[1] = 2.09443154e+02;
+	params.nnprms[2] = -4.83968920e+00;
+	params.nnprms[3] = 2.31243377e+00;
+	params.nnprms[4] = 2.75031497e+00;
+	params.nnprms[5] = 8.89902682e+02;
+	params.nnprms[6] = 2.40146799e+00;
+	params.nnprms[7] = 6.83316702e-02;
+	params.nnprms[8] = 2.89753011e-02;
+	rfothidx[0] = 26;
+	rfothidx[1] = 45;
+	rfothidx[2] = 60;
+	rfothidx[3] = 85;
+
+	std::ifstream forc_file;
+	for (int rfidx = 0; rfidx < 4; rfidx++){
+		forc_file.open("./src/carbon/RFoth_"+std::to_string((unsigned long long int) rfothidx[rfidx])+".txt", std::ios_base::in);
+		if(!forc_file){
+			std::cout << "The other forcing file specified could not be found!" << std::endl;
+			exit(1);
+		}
+		for (int idx=0; idx < 486 ; idx++){
+			forc_file >> rfoth[rfidx][idx];
+		}
+		forc_file.close();		
+	}
+	params.rfoth_type = 1; // rcp4.5
 	statesVector = new double[1];
 	toClimate = new double[1];
-	readParams();
-	std::fstream in;
-	in.open("./settings/FAIRforcothSSP2.txt", std::ios_base::in);
-	if (!in){
-		std::cout << "The FAIR carbon settings file could not be found!" << std::endl;
-	    exit(1);
-	}
-	for (int tidx=0; tidx <= hrzn; tidx++){
-		if (tidx <=17){
-			in >> forcoth[tidx];			
-		}
-		else{
-			forcoth[tidx] = forcoth[tidx-1];
-		}
-	}
-	in.close();
 	t = 0;
+	return;
 }
+// to correct as FAIR has been corrected
+void FAIRCarbon::computeAlpha(){
+	double input[2];
+	//normalize inputs
+	input[0] = (c_acc[t] - params.ranges[0]) /	(params.ranges[1] - params.ranges[0]);
+	input[1] = (tatm - params.ranges[2]) / (params.ranges[3] - params.ranges[2]);
+
+	//compute alpha via ANN 
+	alpha[t] = params.nnprms[0] + \
+	    (params.nnprms[1]) * \
+	    	(-1.0 + 2.0 / \
+	        	( 1.0 + exp( -2.0 * \
+	          	(params.nnprms[2] + \
+	            	(params.nnprms[3]) * input[0] + \
+	            	(params.nnprms[4]) * input[1] )))) +\
+	    (params.nnprms[5]) * \
+	    	(-1.0 + 2.0 / \
+	        	( 1.0 + exp( -2.0 * \
+	        	(params.nnprms[6] + \
+	            	(params.nnprms[7]) * input[0] + \
+	            	(params.nnprms[8]) * input[1] ))));
+	if (alpha[t] < 1e-3){
+		alpha[t] = alpha[t-1];
+	}
+	return;
+}
+// sampling uncertainty
+void FAIRCarbon::sampleUnc(){
+	// if (config->rfoth_unc==1){
+		params.rfoth_type = floor( rand() * (1.0/RAND_MAX) * 4 );
+	// }
+	return;
+}
+
 // simulates next step
 void FAIRCarbon::nextStep(){
 
-	e = fromEcon[0];
+	e = fromEcon[0] * 12/44;
 	tatm = fromClimate[0];
-
-	// need to get tatm from climate component
+	params.iirf = std::min(params.r0 + params.rc*c_acc[t] + params.rt*tatm, params.iirf_max);
 	computeAlpha();
-
-	// iterate over boxes
-	for (int box=0; box<4; box++){
-    	c_cycle[t+1][box] = \
-	      c_cycle[t][box] * exp(-5/(alpha[t] * params.t_scale[box])) +
-	      params.fraction[box] * (e * 
-	      exp(-5/(alpha[t] * params.t_scale[box]))*(1/3.666) ) + 
-	      params.fraction[box] * (e * 
-	      exp(-(5-1)/(alpha[t] * params.t_scale[box]))*(1/3.666) ) + 
-	      params.fraction[box] * (e * 
-	      exp(-(5-2)/(alpha[t] * params.t_scale[box]))*(1/3.666) ) + 
-	      params.fraction[box] * (e * 
-	      exp(-(5-3)/(alpha[t] * params.t_scale[box]))*(1/3.666) ) + 
-	      params.fraction[box] * (e * 
-	      exp(-(5-4)/(alpha[t] * params.t_scale[box]))*(1/3.666) ) ;
-  	}
-
-  	// compute mat
-	mat[t+1] = params.mateq;
-  	for (int box=0; box < 4; box++){
-    	mat[t+1] += c_cycle[t+1][box];
-  	}
-	mat[t+1] = std::max(1.0, mat[t+1]);
-
-	cca_tot[t+1] = cca_tot[t] + e * 5.0 / 3.666;
-  	
-  	// Radiative forcing
-	forc[t+1] = params.kappa * 
-    	(log(mat[t+1] / params.mateq) / log(2.0)) + forcoth[t+1];
-
+	for (int box = 0; box < 4; box++){
+		taunew = params.tau[box] * alpha[t];
+		carbon_boxes[t+1][box] = 
+			carbon_boxes[t][box] * exp(-1.0/taunew) + 
+			params.a[box] * e / params.ppm_to_gtc;
+	}
+	c[t+1] = params.c_pi;
+	for (int box = 0; box < 4; box++){
+		c[t+1] += carbon_boxes[t+1][box];
+	}
+	c_acc[t+1] = c_acc[t] + e - (c[t+1]-c[t]) * params.ppm_to_gtc;
+	if (t < 486){
+		forc[t+1] = params.f2x/log(2.0) * log(c[t+1]/params.c_pi) + rfoth[params.rfoth_type][t];
+	}
+	else{
+		forc[t+1] = params.f2x/log(2.0) * log(c[t+1]/params.c_pi) + rfoth[params.rfoth_type][485];
+	}
 	updateLinks();
 	t++;
 	return;
 }
-void FAIRCarbon::computeAlpha(){
-	double input[2];
-	//normalize inputs
-	input[0] = std::max(0.0, 
-    	(cca_tot[t] - (mat[t] - 588.0) - 30.966999999999985) /
-    	(620.967 - 30.966999999999985));
-	input[1] = std::max(0.0, (tatm - 1.0) / (3.95 - 1.0));
 
-	//compute alpha via ANN
-	alpha[t] = 0.4224476755742342 + 
-	    (-2.24079509) * 
-	    	(-1.0 + 2.0 / 
-	        	( 1.0 + exp( -2.0 * 
-	          	(-1.1679476786651246 + 
-	            	(-0.5497803029711411) * input[0] + 
-	            	(-0.6082563253131715) * input[1] )))) +
-	    (2.10715655) * 
-	    	(-1.0 + 2.0 / 
-	        	( 1.0 + exp( -2.0 * 
-	        	(-1.9221811095464068 + 
-	            	(0.8797355517352923) * input[0] + 
-	            	(0.9631872008727567) * input[1] )))) ;
 
-	return;
-}
-// read parameters from text file
-// and stores them in the params struct
-// and setting initial conditions
-void FAIRCarbon::readParams(){
-	std::fstream in;
-	std::string sJunk = "";
-	in.open("./settings/FAIRCarbonParams.txt", std::ios_base::in);
-	if (!in){
-		std::cout << "The FAIR carbon settings file could not be found!" << std::endl;
-	    exit(1);
-	}
-	while (sJunk!="MATEQ"){
-		in >>sJunk;
-	}
-	in >> params.mateq;
-	while (sJunk!="MUPEQ"){
-		in >>sJunk;
-	}
-	in >> params.mupeq;
-	while (sJunk!="MLOEQ"){
-		in >>sJunk;
-	}
-	in >> params.mloeq;
-	while (sJunk!="t_scale"){
-		in >>sJunk;
-	}
-	for (int box=0; box<4; box++){
-		in >> params.t_scale[box];
-	}
-	while (sJunk!="fraction"){
-		in >>sJunk;
-	}
-	for (int box=0; box<4; box++){
-		in >> params.fraction[box];
-	}
-	while (sJunk!="kappa"){
-		in >>sJunk;
-	}
-	in >> params.kappa;
-	while (sJunk!="mat0"){
-		in >>sJunk;
-	}
-	in >> mat[0];
-	while (sJunk!="c_cycle0"){
-		in >>sJunk;
-	}
-	for (int box=0; box<4; box++){
-		in >> c_cycle[0][box];
-	}
-	while (sJunk!="cca_tot0"){
-		in >>sJunk;
-	}
-	in >> cca_tot[0];
-	in.close();
+void FAIRCarbon::reset(){
+	t = 0;
+	// oneFiveDegYrs = 0.0;
+	// twoDegYrs = 0.0;
+	// aboveTwo = 0.0;
+	// aboveOneFive = 0.0;
 	return;
 }
 //writes header for output
 void FAIRCarbon::writeHeader(std::fstream& output){
-	output << "MAT" << "\t" <<
+	output << "CCONC" << "\t" <<
 		"FORC" << "\t" ;
 	t = 0;
 }
 //writes step to output
 void FAIRCarbon::writeStep(std::fstream& output){
-	output << mat[t] << "\t" <<
+	output << c[t] << "\t" <<
 		forc[t] << "\t" ;
 	t++;
 }
 //get states
 double* FAIRCarbon::getStates(){
-	statesVector[0] = mat[t];
+	statesVector[0] = c[t];
 	return statesVector;
 }
 // get number of states
@@ -576,12 +573,14 @@ void FAIRCarbon::updateLinks(){
 }
 // frees allocated memory
 void FAIRCarbon::carbonDelete(){
-	delete[] mat;
-	delete[] c_cycle;
+	for (int subt = 0; subt < params.horizon+1; subt++){
+		delete[] carbon_boxes[subt];
+	}
+	delete[] carbon_boxes;
 	delete[] alpha;
-	delete[] cca_tot;
+	delete[] c_acc;
 	delete[] forc;
-	delete[] forcoth;
+	delete[] c;
 	delete[] statesVector;
 	delete[] toClimate;
 	return;

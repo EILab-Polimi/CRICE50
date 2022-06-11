@@ -45,6 +45,7 @@ public:
 };
 
 struct RICEEconAgentParams{
+	int annual_climate;
 	double gama;
 	double dk;
 	double dela0; 

@@ -15,6 +15,7 @@ ModelType stringToModelType(std::string input){
 }
 // constructor  
 RICE::RICE(){
+
 	std::fstream in;
 	std::string line;
 	std::string sJunk = "";
@@ -51,6 +52,10 @@ RICE::RICE(){
 		in >> sJunk;
 	}
 	in >> writefile;
+	while (sJunk!="simScenarios"){
+		in >> sJunk;
+	}
+	in >> simScenarios;
 	in.close();
 
 	switch(carbon_model){
@@ -61,7 +66,7 @@ RICE::RICE(){
 			carbon = new DICECarbon(horizon);
 			break;
 		case FAIR:
-			carbon = new FAIRCarbon(horizon);
+			carbon = new FAIRCarbon(horizon * 5);
 			break;
 		case GEOFFROY:
 			std::cerr <<
@@ -73,20 +78,18 @@ RICE::RICE(){
 				<< std::endl;
 	}
 
-	switch(climate_model){
+ 	switch(climate_model){
 		case WITCH:
 			climate = new WITCHClimate(horizon);
 			break;
 		case DICE:
 			climate = new DICEClimate(horizon);
 			break;
+		case FAIR:
+			climate = new FAIRTemp(horizon * 5);
+			break;
 		case GEOFFROY:
 			climate = new GeoffroyClimate(horizon);
-			break;
-		case FAIR:
-			std::cerr << 
-				"insert an available ModelType for Climate" 
-				<< std::endl;			
 		case ERR:
 			std::cerr << 
 				"insert an available ModelType for Climate" 
@@ -100,7 +103,6 @@ RICE::RICE(){
 			climate->getNStates() + carbon->getNStates());
 	}
 	createLinks();
-
 	t = 0;
 }
 // destructor
@@ -164,8 +166,16 @@ void RICE::nextStep(){
 		updateGlobalStates();
 	}
 	econ->nextStep();
-	carbon->nextStep();
-	climate->nextStep();
+	if (carbon_model == FAIR){
+		for (int subt = 0; subt < 5 ; subt++){
+			carbon->nextStep();
+			climate->nextStep();		
+		}		
+	}
+	else{
+		carbon->nextStep();
+		climate->nextStep();		
+	}
 	t++;
 	return;
 }
@@ -277,43 +287,58 @@ void RICE::simulateUnc(double* objs){
 	std::vector<double> y15c;
 	std::vector<double> ineq;
 	std::vector<double> net;
-	for (int ssp = 1; ssp <= 5; ssp++){
-		// set ssp
-		setSsp(ssp);
-		for (int damages = BURKESR; damages < DAMAGEERR; damages++){
-			// set damages
-			setDamages(damages);
-			double y15C = 0.0;
-			simulate();
-			welfare.push_back(-econ->utility);
-			for (int tidx = 0; tidx < horizon; tidx++){
-				if (climate->tatm[tidx] > 1.5){
-					y15C += 5.0;
+	if (simScenarios == "ALL") {
+		for (int ssp = 1; ssp <= 5; ssp++){
+			// set ssp
+			setSsp(ssp);
+			for (int damages = BURKESR; damages < DAMAGEERR; damages++){
+				// set damages
+				setDamages(damages);
+				double y15C = 0.0;
+				simulate();
+				welfare.push_back(-econ->utility);
+				for (int tidx = 0; tidx < horizon; tidx++){
+					if (climate->tatm[tidx] > 1.5){
+						y15C += 5.0;
+					}
 				}
-			}
-			y15c.push_back(y15C);
-			ineq.push_back(econ->computePrctiles7525());
-			net.push_back(econ->computeNET());
-			// std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
-			// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
+				y15c.push_back(y15C);
+				ineq.push_back(econ->computePrctiles7525());
+				net.push_back(econ->computeNET());
+				// std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
+				// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
 
-			// for (int adapteff = 0; adapteff <= 2; adapteff++){
-			// 	double y15C = 0.0;
-			// 	setAdaptEff(adapteff*0.5);
-			// 	simulate();
-			// 	welfare.push_back(-econ->utility);
-			// 	for (int tidx = 0; tidx < horizon; tidx++){
-			// 		if (climate->tatm[tidx] > 1.5){
-			// 			y15C += 5.0;
-			// 		}
-			// 	}
-			// 	y15c.push_back(y15C);
-			// 	ineq.push_back(econ->computePrctiles7525());
-			// 	net.push_back(econ->computeNET());
-			// 	// std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
-			// 	// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
-			// }
+				// for (int adapteff = 0; adapteff <= 2; adapteff++){
+				// 	double y15C = 0.0;
+				// 	setAdaptEff(adapteff*0.5);
+				// 	simulate();
+				// 	welfare.push_back(-econ->utility);
+				// 	for (int tidx = 0; tidx < horizon; tidx++){
+				// 		if (climate->tatm[tidx] > 1.5){
+				// 			y15C += 5.0;
+				// 		}
+				// 	}
+				// 	y15c.push_back(y15C);
+				// 	ineq.push_back(econ->computePrctiles7525());
+				// 	net.push_back(econ->computeNET());
+				// 	// std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
+				// 	// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
+				// }
+			}
 		}
+	}
+	else{
+		double y15C = 0.0;
+		simulate();
+		welfare.push_back(-econ->utility);
+		for (int tidx = 0; tidx < horizon; tidx++){
+			if (climate->tatm[tidx] > 1.5){
+				y15C += 5.0;
+			}
+		}
+		y15c.push_back(y15C);
+		ineq.push_back(econ->computePrctiles7525());
+		net.push_back(econ->computeNET());		
 	}
 	double sum = std::accumulate(std::begin(welfare), std::end(welfare), 0.0);
 	allobjs.push_back(sum / welfare.size());

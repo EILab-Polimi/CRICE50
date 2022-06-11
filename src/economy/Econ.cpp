@@ -167,6 +167,7 @@ void Econ::nextStep(){
 	// get value for cutoff from every agent
 	double* tatm = fromClimate;
 	double RPCutoffValues[agents];
+
 	for (int ag=0; ag < agents; ag++){
 		RPCutoffValues[ag] = agents_ptr[ag]->getValueForRPCutoff();
 	}
@@ -218,10 +219,12 @@ void Econ::nextStep(){
 			gcf_out -= gcf_flux;
 		}
 	}
+	// std::cout << t << "\t" << gcf[t] << "\t" << gcf_in << "\t" << gcf_out << std::endl;
+
 	// std::cout << t << "\t" << gcf[t] << "\t" << gcf_in << "\t" << gcf_out << std::endl;		
 	/// enforcing that money transfers sum to zero
 	/// reducing flows of money to receiving countries if they are asking too much
-	if (gcf_out < gcf_in){
+	if (gcf_out > gcf_in){
 		for (int ag=0; ag < agents; ag++){
 			gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
 			if (gcf_flux < 0){
@@ -271,7 +274,6 @@ void Econ::nextStep(){
 			gcf_out -= gcf_flux;
 		}
 	}
-	// std::cout << t << "\t" << gcf[t] << "\t" << gcf_in << "\t" << gcf_out << std::endl;
 	// std::cout << t << "\t" << gcf[t] << "\t" << gcf_in << "\t" << gcf_out << std::endl;
 	gcf[t+1] = gcf[t] + gcf_in - gcf_out;
 	// compute period utility and update utiltiy

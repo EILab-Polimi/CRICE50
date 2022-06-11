@@ -108,12 +108,24 @@ public:
 // ====   FAIR-Carbon module ========
 
 struct paramsFAIRCarbon{
-	int mateq;
-	int mupeq;
-	int mloeq;
-	double t_scale[4];
-	double fraction[4];
-	double kappa;
+	int horizon;
+	double iirf_max;
+	double iirf_h;
+	double time_scale_sf;
+	double r0;
+	double rc;
+	double rt;
+	double iirf;
+	double ppm_to_gtc;
+	// ann params to compute alpha (non linear carbon absorption from sinks)
+	double ranges[4]; // = {0.0, 2000.0, -1.0, 10.0};
+	double nnprms[9]; // = {-6.66006035e+02, 2.09443154e+02, 
+	// carbon cycle
+	double a[4];
+	double tau[4];
+	double c_pi;
+	double f2x;
+	int rfoth_type;
 };
 
 class FAIRCarbon: public Carbon{
@@ -122,14 +134,20 @@ public:
 	~FAIRCarbon();
 	FAIRCarbon(int hrzn);
 	double* alpha;
-	double (*c_cycle)[4];
-	double* mat;		// atmospheric carbon (GtC)
-	double* cca_tot;
-	double* forcoth;
-	double tatm, e; //current tatm and emissions needed to compute alpha at each time step
+	double** carbon_boxes;
+	double taunew;
+	double* c;
+	double* c_acc;
+	double* forc;
+	double rfoth[4][486];
+	double rfothidx[4]; // = {26,45,60,85};
+	double tatm; // used to compute alpha
+	double e;
 	paramsFAIRCarbon params;
-	void readParams();
+	// void readParams();
 	void computeAlpha();
+	void sampleUnc();
+	void reset();
 	void nextStep();
 	void writeHeader(std::fstream& output);
 	void writeStep(std::fstream& output);

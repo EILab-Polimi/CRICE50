@@ -20,6 +20,7 @@ public:
 	ModelType climate_model;
 	int robustness;
 	int writefile;
+	std::string simScenarios;
 	Carbon* carbon;					// pointer to carbon module active in the model
 	Climate* climate;				// pointer to climate module active in the model
 	Econ* econ;						// pointer to economic module active in the model
