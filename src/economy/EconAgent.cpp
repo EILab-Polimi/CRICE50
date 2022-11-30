@@ -948,21 +948,11 @@ void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 	//take action first based on available information 
 	// (especially in adaptive decision making setting)
 	// eventually consider 30°C limit
-	if (params.annual_climate == 0){
-		if (params.tempLimit == ON){
-			traj.tatm_local[t] = std::min(30.0, params.alpha_tatm + params.beta_tatm * tatm[t]);
-		}
-		else{
-			traj.tatm_local[t] = params.alpha_tatm + params.beta_tatm * tatm[t];	
-		}
+	if (params.tempLimit == ON){
+		traj.tatm_local[t] = std::min(30.0, params.alpha_tatm + params.beta_tatm * tatm[t]);
 	}
 	else{
-		if (params.tempLimit == ON){
-			traj.tatm_local[t] = std::min(30.0, params.alpha_tatm + params.beta_tatm * tatm[t/5]);
-		}
-		else{
-			traj.tatm_local[t] = params.alpha_tatm + params.beta_tatm * tatm[t/5];	
-		}
+		traj.tatm_local[t] = params.alpha_tatm + params.beta_tatm * tatm[t];	
 	}
 	nextAction();		
 

@@ -84,6 +84,7 @@ RICE::RICE(){
 				<< std::endl;
 	}
 
+
  	switch(climate_model){
 		case WITCH:
 			climate = new WITCHClimate(horizon);
@@ -348,6 +349,11 @@ void RICE::simulateUnc(double* objs){
 		double y15C = 0.0;
 		simulate();
 		welfare.push_back(-econ->utility);
+		// for (int tidx = 0; tidx < horizon; tidx++){
+		// 	if (climate->tatm[tidx] > 1.5){
+		// 		y15C += 5.0;
+		// 	}
+		// }
 		for (int tidx = 0; tidx < horizon; tidx++){
 			if (climate->tatm[tidx] > 1.5){
 				y15C += (climate->tatm[tidx] - 1.5);

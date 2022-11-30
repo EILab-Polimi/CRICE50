@@ -643,6 +643,11 @@ void GeoffroyClimate::readParams(){
 	in.close();
 	return;
 }
+// set ECS value
+void GeoffroyClimate::setECS(double ECS){
+	params.xi2 = params.kappa / ECS;
+	return;
+}
 // simulates one time step
 void GeoffroyClimate::nextStep(){
 
@@ -669,12 +674,14 @@ void GeoffroyClimate::writeHeader(std::fstream& output){
 	output << "TATM" << "\t" <<
 		"TOCEAN" << "\t";
 	t = 0;
+	return;
 }
 //writes step to output
 void GeoffroyClimate::writeStep(std::fstream& output){
 	output << tatm[t] << "\t" <<
 		tocean[t] << "\t" ;
 	t++;
+	return;
 }
 //get states
 double* GeoffroyClimate::getStates(){
@@ -776,6 +783,11 @@ void FAIRTemp::sampleTCRECS(){
 	return;
 }
 
+void FAIRTemp::setECS(double ECS){
+	params.ECS = ECS;
+	return;
+}
+
 void FAIRTemp::sampleUnc(){
 	sampleTCRECS();
 	return;
@@ -802,9 +814,9 @@ void FAIRTemp::nextStep(){
 	// 	tf[t+1] = tf[t+1] + noise[t+1] * stdev;
 	// }
 	gmst[t+1] = ts[t+1] + tf[t+1];
+	updateLinks();
 	if ((t+1)%5==0){
 		tatm[(t+1)/5] = gmst[t+1];
-		updateLinks();
 	}
 	// if (gmst[t+1] > 1.5){
 	// 	if (gmst[t+1] > 2.0){
@@ -823,14 +835,14 @@ void FAIRTemp::writeHeader(std::fstream& output){
 	output << "TATM" << "\t" ;
 	t = 0;
 }
-//writes step to output
+//writes step to output - every 5 years to match Econ time step
 void FAIRTemp::writeStep(std::fstream& output){
-	output << tatm[t] << "\t" ;
-	t++;
+	output << tatm[t/5] << "\t" ;
+	t+=5;
 }
 //get states
 double* FAIRTemp::getStates(){
-	statesVector[0] = tatm[t];
+	statesVector[0] = tatm[t/5];
 	return statesVector;
 }
 void FAIRTemp::updateLinks(){

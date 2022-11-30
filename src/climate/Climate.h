@@ -208,6 +208,7 @@ public:
 	int getNStates();
 	void updateLinks();
 	void climateDelete();
+	void setECS(double ECS);
 };
 
 // ====  FAIR temperature model ========
@@ -250,6 +251,7 @@ public:
 	int getNStates();
 	void updateLinks();
 	void climateDelete();
+	void setECS(double ECS);
 };
 
 
