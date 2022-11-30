@@ -78,6 +78,7 @@ RICE::RICE(){
 				<< std::endl;
 	}
 
+
  	switch(climate_model){
 		case WITCH:
 			climate = new WITCHClimate(horizon);
@@ -215,10 +216,10 @@ void RICE::resetTidx(){
 	carbon->t = 0;
 }
 // writes simulation trajectories to file
-void RICE::writeSimulation(){
+void RICE::writeSimulation(std::string filename){
 	// === Open output file =====
 	std::fstream output;
-	output.open("./simulationOutput.txt", std::ios_base::out);
+	output.open(filename, std::ios_base::out);
 	if (!output) {
 		std::cerr << "Error: file could not be opened" << std::endl;
     	exit(1);
@@ -256,6 +257,11 @@ void RICE::setDamages(int damages){
 	}
 	return;
 }
+// sets ECS
+void RICE::setECS(double ECS){
+	climate->setECS(ECS);
+	return;
+}
 // sets adaptation efficiency
 void RICE::setAdaptEff(double adapteff){
 	for (int ag=0; ag < econ->agents; ag++){
@@ -264,7 +270,7 @@ void RICE::setAdaptEff(double adapteff){
 	return;
 }
 // report objectives
-void RICE::reportObjs(std::string nameSol, int ssp, int damages, std::fstream& robustnessOutput){
+void RICE::reportObjs(std::string nameSol, double ECS, int ssp, int damages, std::fstream& robustnessOutput){
 	double tatmpeak = 0.0;
 	for (int tidx=0; tidx <= 17; tidx++){
 		tatmpeak = std::max(climate->tatm[tidx], tatmpeak);
@@ -299,7 +305,7 @@ void RICE::simulateUnc(double* objs){
 				welfare.push_back(-econ->utility);
 				for (int tidx = 0; tidx < horizon; tidx++){
 					if (climate->tatm[tidx] > 1.5){
-						y15C += 5.0;
+						y15C += climate->tatm[tidx] - 1.5;
 					}
 				}
 				y15c.push_back(y15C);
@@ -331,9 +337,14 @@ void RICE::simulateUnc(double* objs){
 		double y15C = 0.0;
 		simulate();
 		welfare.push_back(-econ->utility);
+		// for (int tidx = 0; tidx < horizon; tidx++){
+		// 	if (climate->tatm[tidx] > 1.5){
+		// 		y15C += 5.0;
+		// 	}
+		// }
 		for (int tidx = 0; tidx < horizon; tidx++){
 			if (climate->tatm[tidx] > 1.5){
-				y15C += 5.0;
+				y15C += (climate->tatm[tidx] - 1.5);
 			}
 		}
 		y15c.push_back(y15C);

@@ -523,7 +523,7 @@ void RICEEconAgent::readPolicyParams(){
 }
 // return number of variables
 int RICEEconAgent::getNVars(){
-	int nvars;
+	int nvars = 0;
 	if (params.DMType == INPUT_STATIC){
 		if (params.adaptType == ADWITCH){
 			nvars = (horizon - 1) * 5;
@@ -856,15 +856,19 @@ void RICEEconAgent::computeEmbedding(){
 }
 // returns value for Rich Poor Cutoff
 double RICEEconAgent::getValueForRPCutoff(){
+	double Cutoff = 0.0;
 	switch (params.indRPCutoff){
 		case BASEGDP:
-			return traj.gdpbase[ssp][t] / traj.pop[ssp][t];
+			Cutoff = traj.gdpbase[ssp][t] / traj.pop[ssp][t];
+			break;
 		case GDP:
-			return traj.y[t-1] / traj.pop[ssp][t];
+			Cutoff = traj.y[t-1] / traj.pop[ssp][t];
+			break;
 		case RPINDERR:
 			std::cerr << "Please insert a valid option for RPCutoff" << std::endl;
 			exit(1);
 	}
+	return Cutoff;
 }
 // sets BAU simulation
 void RICEEconAgent::setBAUDMType(){
@@ -881,21 +885,11 @@ void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 	//take action first based on available information 
 	// (especially in adaptive decision making setting)
 	// eventually consider 30°C limit
-	if (params.annual_climate == 0){
-		if (params.tempLimit == ON){
-			traj.tatm_local[t] = std::min(30.0, params.alpha_tatm + params.beta_tatm * tatm[t]);
-		}
-		else{
-			traj.tatm_local[t] = params.alpha_tatm + params.beta_tatm * tatm[t];	
-		}
+	if (params.tempLimit == ON){
+		traj.tatm_local[t] = std::min(30.0, params.alpha_tatm + params.beta_tatm * tatm[t]);
 	}
 	else{
-		if (params.tempLimit == ON){
-			traj.tatm_local[t] = std::min(30.0, params.alpha_tatm + params.beta_tatm * tatm[t/5]);
-		}
-		else{
-			traj.tatm_local[t] = params.alpha_tatm + params.beta_tatm * tatm[t/5];	
-		}
+		traj.tatm_local[t] = params.alpha_tatm + params.beta_tatm * tatm[t];	
 	}
 	nextAction();		
 
@@ -978,7 +972,7 @@ void RICEEconAgent::computeAdaptation(double* tatm){
 				1.0 / params.rho_adcap);
 			// compute adaptation total
 			// traj.adapt[t] = params.adapteff * pow(params.miu_ad * pow(traj.act[t], params.rho_ad) + \
-			// 	(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), 
+			//	(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), \
 			// 	1.0 / params.rho_ad); // old version
 			traj.adapt[t] = pow(params.miu_ad * pow(traj.act[t], params.rho_ad) + \
 				(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), 

@@ -39,6 +39,9 @@ Econ::Econ(int hrzn){
 	horizon = hrzn;
 	e = new double[horizon+1];
 	gcf = new double[horizon+1];
+	GDPpc = new double[horizon+1];
+	ratio9010 = new double[horizon+1];
+	ratio8020 = new double[horizon+1];
 	statesVector = new double[1];
 	gcf[0] = 0.0;
 	cemutotper = new double[horizon + 1];
@@ -72,6 +75,7 @@ Econ::Econ(int hrzn){
 			nag++;
 		}
 	}
+
 }
 // read general economic parameters
 void Econ::readParams(){
@@ -144,7 +148,7 @@ void Econ::initializeStates(int numGlobalStates){
 } 
 // returns the pointer to a vector of global economic state variables
 double* Econ::getStates(){
-	statesVector[0] = gcf[t];
+	// statesVector[0] = gcf[t];
 	return statesVector;
 }
 // returns the pointer to a vector of global economic state variables
@@ -299,13 +303,14 @@ void Econ::nextStep(){
 		}
 		utility += 5 * 0.0001 * cemutotper[t];							// update utility
 	}
+	computePrctilesTime(t);
 	updateLinks();
 	t++;
 	return;
 }
 //writes header of file
 void Econ::writeHeader(std::fstream& output){
-	output << "E\tGCF\tCEMUTOTPER\t";
+	output << "E\tGCF\tCEMUTOTPER\t90:10\t80:20\tGDPpc\t";
 	for (int ag=0; ag < agents; ag++){
 		agents_ptr[ag]->writeHeader(output);
 	}
@@ -315,7 +320,9 @@ void Econ::writeHeader(std::fstream& output){
 //writes steps to file
 void Econ::writeStep(std::fstream& output){
 	output << e[t] << "\t" << gcf[t] << "\t"
-		<< cemutotper[t] << "\t" ;
+		<< cemutotper[t] << "\t" << ratio9010[t]
+		<< "\t" << ratio8020[t] 
+		<< "\t" << GDPpc[t] << "\t" ;
 	for (int ag=0; ag < agents; ag++){
 		agents_ptr[ag]->writeStep(output);
 	}
@@ -373,6 +380,32 @@ double Econ::computePrctiles7525(){
 	}
 	return ineq;
 }
+// computes GDPpc percentiles for a input-specified tidx
+void Econ::computePrctilesTime(int tidx){
+	*(prctiles) = 0.0;
+	*(prctiles+1) = 0.0;
+	*(prctiles+2) = 0.0;
+	*(prctiles+3) = 0.0;
+	std::vector<double> GDPpcDist;
+	double pop = 0.0;
+	double gdp = 0.0;
+	for (int ag=0; ag < agents; ag++){
+		int bins = round(agents_ptr[ag]->getPop(tidx));
+		pop += agents_ptr[ag]->getPop(tidx);
+		gdp += agents_ptr[ag]->getGDPpc(tidx) * pop;
+		for (int n=0; n < bins; n++){
+			GDPpcDist.push_back(agents_ptr[ag]->getGDPpc(tidx));
+		}
+	}
+	std::sort(GDPpcDist.begin(), GDPpcDist.end());
+	*(prctiles) = GDPpcDist[round(GDPpcDist.size()/100*90)] * 1000.0;
+	*(prctiles+1) = GDPpcDist[round(GDPpcDist.size()/100*80)] * 1000.0;	
+	*(prctiles+2) = GDPpcDist[round(GDPpcDist.size()/100*20)] * 1000.0;	
+	*(prctiles+3) = GDPpcDist[round(GDPpcDist.size()/100*10)] * 1000.0 ;
+	ratio9010[tidx] = prctiles[0]/prctiles[3];
+	ratio8020[tidx] = prctiles[1]/prctiles[2];
+	GDPpc[tidx] = gdp/pop;
+}
 double Econ::computeNET(){
 	double NET = 0.0;
 	for (int tidx=0; tidx <= 27; tidx++){
@@ -391,6 +424,9 @@ void Econ::econDelete(){
 	delete[] agents_ptr;
 	delete[] e;
 	delete[] gcf;
+	delete[] ratio9010;
+	delete[] ratio8020;
+	delete[] GDPpc;
 	delete[] statesVector;
 	delete[] cemutotper;
 	delete[] RPCutoff;

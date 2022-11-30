@@ -551,11 +551,11 @@ void FAIRCarbon::writeHeader(std::fstream& output){
 		"FORC" << "\t" ;
 	t = 0;
 }
-//writes step to output
+//writes step to output - every 5 years to match Econ time step
 void FAIRCarbon::writeStep(std::fstream& output){
 	output << c[t] << "\t" <<
 		forc[t] << "\t" ;
-	t++;
+	t+=5;
 }
 //get states
 double* FAIRCarbon::getStates(){

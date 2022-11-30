@@ -97,10 +97,7 @@ int main(int argc, char* argv[])
 	// std::cout << nvars << std::endl;
 
 	if (riceptr->robustness == 1){
-	    end = clock();
-
-	    std::cout << "reading input files: time elapsed: " << ((end - start)/double(CLOCKS_PER_SEC)) << " seconds" << std::endl;
-	    std::cout << "starting simulations" << std::endl;
+		double ECSvalues[3] = {2.5, 3.0, 4.0};
 		// get list of solution files to be simulated 
 		std::vector<std::string> listFiles;
 		listFiles.reserve(484);
@@ -111,7 +108,7 @@ int main(int argc, char* argv[])
 		std::fstream robustnessOutput;
 		// write header
 		robustnessOutput.open("./robustnessOutput.txt", std::ios_base::out);
-		robustnessOutput << "Solution\tSSP\tDamages\t" << 
+		robustnessOutput << "Solution\tECS\tSSP\tDamages\t" << 
 			"Welfare\tT(2100)\tTmax\tGini(2100)\t" <<
 			"90thGDPpc(2100)\t80thGDPpc(2100)\t" << 
 			"20thGDPpc(2100)\t10thGDPpc(2100)\t" << std::endl;
@@ -134,20 +131,74 @@ int main(int argc, char* argv[])
 			solFile.close();
 			// set the variables read above
 			riceptr->setVariables(vars);
-			for (int ssp = 1; ssp <= 5; ssp++){
-				// set ssp
-				riceptr->setSsp(ssp);
-				for (int damages = BURKESR; damages < DAMAGEERR; damages++){
-					// set damages
-					riceptr->setDamages(damages);
-					// simulate
-					riceptr->simulate();
-					// report
-					riceptr->reportObjs(nameSol, ssp, damages, robustnessOutput);
-				}
-			} 
+			for (int idxECS = 0; idxECS<3; idxECS++){
+				riceptr->setECS(ECSvalues[idxECS]);
+				for (int ssp = 1; ssp <= 5; ssp++){
+					// set ssp
+					riceptr->setSsp(ssp);
+					for (int damages = BURKESR; damages < DAMAGEERR; damages++){
+						// set damages
+						riceptr->setDamages(damages);
+						// simulate
+						riceptr->simulate();
+						// report
+						riceptr->reportObjs(nameSol, ECSvalues[idxECS], ssp, damages, robustnessOutput);
+					}
+				}				
+			}
 		}
 		robustnessOutput.close();			
+	}
+	else if (riceptr->robustness == 2){
+		double ECSvalues[3] = {2.5, 3.0, 4.0};
+		// get list of solution files to be simulated 
+		std::vector<std::string> listFiles;
+		listFiles.reserve(484);
+		std::string solDir = "./RICE50++_Inputs";
+		GetFilesInDirectory(listFiles, solDir);
+		// file streams:  input & output  
+		std::fstream solFile;
+
+		for (int nfiles = 0; nfiles < listFiles.size() ; nfiles++){
+			// get file name
+			std::string nameSol = listFiles[nfiles];
+			// std::cout << nameSol << std::endl;
+			nameSol.erase( nameSol.begin(), nameSol.begin() + solDir.length()+1 );
+			nameSol.erase( nameSol.end() - 4, nameSol.end() );
+			// open solution file to be simulated
+			solFile.open(listFiles[nfiles], std::ios_base::in);
+			if (!solFile) {
+				std::cerr << "Error: file " << listFiles[nfiles] << " could not be opened" << std::endl;
+	    		exit(1);
+	    	}
+	    	// read file into variables
+			for (int varidx = 0; varidx < nvars ; varidx++){
+				solFile >> vars[varidx];
+			}
+			solFile.close();
+			// set the variables read above
+			riceptr->setVariables(vars);
+			// for (int idxECS = 0; idxECS<3; idxECS++){
+			// 	riceptr->setECS(ECSvalues[idxECS]);
+				for (int ssp = 1; ssp <= 5; ssp++){
+					// set ssp
+					riceptr->setSsp(ssp);
+					for (int damages = BURKESR; damages < DAMAGEERR; damages++){
+						// set damages
+						riceptr->setDamages(damages);
+						// simulate
+						riceptr->simulate();
+						// write output
+						std::string filename = "./allSolsOutput/";
+						filename.append(nameSol);
+						// filename.append("_").append(std::to_string(ECSvalues[idxECS]));
+						filename.append("_SSP").append(std::to_string(ssp));
+						filename.append("_DAMAGE").append(std::to_string(damages)).append(".txt");
+						riceptr->writeSimulation(filename);
+					}
+				}				
+			// }
+		}
 	}
 	else{
 		// ==== SIMULATION EXECUTION ==========

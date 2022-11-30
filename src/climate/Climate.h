@@ -2,7 +2,7 @@
 #define CLIMATE__H
 
 #include <fstream>
-
+#include <cmath>
 
 // ====  Abstract Climate class ========
 
@@ -24,6 +24,7 @@ public:
 	virtual int getNStates() = 0;
 	virtual void updateLinks() = 0;
 	virtual void climateDelete() = 0;
+	virtual void setECS(double ECS) = 0;
 };
 
 
@@ -52,6 +53,8 @@ public:
 	int getNStates();
 	void updateLinks();
 	void climateDelete();
+	void setECS(double ECS);
+
 };
 
 
@@ -81,6 +84,7 @@ public:
 	int getNStates();
 	void updateLinks();
 	void climateDelete();
+	void setECS(double ECS);
 };
 
 // ====  Geoffroy et al. (2013)-Climate module ========
@@ -112,6 +116,7 @@ public:
 	int getNStates();
 	void updateLinks();
 	void climateDelete();
+	void setECS(double ECS);
 };
 
 // ====  FAIR temperature model ========
@@ -154,6 +159,7 @@ public:
 	int getNStates();
 	void updateLinks();
 	void climateDelete();
+	void setECS(double ECS);
 };
 
 

@@ -33,11 +33,12 @@ public:
 	void simulate();
 	void simulateUnc(double* objs);
 	void resetTidx();
-	void writeSimulation();
+	void writeSimulation(std::string filename="./simulationOutput.txt");
 	void setSsp(int ssp);
 	void setDamages(int damages);
+	void setECS(double ECS);
 	void setAdaptEff(double adapteff);
-	void reportObjs(std::string nameSol, int ssp, int damages, std::fstream& robustnessOutput);
+	void reportObjs(std::string nameSol, double ECS, int ssp, int damages, std::fstream& robustnessOutput);
 	void RICE_delete();
 };
 

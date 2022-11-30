@@ -138,13 +138,11 @@ public:
 	double taunew;
 	double* c;
 	double* c_acc;
-	double* forc;
 	double rfoth[4][486];
 	double rfothidx[4]; // = {26,45,60,85};
 	double tatm; // used to compute alpha
 	double e;
 	paramsFAIRCarbon params;
-	// void readParams();
 	void computeAlpha();
 	void sampleUnc();
 	void reset();

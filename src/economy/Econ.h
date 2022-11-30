@@ -28,6 +28,9 @@ public:
 	EconParams params;
 	double* e;
 	double* gcf;
+	double* GDPpc;
+	double* ratio9010;
+	double* ratio8020;
 	double* statesVector;
 	double* cemutotper;
 	double* RPCutoff;
@@ -54,6 +57,7 @@ public:
 	double computeGini();	
 	double* computePrctiles();
 	double computePrctiles7525();
+	void computePrctilesTime(int tidx);
 	double computeNET();
 	void econDelete();
 };
