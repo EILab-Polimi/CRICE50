@@ -1,0 +1,25 @@
+<POLICY_CLASS>      4
+<NUM_INPUT>      6
+	0.0		0.06
+   0.0      2.0
+	-10.0		30.0
+	0.0		6.0
+	400		1200
+   0      	58 	
+<NUM_OUTPUT>      1
+   0      		1.2
+<POLICY_STRUCTURE>      6
+
+
+policy class = type of policy
+num of inputs and bounds for every input: 
+   - k
+   - tatm
+   - tocean
+   - mat
+   - mup
+   - mlo
+num of output and bounds for every output:
+   - miu
+   - s
+policy structure = number of nodes  

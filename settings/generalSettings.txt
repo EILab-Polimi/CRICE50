@@ -1,4 +1,8 @@
 horizon			58
 tstep			5
-carbon_model	WITCH		(WITCH / DICE)	
-climate_model	WITCH		(WITCH / DICE)
+carbon_model	FAIR		#	(WITCH / DICE / FAIR)	
+climate_model	FAIR		#(WITCH / DICE / GEOFFROY)
+objectives		6
+robustness 		0
+writefile		1
+simScenarios	BENCHMARK		(ALL to simulate over all scenarios, anything else will simulate the scenario set in EconAgentSettings)

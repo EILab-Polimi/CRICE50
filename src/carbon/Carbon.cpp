@@ -32,13 +32,15 @@ DICECarbon::DICECarbon(int hrzn){
 	mlo = new double[hrzn + 1];  // Carbon concentration increase in Lower Oceans [GtC from 1750]
 	forc = new double[hrzn + 1];  // Increase in Radiative Forcing [W/m2 from 1900]
 	forcoth = new double[hrzn + 1];  // Exogenous forcing from other greenhouse gases [W/m2]
-		
+	statesVector = new double[3];
+	toClimate = new double[1];
 	readParams();
 	t = 0;
 }
 // simulates next step
-void DICECarbon::nextStep(double e){
+void DICECarbon::nextStep(){
 
+	e = fromEcon[0];
 	// OGHG Forcing
 	forcoth[t] = params.fex0 + (params.fex1 - params.fex0) * std::min((double)t/17.0,1.0);
 	// Carbon concentration increase in Atmosphere 
@@ -52,9 +54,11 @@ void DICECarbon::nextStep(double e){
 
 	// std::cout << "\t\tDICE carbon cycle evolves to next step: " << std::endl;
 	// std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
+	updateLinks();
 	t++;
 	return;
 }
+
 // read parameters from text file
 // and stores them in the params struct
 // and setting initial conditions
@@ -136,6 +140,22 @@ void DICECarbon::writeStep(std::fstream& output){
 		forcoth[t] << "\t" ;
 	t++;
 }
+//get states
+double* DICECarbon::getStates(){
+	statesVector[0] = mat[t];
+	statesVector[1] = mup[t];
+	statesVector[2] = mlo[t];
+	return statesVector;
+}
+// get number of states
+int DICECarbon::getNStates(){
+	return 3;
+}
+// update shared info with climate
+void DICECarbon::updateLinks(){
+	toClimate[0] = forc[t];
+	return;
+}
 // frees allocated memory
 void DICECarbon::carbonDelete(){
 	delete[] mat;
@@ -143,11 +163,16 @@ void DICECarbon::carbonDelete(){
 	delete[] mlo;
 	delete[] forc;
 	delete[] forcoth;
+	delete[] statesVector;
+	delete[] toClimate;
 	return;
 }
 
 
-
+void DICECarbon::reset(){
+	t = 0;
+	return;
+}
 
 
 // ====  WITCH-Carbon module =============
@@ -167,12 +192,15 @@ WITCHCarbon::WITCHCarbon(int hrzn){
 	mup = new double[hrzn + 1];  // Carbon concentration increase in Shallow Oceans [GtC from 1750]
 	mlo = new double[hrzn + 1];  // Carbon concentration increase in Lower Oceans [GtC from 1750]
 	forc = new double[hrzn + 1];  // Increase in Radiative Forcing [W/m2 from 1900]
+	statesVector = new double[3];
+	toClimate = new double[1];
 	readParams();
 	t = 0;
 }
 // simulates next step
-void WITCHCarbon::nextStep(double e){
+void WITCHCarbon::nextStep(){
 
+	e = fromEcon[0];
 	// Carbon concentration increase in Atmosphere 
 	mat[t+1] = mat[t] * params.at2at + mup[t] * params.up2at +
 		e * 5 * params.CO2toC;
@@ -188,6 +216,7 @@ void WITCHCarbon::nextStep(double e){
 
 	// std::cout << "\t\tWITCH carbon cycle evolves to next step: " << std::endl;
 	// std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
+	updateLinks();
 	t++;
 	return;
 }
@@ -336,14 +365,231 @@ void WITCHCarbon::writeStep(std::fstream& output){
 		forc[t] << "\t" ;
 	t++;
 }
+//get states
+double* WITCHCarbon::getStates(){
+	statesVector[0] = mat[t];
+	statesVector[1] = mup[t];
+	statesVector[2] = mlo[t];
+	return statesVector;
+}
+// get number of states
+int WITCHCarbon::getNStates(){
+	return 3;
+}
+// update shared info with climate
+void WITCHCarbon::updateLinks(){
+	toClimate[0] = forc[t];
+	return;
+}
 // frees allocated memory
 void WITCHCarbon::carbonDelete(){
 	delete[] mat;
 	delete[] mup;
 	delete[] mlo;
 	delete[] forc;
+	delete[] statesVector;
+	delete[] toClimate;
+	return;
+}
+
+
+void WITCHCarbon::reset(){
+	t = 0;
 	return;
 }
 
 
 // ====   FAIR-Carbon module ========
+
+// constructor
+FAIRCarbon::FAIRCarbon(){
+
+}
+// destructor
+FAIRCarbon::~FAIRCarbon(){
+
+}
+// allocates the carbon component
+FAIRCarbon::FAIRCarbon(int hrzn){
+	params.horizon = hrzn;
+	params.r0       = 35.0;
+	params.rc       = 0.019;
+	params.rt       = 4.165;
+	params.iirf_h   = 100.0;
+	params.iirf_max = 97.0;
+	params.iirf = 0.0;
+	alpha = new double[params.horizon+1];
+	params.ppm_to_gtc = 2.124;
+	params.a[0] = 0.2173;
+	params.a[1] = 0.2240;
+	params.a[2] = 0.2824;
+	params.a[3] = 0.2763;
+	params.tau[0] = 1000000;
+	params.tau[1] = 394.4;
+	params.tau[2] = 36.54;
+	params.tau[3] = 4.304;
+	params.f2x = 3.71;
+	carbon_boxes = new double*[params.horizon+1];
+	for (int subt = 0; subt < params.horizon+1; subt++){
+		carbon_boxes[subt] = new double[4];
+	}
+	carbon_boxes[0][0] = 58.71337292; // * ppm_to_gtc; //127.159
+	carbon_boxes[0][1] = 43.28685286; // * ppm_to_gtc; //93.313;
+	carbon_boxes[0][2] = 18.44893718; // * ppm_to_gtc; //37.840;
+	carbon_boxes[0][3] = 3.81581747; // * ppm_to_gtc; //7.721
+	taunew = 0.0;
+	params.c_pi = 278.0; // * 2.124;
+	c = new double[params.horizon+1];
+	c[0] = params.c_pi;
+	for (int idx = 0; idx < 4; idx++){
+		c[0] += carbon_boxes[0][idx];
+	}
+	c_acc = new double[params.horizon+1];
+	c_acc[0] = 305.1673751542558; //value in 2015 // * ppm_to_gtc; //597.0; //(400+197)
+	forc = new double[params.horizon+1];
+	forc[0] = 0.0;
+
+	params.ranges[0] = 0.0;
+	params.ranges[1] = 2000.0;
+	params.ranges[2] = -1.0;
+	params.ranges[3] = 10.0;
+	params.nnprms[0] = -6.66006035e+02;
+	params.nnprms[1] = 2.09443154e+02;
+	params.nnprms[2] = -4.83968920e+00;
+	params.nnprms[3] = 2.31243377e+00;
+	params.nnprms[4] = 2.75031497e+00;
+	params.nnprms[5] = 8.89902682e+02;
+	params.nnprms[6] = 2.40146799e+00;
+	params.nnprms[7] = 6.83316702e-02;
+	params.nnprms[8] = 2.89753011e-02;
+	rfothidx[0] = 26;
+	rfothidx[1] = 45;
+	rfothidx[2] = 60;
+	rfothidx[3] = 85;
+
+	std::ifstream forc_file;
+	for (int rfidx = 0; rfidx < 4; rfidx++){
+		forc_file.open("./src/carbon/RFoth_"+std::to_string((unsigned long long int) rfothidx[rfidx])+".txt", std::ios_base::in);
+		if(!forc_file){
+			std::cout << "The other forcing file specified could not be found!" << std::endl;
+			exit(1);
+		}
+		for (int idx=0; idx < 486 ; idx++){
+			forc_file >> rfoth[rfidx][idx];
+		}
+		forc_file.close();		
+	}
+	params.rfoth_type = 1; // rcp4.5
+	statesVector = new double[1];
+	toClimate = new double[1];
+	t = 0;
+	return;
+}
+// to correct as FAIR has been corrected
+void FAIRCarbon::computeAlpha(){
+	double input[2];
+	//normalize inputs
+	input[0] = (c_acc[t] - params.ranges[0]) /	(params.ranges[1] - params.ranges[0]);
+	input[1] = (tatm - params.ranges[2]) / (params.ranges[3] - params.ranges[2]);
+
+	//compute alpha via ANN 
+	alpha[t] = params.nnprms[0] + \
+	    (params.nnprms[1]) * \
+	    	(-1.0 + 2.0 / \
+	        	( 1.0 + exp( -2.0 * \
+	          	(params.nnprms[2] + \
+	            	(params.nnprms[3]) * input[0] + \
+	            	(params.nnprms[4]) * input[1] )))) +\
+	    (params.nnprms[5]) * \
+	    	(-1.0 + 2.0 / \
+	        	( 1.0 + exp( -2.0 * \
+	        	(params.nnprms[6] + \
+	            	(params.nnprms[7]) * input[0] + \
+	            	(params.nnprms[8]) * input[1] ))));
+	if (alpha[t] < 1e-3){
+		alpha[t] = alpha[t-1];
+	}
+	return;
+}
+// sampling uncertainty
+void FAIRCarbon::sampleUnc(){
+	// if (config->rfoth_unc==1){
+		params.rfoth_type = floor( rand() * (1.0/RAND_MAX) * 4 );
+	// }
+	return;
+}
+
+// simulates next step
+void FAIRCarbon::nextStep(){
+
+	e = fromEcon[0] * 12/44;
+	tatm = fromClimate[0];
+	params.iirf = std::min(params.r0 + params.rc*c_acc[t] + params.rt*tatm, params.iirf_max);
+	computeAlpha();
+	for (int box = 0; box < 4; box++){
+		taunew = params.tau[box] * alpha[t];
+		carbon_boxes[t+1][box] = 
+			carbon_boxes[t][box] * exp(-1.0/taunew) + 
+			params.a[box] * e / params.ppm_to_gtc;
+	}
+	c[t+1] = params.c_pi;
+	for (int box = 0; box < 4; box++){
+		c[t+1] += carbon_boxes[t+1][box];
+	}
+	c_acc[t+1] = c_acc[t] + e - (c[t+1]-c[t]) * params.ppm_to_gtc;
+	if (t < 486){
+		forc[t+1] = params.f2x/log(2.0) * log(c[t+1]/params.c_pi) + rfoth[params.rfoth_type][t];
+	}
+	else{
+		forc[t+1] = params.f2x/log(2.0) * log(c[t+1]/params.c_pi) + rfoth[params.rfoth_type][485];
+	}
+	updateLinks();
+	t++;
+	return;
+}
+
+
+void FAIRCarbon::reset(){
+	t = 0;
+	return;
+}
+//writes header for output
+void FAIRCarbon::writeHeader(std::fstream& output){
+	output << "CCONC" << "\t" <<
+		"FORC" << "\t" ;
+	t = 0;
+}
+//writes step to output - every 5 years to match Econ time step
+void FAIRCarbon::writeStep(std::fstream& output){
+	output << c[t] << "\t" <<
+		forc[t] << "\t" ;
+	t+=5;
+}
+//get states
+double* FAIRCarbon::getStates(){
+	statesVector[0] = c[t];
+	return statesVector;
+}
+// get number of states
+int FAIRCarbon::getNStates(){
+	return 1;
+}
+// update shared info with climate
+void FAIRCarbon::updateLinks(){
+	toClimate[0] = forc[t+1];
+	return;
+}
+// frees allocated memory
+void FAIRCarbon::carbonDelete(){
+	for (int subt = 0; subt < params.horizon+1; subt++){
+		delete[] carbon_boxes[subt];
+	}
+	delete[] carbon_boxes;
+	delete[] alpha;
+	delete[] c_acc;
+	delete[] forc;
+	delete[] c;
+	delete[] statesVector;
+	delete[] toClimate;
+	return;
+}
