@@ -186,36 +186,13 @@ void RICE::nextStep(){
 void RICE::simulate(){
 	resetTidx();
 	for (int time=0 ; time < horizon; time++){
-		// std::cout << "\tSimulation time step " << t << ", year " << 2015+t*5 << std::endl;
 		nextStep();
 	} 
-	// std::cout << carbon->forc[0] << std::endl;	
-
-	// std::cout << "Objective value - utility is equal to: " 
-	// 	<< econ->utility << std::endl;;
 	return;
 }
 // resets indices for new simulation
 void RICE::resetTidx(){
 	t = 0;
-	// econ->t = 0;
-	// switch (econ->params.utilityType){
-	// 	case COOP:
-	// 		econ->utility = pow(10,-8);	
-	// 		break;
-	// 	case NON_COOP:
-	// 		econ->utility = 0.0;
-	// 		break;
-	// 	case UTILITYERR:
-	// 		std::cerr << 
-	// 			"Please insert a valid option for the utility setting" 
-	// 			<< std::endl;
-	// 		exit(1);
-	// }
-	// for (int ag=0; ag < econ->agents; ag++){
-	// 	econ->agents_ptr[ag]->t = 0;
-	// 	econ->agents_ptr[ag]->utility = 0.0;
-	// }
 	econ->reset();
 	climate->reset();
 	carbon->reset();
@@ -299,7 +276,6 @@ void RICE::simulateUnc(double* objs){
 	std::vector<double> ineq;
 	std::vector<double> net;
 	double adapteff_v[2] = {0.0, 1.0}; 
-	// double adapteff_v[1] = {1.0}; 
 	if (simScenarios == "ALL") {
 		for (int ssp = 1; ssp <= 5; ssp++){
 			// set ssp
@@ -318,32 +294,10 @@ void RICE::simulateUnc(double* objs){
 				y15c.push_back(y15C);
 				ineq.push_back(econ->computePrctiles7525());
 				net.push_back(econ->computeNET());
-				// std::cout << ssp << "\t" << damages << "\t" //<< adapteff << "\t"
-				// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computePrctiles7525() << std::endl;
-
-				// for (int adapteff = 0; adapteff <= 2; adapteff++){
-				// 	double y15C = 0.0;
-				// 	setAdaptEff(adapteff*0.5);
-				// 	simulate();
-				// 	welfare.push_back(-econ->utility);
-				// 	for (int tidx = 0; tidx < horizon; tidx++){
-				// 		if (climate->tatm[tidx] > 1.5){
-				// 			y15C += 5.0;
-				// 		}
-				// 	}
-				// 	y15c.push_back(y15C);
-				// 	ineq.push_back(econ->computePrctiles7525());
-				// 	net.push_back(econ->computeNET());
-				// 	// std::cout << ssp << "\t" << damages << "\t" << adapteff << "\t"
-				// 	// 	<< - econ->utility << "\t" << y15C << "\t" << econ->computeGini() << std::endl;
-				// }
 			}
 		}
 	}
 	else if (simScenarios=="BENCHMARK"){
-		// setAdaptEff(1.0);
-		// setSsp(2);
-		// setDamages(KALKUHL);
 		for (int ssp = 1; ssp <= 5; ssp++){
 		// 	// set ssp
 			setSsp(ssp);
@@ -353,30 +307,27 @@ void RICE::simulateUnc(double* objs){
 				for (int adEff=0; adEff < (sizeof(adapteff_v)/sizeof(*adapteff_v)); adEff++){
 					setAdaptEff(adapteff_v[adEff]);
 					srand(1e6);
-					// for (int nsim=0; nsim<10; nsim++){
-					// 	climate->sampleUnc();
-						double y15C = 0.0;
-						simulate();
-						welfare.push_back(-econ->utility);
-						for (int tidx = 0; tidx < horizon; tidx++){
-							if (climate->tatm[tidx] > 1.5){
-								y15C += climate->tatm[tidx] - 1.5;
-							}
+					double y15C = 0.0;
+					simulate();
+					welfare.push_back(-econ->utility);
+					for (int tidx = 0; tidx < horizon; tidx++){
+						if (climate->tatm[tidx] > 1.5){
+							y15C += climate->tatm[tidx] - 1.5;
 						}
-						y15c.push_back(y15C);
-						ineq.push_back(econ->computePrctiles7525());
-						net.push_back(econ->computeNET());	
-						if (writefile == 1){
-							std::__fs::filesystem::create_directories("./SimOutput/");
-							std::string filename = "./SimOutput/";
-							filename.append("Sol");
-							filename.append("_SSP").append(std::to_string(ssp));
-							filename.append("_DAMAGE").append(std::to_string(damages));
-							filename.append("_ADAPTEFF").append(std::to_string(int(adapteff_v[adEff])));
-							filename.append("_ECS3.0_TCR1.8").append(".txt");
-							writeSimulation(filename);
-						}
-					// }
+					}
+					y15c.push_back(y15C);
+					ineq.push_back(econ->computePrctiles7525());
+					net.push_back(econ->computeNET());	
+					if (writefile == 1){
+						std::__fs::filesystem::create_directories("./SimOutput/");
+						std::string filename = "./SimOutput/";
+						filename.append("Sol");
+						filename.append("_SSP").append(std::to_string(ssp));
+						filename.append("_DAMAGE").append(std::to_string(damages));
+						filename.append("_ADAPTEFF").append(std::to_string(int(adapteff_v[adEff])));
+						filename.append("_ECS3.0_TCR1.8").append(".txt");
+						writeSimulation(filename);
+					}
 				}
 			}
 		}
@@ -400,11 +351,6 @@ void RICE::simulateUnc(double* objs){
 		double y15C = 0.0;
 		simulate();
 		welfare.push_back(-econ->utility);
-		// for (int tidx = 0; tidx < horizon; tidx++){
-		// 	if (climate->tatm[tidx] > 1.5){
-		// 		y15C += 5.0;
-		// 	}
-		// }
 		for (int tidx = 0; tidx < horizon; tidx++){
 			if (climate->tatm[tidx] > 1.5){
 				y15C += (climate->tatm[tidx] - 1.5);
@@ -416,22 +362,16 @@ void RICE::simulateUnc(double* objs){
 	}
 	double sum = std::accumulate(std::begin(welfare), std::end(welfare), 0.0);
 	allobjs.push_back(sum / welfare.size());
-	// allobjs.push_back(*std::max_element(welfare.begin(), welfare.end()));
 	allobjs.push_back(welfare.back());
 	sum = std::accumulate(std::begin(y15c), std::end(y15c), 0.0);
 	allobjs.push_back(sum / y15c.size());
-	// allobjs.push_back(*std::max_element(y15c.begin(), y15c.end()));
 	allobjs.push_back(y15c.back());
 	sum = std::accumulate(std::begin(ineq), std::end(ineq), 0.0);
 	allobjs.push_back(sum / ineq.size());
-	// allobjs.push_back(*std::max_element(ineq.begin(), ineq.end()));
 	allobjs.push_back(ineq.back());
 	for (int obj = 0; obj < nobjs; obj++){
 		objs[obj] = allobjs[obj];
 	}
-	// objs[6] = *std::max_element(net.begin(), net.end());
-	// sum = std::accumulate(std::begin(net), std::end(net), 0.0);
-	// objs[7] =  sum / net.size();
 	return;
 }
 

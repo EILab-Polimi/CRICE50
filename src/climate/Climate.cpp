@@ -98,8 +98,6 @@ void WITCHClimate::nextStep(){
 	
 	// Ocean temperature
 	tocean[t+1] = tocean[t] + params.heat_ocean * (tatm[t] - tocean[t]);
-	// std::cout << "\t\tWITCH climate evolves to next step:" << std::endl;
-	// std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
 	updateLinks();
 	t++;
 	return;
@@ -232,8 +230,6 @@ void DICEClimate::nextStep(){
 		params.c1 * (forc - params.fco22x / params.t2xco2 * tatm[t] +
 						 - params.c3 * (tatm[t] - tocean[t]));
 	tocean[t+1] = tocean[t] + params.c4 * (tatm[t] - tocean[t]);
-	// std::cout << "\t\tDICE climate evolves to next step:" << std::endl;
-	// std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
 	updateLinks();
 	t++;
 	return;
@@ -378,8 +374,6 @@ void GeoffroyClimate::nextStep(){
 	// Ocean temperature
 	tocean[t+1] = tocean[t] + \
 		5.0 * params.xi3/params.xi4 * (tatm[t] - tocean[t]);
-	// std::cout << "\t\tWITCH climate evolves to next step:" << std::endl;
-	// std::cout << "\t\t" << tatm[t] << "\t" << tocean[t] << std::endl;
 	updateLinks();
 	t++;
 	return;
@@ -538,28 +532,11 @@ void FAIRTemp::nextStep(){
 	forc = fromCarbon[0];
 	ts[t+1] = ts[t] * exp(-1.0/params.ds) + params.qs * (1.0 - exp(-1.0/params.ds)) * forc * params.eff;
 	tf[t+1] = tf[t] * exp(-1.0/params.df) + params.qf * (1.0 - exp(-1.0/params.df)) * forc * params.eff;
-	// if (config->tatm_stoch == 1){
-	// 	// sample from standard normal distribution using box-cox method 
-	// 	if (config->scc_ == 0){
-	// 		noise[t+1] = std::max(-3.0, std::min(3.0, 
-	// 			sqrt(-2 * log(rand() * (1.0 / RAND_MAX)))
-	// 				 * sin (2 * M_PI * rand() * (1.0 /RAND_MAX)))) ; 
-	// 	}
-	// 	tf[t+1] = tf[t+1] + noise[t+1] * stdev;
-	// }
 	gmst[t+1] = ts[t+1] + tf[t+1];
 	updateLinks();
 	if ((t+1)%5==0){
 		tatm[(t+1)/5] = gmst[t+1];
 	}
-	// if (gmst[t+1] > 1.5){
-	// 	if (gmst[t+1] > 2.0){
-	// 		twoDegYrs += gmst[t+1] - 2.0;
-	// 		aboveTwo = 1.0;
-	// 	}
-	// 	oneFiveDegYrs += gmst[t+1] - 1.5;
-	// 	aboveOneFive = 1.0;
-	// }
 	t++;
 	return;
 

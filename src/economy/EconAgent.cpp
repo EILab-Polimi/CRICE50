@@ -434,12 +434,6 @@ void RICEEconAgent::readPolicyParams(){
 		    policy.p_param.MIn.push_back(10.0);			
 		}
 	}
-	///// EMPTY GCF - no money can be stored
-	// if (params.GCFSim == GCF_YES){
-	// 	policy.p_param.policyInput += 1;
-	//     policy.p_param.mIn.push_back(0.0);
-	//     policy.p_param.MIn.push_back(1.0);						
-	// }
 	// read output number and bounds
 	double o1, o2;
 	while (sJunk!="<NUM_OUTPUT>"){
@@ -972,8 +966,6 @@ void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 			(traj.bx[t] * pow(traj.miu[t],4)));
 
 	// compute variables for economic step transition
-	// traj.ynet[t] = traj.ygross[t] - traj.damages[t];
-	// traj.y[t] = std::max(0.01, traj.ynet[t] - traj.abatecost[t]); //avoid damages making negative gdp
 	traj.ynet[t] = traj.ygross[t] - traj.rd[t];
 	if (params.GCFSim==GCF_YES){
 		traj.ynet[t] -= traj.gcfFlux[t] ;
@@ -1010,11 +1002,6 @@ void RICEEconAgent::computeAdaptation(double* tatm){
 			traj.iac[t] = 0.0;
 		}
 		else{
-			// if ( traj.adapt[t-1] > 9 ){
-			// 	traj.ia[t] = std::min(0.001, traj.ia[t]);
-			// 	traj.iac[t] = std::min(0.001, traj.iac[t]);
-			// 	traj.fad[t] = std::min(0.001, traj.fad[t]);
-			// }
 			// compute adaptation costs
 			traj.adcosts[t] = traj.ygross[t] * 
 				(traj.fad[t] + traj.ia[t] + traj.iac[t]);
@@ -1030,25 +1017,11 @@ void RICEEconAgent::computeAdaptation(double* tatm){
 				(1 - params.phi_ad) * pow(traj.gac[t], params.rho_adcap), 
 				1.0 / params.rho_adcap);
 			// compute adaptation total
-			// traj.adapt[t] = params.adapteff * pow(params.miu_ad * pow(traj.act[t], params.rho_ad) + \
-			//	(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), \
-			// 	1.0 / params.rho_ad); // old version
 			traj.adapt[t] = pow(params.miu_ad * pow(traj.act[t], params.rho_ad) + \
 				(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), 
 				1.0 / params.rho_ad);
-			// compute residual damages
-			// if (traj.damages[t] < 0){
-			// 	traj.rd[t] = traj.damages[t];
-			// }
-			// else{
-				// traj.adapt[t] = 0.0;
-				double omega_witch = params.witch_w4 + params.witch_w1 * tatm[t] +
-					 params.witch_w2 * pow(tatm[t], params.witch_w3);
-				// std::cout << omega_witch << std::endl;
-				// traj.rd[t] = traj.damages[t] - 
-				// 	params.adapteff * traj.ygross[t] * 
-				// 	omega_witch / (1.0 + omega_witch) *
-				// 	traj.adapt[t] / (1.0 + traj.adapt[t]) ; 
+			double omega_witch = params.witch_w4 + params.witch_w1 * tatm[t] +
+					params.witch_w2 * pow(tatm[t], params.witch_w3);
 				// traj.rd[t] = std::max(0.0, 1.0 - t/57.0)*
 				// 	( traj.damages[t] - 
 				// 	params.adapteff * traj.ygross[t] * 
@@ -1057,10 +1030,8 @@ void RICEEconAgent::computeAdaptation(double* tatm){
 				// 	std::max(0.0, std::min(1.0, t/57.0)) * 
 				// 	traj.damages[t] * 
 				// 	( 1.0 - params.adapteff * traj.adapt[t] / (1.0 + traj.adapt[t]));
-				traj.rd[t] = traj.damages[t] * 
-					( 1.0 - params.adapteff * traj.adapt[t] / (1.0 + traj.adapt[t]));
-				// traj.rd[t] = traj.damages[t] / (1.0 + traj.adapt[t]) ; // old version
-			// }
+			traj.rd[t] = traj.damages[t] * 
+				( 1.0 - params.adapteff * traj.adapt[t] / (1.0 + traj.adapt[t]));
 
 			// update adaptation stocks (capital and specific capacity)
 			traj.sad[t+1] = traj.sad[t] * (1 - params.dk_adsad) + \
@@ -1094,7 +1065,6 @@ void RICEEconAgent::nextAction(){
 				else{
 					policy.input.push_back( 1.0 / (1.0 + traj.omega[t])); //consider the new state variable omega, scale to have better bounds
 				}
-				// policy.input.push_back(traj.y[t - 1]/(traj.tfp[ssp][t - 1] * traj.pop[ssp][t - 1])); //maybe better (?)
 				policy.input.push_back(traj.tatm_local[t]);
 				for (int s = 0; s < nGlobalStates; s++){
 					policy.input.push_back(globalStates[s]);
@@ -1104,16 +1074,9 @@ void RICEEconAgent::nextAction(){
 					if (params.embedding==EMB_YES){
 						policy.input.push_back(policy.e_output[0]);
 					}
-					// else{
-					// 	policy.input.push_back(id_name);
-					// }
 					policy.input.push_back(traj.sad[t] / traj.k[t] * 100.0);
 					policy.input.push_back(traj.sac[t] / traj.k[t] * 100.0);
 				}
-				///// EMPTY GCF - no money can be stored
-				// if (params.GCFSim == GCF_YES){
-				// 	policy.input.push_back(globalStates[0]);
-				// }
 
 				policy.output = policy.Policy->get_NormOutput(policy.input);
 				traj.miu[t] = policy.output[outsize];
@@ -1147,7 +1110,6 @@ void RICEEconAgent::nextAction(){
 				break;
 			}
 			case BAU:{
-				// traj.miu[t] = std::min(traj.miu_up[t], 0.1 * (double) t);
 				traj.miu[t] = 0.0;
 				traj.s[t] = traj.s[0] + std::min(1.0, t/57.0) * (params.optlr_s - traj.s[0]);
 				if (params.adaptType == ADWITCH){
@@ -1161,8 +1123,6 @@ void RICEEconAgent::nextAction(){
 				// no need to do anything here
 				// miu, s & other decs. vars are fixed 
 				// at the beginning of simulation
-				// std::cerr << "not developed yet" << std::endl;
-				// exit(1);
 				break;
 			}
 			case DMERR:{
@@ -1170,19 +1130,14 @@ void RICEEconAgent::nextAction(){
 			}
 		}
 		// enforce constrainst on max min for decision variables
-		// traj.miu[t] = std::max(0.0, std::min(std::min(traj.miu_up[t], traj.miu[t-1]+0.2), traj.miu[t]));
 		traj.miu[t] = std::max(0.0, std::min(traj.miu_up[t], std::min(traj.miu[t-1] + 0.2, traj.miu[t])));
 		traj.s[t] = std::max(0.001, std::min(0.999, traj.s[t]));
 		if (params.adaptType == ADWITCH){
-		// 	traj.fad[t] = std::min(0.1, std::max(0.0, traj.fad[t]));
-		// 	traj.ia[t] = std::min(0.1, std::max(0.0, traj.ia[t]));
-		// 	traj.iac[t] = std::min(0.1, std::max(0.0, traj.iac[t]));
 			traj.fad[t] = std::min(0.1, std::min(traj.fad[t-1] + 0.05, std::max(0.0, traj.fad[t])));
 			traj.ia[t] = std::min(0.1, std::min(traj.ia[t-1] + 0.05, std::max(0.0, traj.ia[t])));
 			traj.iac[t] = std::min(0.1, std::min(traj.iac[t-1] + 0.05, std::max(0.0, traj.iac[t])));	
 		}
 		if (params.GCFSim == GCF_YES){
-			// traj.gcfFlux[t+1] = std::max(-0.05, std::min(0.05, traj.gcfFlux[t+1]) ) * traj.ygross[t];			
 			traj.gcfFlux[t+1] = std::min(0.05, traj.gcfFlux[t+1]) * traj.ygross[t];			
 		}
 	}
@@ -1201,9 +1156,6 @@ void RICEEconAgent::nextAction(){
 	if (t==1){
 		traj.miu[1] = 0.03;
 	}
-	// if (t >= horizon - 10){
-	// 	traj.s[t] = params.optlr_s; 
-	// }
 	return;	
 }
 void RICEEconAgent::computeDamages(double* RPCutoff, double* tatm){
@@ -1328,8 +1280,6 @@ void RICEEconAgent::computeDamages(double* RPCutoff, double* tatm){
 		}
 		else if (params.damagesType == KALKUHL){
 			//KALKUHL
-			// traj.impact[t] = (params.kw_DT + params.kw_DT_lag) * (traj.tatm_local[t] - traj.tatm_local[t-1])/5 + 
-			// 	(params.kw_TDT + params.kw_TDT_lag) * (traj.tatm_local[t] - traj.tatm_local[t-1])/5 * traj.tatm_local[t-1];// + 
 			traj.impact[t] = (params.kw_DT + params.kw_DT_lag) * (traj.tatm_local[t] - traj.tatm_local[t-1]) + 
 				(params.kw_TDT + params.kw_TDT_lag) * (traj.tatm_local[t] - traj.tatm_local[t-1])/5 * 
 				(2 * (traj.tatm_local[t] - traj.tatm_local[t-1]) + 5 * traj.tatm_local[t-1]);
@@ -1381,7 +1331,6 @@ void RICEEconAgent::computeDamages(double* RPCutoff, double* tatm){
 				params.comega_c);
 		}
 		traj.damfrac[t] = 1.0 - (1.0 / ( 1.0 + traj.omega[t]));
-		// std::cout << traj.damfrac[t] << std::endl;
 		traj.ynet_estimated[t] = std::min(std::max(traj.ygross[t] 
 			* (1 - traj.damfrac[t]), pow(10.0, -4.0) * traj.gdpbase[ssp][t]), 
 			2.0 * traj.gdpbase[ssp][t]);

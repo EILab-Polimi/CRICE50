@@ -160,7 +160,6 @@ void Econ::initializeStates(int numGlobalStates){
 } 
 // returns the pointer to a vector of global economic state variables
 double* Econ::getStates(){
-	// statesVector[0] = gcf[t];
 	return statesVector;
 }
 // returns the pointer to a vector of global economic state variables
@@ -243,16 +242,13 @@ void Econ::nextStep(){
 			gcf_out -= gcf_flux;
 		}
 	}
-	// std::cout << t << "\t" << gcf[t] << "\t" << gcf_in << "\t" << gcf_out << std::endl;
 
-	// std::cout << t << "\t" << gcf[t] << "\t" << gcf_in << "\t" << gcf_out << std::endl;		
 	/// enforcing that money transfers sum to zero
 	/// reducing flows of money to receiving countries if they are asking too much
 	if (gcf_out > gcf_in){
 		for (int ag=0; ag < agents; ag++){
 			gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
 			if (gcf_flux < 0){
-				// std::cout << gcf_flux << "\t" << gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in << std::endl;
 				agents_ptr[ag]->setGCFFlux(gcf_flux * gcf_in / gcf_out , t+1) ;
 			}
 		}		
@@ -262,31 +258,10 @@ void Econ::nextStep(){
 		for (int ag=0; ag < agents; ag++){
 			gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
 			if (gcf_flux > 0){
-				// std::cout << gcf_flux << "\t" << gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in << std::endl;
 				agents_ptr[ag]->setGCFFlux(gcf_flux *  gcf_out / gcf_in , t+1) ;
 			}
 		}				
 	}
-	// if (gcf[t] + gcf_in > 1.0 && gcf_in > 0 ){
-	// 	for (int ag=0; ag < agents; ag++){
-	// 		gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
-	// 		if (gcf_flux > 0){
-	// 			// std::cout << gcf_flux << "\t" << gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in << std::endl;
-	// 			agents_ptr[ag]->setGCFFlux(gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in , t+1) ;
-	// 			new_gcf_in += gcf_flux * 0.9 * (1.0 - gcf[t]) / gcf_in;
-	// 		}
-	// 	}
-	// }
-	// if (gcf[t] + new_gcf_in < gcf_out && gcf_out > 0 ){
-	// for (int ag=0; ag < agents; ag++){
-	// 		gcf_flux = agents_ptr[ag]->getGCFFlux(t+1);
-	// 		if (gcf_flux < 0){
-	// 			// std::cout << gcf_flux << "\t" << gcf_flux * 0.9 * (gcf[t] + gcf_in) / gcf_out  << std::endl;
-	// 			agents_ptr[ag]->setGCFFlux( std::max(- agents_ptr[ag]->getAbateAdaptCost(t), gcf_flux * 0.9 * (gcf[t] + new_gcf_in) / gcf_out ) , t+1);
-	// 			// agents_ptr[ag]->setGCFFlux( gcf_flux * 0.9 * (gcf[t] + new_gcf_in) / gcf_out , t+1);
-	// 		}
-	// 	}
-	// }
 	gcf_in = 0;
 	gcf_out = 0;
 	for (int ag=0; ag < agents; ag++){
@@ -298,7 +273,7 @@ void Econ::nextStep(){
 			gcf_out -= gcf_flux;
 		}
 	}
-	// std::cout << t << "\t" << gcf[t] << "\t" << gcf_in << "\t" << gcf_out << std::endl;
+
 	gcf[t+1] = gcf[t] + gcf_in - gcf_out;
 	// compute period utility and update utiltiy
 	if (params.utilityType == COOP){
@@ -393,8 +368,6 @@ double Econ::computePrctiles7525(){
 		}
 		std::sort(GDPpcDist.begin(), GDPpcDist.end());
 		*(prctiles) = GDPpcDist[round(GDPpcDist.size()/100*90)] * 1000.0 / 11.0;
-		// *(prctiles+1) += GDPpcDist[round(GDPpcDist.size()/100*80)] * 1000.0 / 11.0;
-		// *(prctiles+2) += GDPpcDist[round(GDPpcDist.size()/100*20)] * 1000.0 / 11.0;
 		*(prctiles+3) = GDPpcDist[round(GDPpcDist.size()/100*10)] * 1000.0 / 11.0 ;
 		ineq += prctiles[0]/prctiles[3] / 11.0;
 	}

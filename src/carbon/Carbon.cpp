@@ -52,8 +52,6 @@ void DICECarbon::nextStep(){
 	// Total radiative forcing
 	forc[t] = params.fco22x * ((log((mat[t]/588.000))/log(2))) + forcoth[t];
 
-	// std::cout << "\t\tDICE carbon cycle evolves to next step: " << std::endl;
-	// std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
 	updateLinks();
 	t++;
 	return;
@@ -213,9 +211,6 @@ void WITCHCarbon::nextStep(){
 	forc[t] = params.rfoth_I + ( 1 + params.rfoth_a) * 
 		(params.rfc_alpha * (log(mat[t]) - log(params.rfc_beta)));
 
-
-	// std::cout << "\t\tWITCH carbon cycle evolves to next step: " << std::endl;
-	// std::cout <<  "\t\t" << mat[t] << "\t" << mup[t] << "\t" << mlo[t] << "\t" << forc[t] << "\t" << t+1 << std::endl;
 	updateLinks();
 	t++;
 	return;

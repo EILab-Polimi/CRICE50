@@ -80,9 +80,6 @@ int main(int argc, char* argv[])
 	// and fix the settings for the simulations 
 	// to be run
 
-	// do we want to consider different delta t ?
-	// int delta_t = 1;
-
 	// ==== MODEL BUILD ==========	
 	// here we create the RICE instance
 	// and the associated pointer
@@ -97,7 +94,6 @@ int main(int argc, char* argv[])
 	int nvars = riceptr->getNVars();	
 	double objs[nobjs];
 	double vars[nvars];
-	// std::cout << nvars << std::endl;
 
 	if (riceptr->robustness == 1){
 		double ECSvalues[3] = {2.5, 3.0, 4.0};
@@ -202,130 +198,6 @@ int main(int argc, char* argv[])
 					}
 				}				
 			// }
-		}
-	}
-	else if (riceptr->robustness==3){
-	//validation
-		std::vector<std::string> listFiles;
-		std::string solDir = "./InputVal";
-		GetFilesInDirectory(listFiles, solDir);
-		// file streams:  input & output  
-		std::fstream solFile;
-
-		for (int nfiles = 0; nfiles < listFiles.size() ; nfiles++){
-			// get file name
-			std::string nameSol = listFiles[nfiles];
-			nameSol.erase( nameSol.begin(), nameSol.begin() + 11 );
-			nameSol.erase( nameSol.end() - 4, nameSol.end() );
-			std::cout << nameSol << std::endl;
-			// open solution file to be simulated
-			solFile.open(listFiles[nfiles], std::ios_base::in);
-			if (!solFile) {
-				std::cerr << "Error: file " << listFiles[nfiles] << " could not be opened" << std::endl;
-	    		exit(1);
-	    	}
-	    	// read file into variables
-			for (int varidx = 0; varidx < nvars ; varidx++){
-				solFile >> vars[varidx];
-			}
-			solFile.close();
-			// set the variables read above
-			riceptr->setVariables(vars);
-			riceptr->simulateUnc(objs);
-			std::fstream objsFile;
-			objsFile.open(std::string("./ObjsVal/").append(nameSol).append(".txt"), std::ios_base::out);
-			for (int obj=0; obj < nobjs; obj++){
-				objsFile << objs[obj] << "\t";
-			}
-			objsFile.close();
-
-			// for (int idxECS = 0; idxECS<3; idxECS++){
-			// std::vector<double> allobjs;
-			// std::vector<double> welfare;
-			// std::vector<double> y15c;
-			// std::vector<double> ineq;
-			// std::vector<double> net;
-			// int ssp = 2;
-			// int damages = KALKUHL;
-			// double adapteff = 1.0;
-			// riceptr->setSsp(ssp);
-			// riceptr->setDamages(damages);
-			// riceptr->setAdaptEff(adapteff);
-			// double y15C = 0.0;
-			// riceptr->simulate();
-			// welfare.push_back(-riceptr->econ->utility);
-			// for (int tidx = 0; tidx < riceptr->horizon; tidx++){
-			// 	if (riceptr->climate->tatm[tidx] > 1.5){
-			// 		y15C += riceptr->climate->tatm[tidx] - 1.5;
-			// 	}
-			// }
-			// y15c.push_back(y15C);
-			// ineq.push_back(riceptr->econ->computePrctiles7525());
-			std::string filename = "./valOutput/";
-			filename.append(nameSol);
-			filename.append("_SSP2")
-				.append("_DAMAGE8")
-				.append("_ADAPTEFF1")
-				.append("_ECS3.0")
-				.append("_TCR1.8")
-				.append(".txt");
-			riceptr->writeSimulation(filename);
-
-			// double adapteff_v[2] = {0.0, 1.0}; 
-			// srand(20000);			
-			// for (int ssp = 1; ssp <= 5; ssp++){
-			// 	// set ssp
-			// 	riceptr->setSsp(ssp);
-			// 	for (int damages = BURKESR; damages < DAMAGEERR; damages++){
-			// 		// set damages
-			// 		riceptr->setDamages(damages);
-			// 		for (int adEff=0; adEff < (sizeof(adapteff_v)/sizeof(*adapteff_v)); adEff++){
-			// 			riceptr->setAdaptEff(adapteff_v[adEff]);
-			// 			for (int nsim=0; nsim<5; nsim++){
-			// 				riceptr->climate->sampleUnc();
-			// 				double y15C = 0.0;
-			// 				riceptr->simulate();
-			// 				welfare.push_back(-riceptr->econ->utility);
-			// 				for (int tidx = 0; tidx < riceptr->horizon; tidx++){
-			// 					if (riceptr->climate->tatm[tidx] > 1.5){
-			// 						y15C += riceptr->climate->tatm[tidx] - 1.5;
-			// 					}
-			// 				}
-			// 				y15c.push_back(y15C);
-			// 				ineq.push_back(riceptr->econ->computePrctiles7525());
-			// 				net.push_back(riceptr->econ->computeNET());	
-			// 				std::string filename = "./valOutput/";
-			// 				filename.append(nameSol);
-			// 				// filename.append("_").append(std::to_string(ECSvalues[idxECS]));
-			// 				filename.append("_SSP").append(std::to_string(ssp))
-			// 					.append("_DAMAGE").append(std::to_string(damages))
-			// 					.append("_ADAPTEFF").append(std::to_string(adapteff_v[adEff]).substr(0,4))
-			// 					.append("_ECS").append(std::to_string(riceptr->climate->getECS()).substr(0,4))
-			// 					.append("_TCR").append(std::to_string(riceptr->climate->getTCR()).substr(0,4))
-			// 					.append(".txt");
-			// 				riceptr->writeSimulation(filename);
-			// 			}
-			// 		}
-			// 	}
-			// }
-			// double sum = std::accumulate(std::begin(welfare), std::end(welfare), 0.0);
-			// allobjs.push_back(sum / welfare.size());
-			// allobjs.push_back(*std::max_element(welfare.begin(), welfare.end()));
-			// sum = std::accumulate(std::begin(y15c), std::end(y15c), 0.0);
-			// allobjs.push_back(sum / y15c.size());
-			// allobjs.push_back(*std::max_element(y15c.begin(), y15c.end()));
-			// sum = std::accumulate(std::begin(ineq), std::end(ineq), 0.0);
-			// allobjs.push_back(sum / ineq.size());
-			// allobjs.push_back(*std::max_element(ineq.begin(), ineq.end()));
-			// for (int obj = 0; obj < nobjs; obj++){
-			// 	objs[obj] = allobjs[obj];
-			// }
-			// std::fstream objsFile;
-			// objsFile.open(std::string("./ObjsVal/").append(nameSol).append(".txt"), std::ios_base::out);
-			// for (int obj=0; obj < nobjs; obj++){
-			// 	objsFile << objs[obj] << "\t";
-			// }
-			// objsFile.close();
 		}
 	}
 	else{

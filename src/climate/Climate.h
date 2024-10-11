@@ -148,9 +148,9 @@ struct FAIRTempParams{
 	double qs;
 	double qf;
 	double eff;
-	double alpha_tcrecs[2]; // =  {0.5543371849882144, 1.1512945858642294};
-	double root_delta[2][2]; // =  { {0.19695275, 0.11014884}, {0.11014884, 0.22981541} };
-	double stdev; // = 0.10729947684829523;
+	double alpha_tcrecs[2]; 
+	double root_delta[2][2]; 
+	double stdev; 
 };
 
 class FAIRTemp: public Climate{
