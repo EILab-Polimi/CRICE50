@@ -65,3 +65,4 @@ rntdynamics_*.txt
 # RICE50++
 RICE50++
 simulationOutput.txt
+src/.DS_Store
