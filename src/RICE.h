@@ -20,6 +20,7 @@ public:
 	ModelType climate_model;
 	int robustness;
 	int writefile;
+	int climateUnc;
 	std::string nameWritefile;
 	std::string simScenarios;
 	Carbon* carbon;					// pointer to carbon module active in the model

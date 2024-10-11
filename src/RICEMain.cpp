@@ -148,87 +148,21 @@ int main(int argc, char* argv[])
 		}
 		robustnessOutput.close();			
 	}
-	else if (riceptr->robustness == 2){
-		// double ECSvalues[3] = {2.5, 3.0, 4.0};
-		// get list of solution files to be simulated 
-		std::vector<std::string> listFiles;
-		listFiles.reserve(484);
-		std::string solDir = "./InputSim";
-		GetFilesInDirectory(listFiles, solDir);
-		// file streams:  input & output  
-		std::fstream solFile;
-
-		for (int nfiles = 0; nfiles < listFiles.size() ; nfiles++){
-			// get file name
-			std::string nameSol = listFiles[nfiles];
-			// std::cout << nameSol << std::endl;
-			nameSol.erase( nameSol.begin(), nameSol.begin() + 11 );
-			nameSol.erase( nameSol.end() - 4, nameSol.end() );
-			// std::cout << nameSol << std::endl;
-			// open solution file to be simulated
-			solFile.open(listFiles[nfiles], std::ios_base::in);
-			if (!solFile) {
-				std::cerr << "Error: file " << listFiles[nfiles] << " could not be opened" << std::endl;
-	    		exit(1);
-	    	}
-	    	// read file into variables
-			for (int varidx = 0; varidx < nvars ; varidx++){
-				solFile >> vars[varidx];
-			}
-			solFile.close();
-			// set the variables read above
-			riceptr->setVariables(vars);
-			// for (int idxECS = 0; idxECS<3; idxECS++){
-			// 	riceptr->setECS(ECSvalues[idxECS]);
-				for (int ssp = 1; ssp <= 5; ssp++){
-					// set ssp
-					riceptr->setSsp(ssp);
-					for (int damages = BURKESR; damages < DAMAGEERR; damages++){
-						// set damages
-						riceptr->setDamages(damages);
-						// simulate
-						riceptr->simulate();
-						// write output
-						std::string filename = "./solsOutput/";
-						filename.append(nameSol);
-						// filename.append("_").append(std::to_string(ECSvalues[idxECS]));
-						filename.append("_SSP").append(std::to_string(ssp));
-						filename.append("_DAMAGE").append(std::to_string(damages)).append(".txt");
-						riceptr->writeSimulation(filename);
-					}
-				}				
-			// }
-		}
-	}
 	else{
-		// ==== SIMULATION EXECUTION ==========
+		// ==== BAU SIMULATION EXECUTION ==========
 		if (riceptr->econ->params.DMType == BAU){
 			riceptr->simulate();				
 			std::cout << riceptr->econ->utility << std::endl;	
 		}
-		// else{
-		// 	MOEA_Init(nobjs, 0);
-		// 	while (MOEA_Next_solution() == MOEA_SUCCESS) {
-		// 		MOEA_Read_doubles(nvars, vars);
-		// 		riceptr->setVariables(vars);
-		// 		riceptr->simulate();
-		// 		objs[0] =  - riceptr->econ->utility;
-		// 		MOEA_Write(objs, NULL);
-		// 	}
-		// }
+		// ==== SIMULATE BASED ON INPUT  ==========
 		else{
 			MOEA_Init(nobjs, 0);
 			while (MOEA_Next_solution() == MOEA_SUCCESS) {
 				MOEA_Read_doubles(nvars, vars);
 				riceptr->setVariables(vars);
 				riceptr->simulateUnc(objs);
-				// riceptr->simulate();
-				// objs[0] =  - riceptr->econ->utility;
 				MOEA_Write(objs, NULL);
 			}
-		}
-		if (riceptr->writefile == 1){
-			riceptr->writeSimulation("output.txt");
 		}
 	}
 	// ==== POST PROCESSING ==========

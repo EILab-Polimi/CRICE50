@@ -214,6 +214,10 @@ void RICEEconAgent::readParams(){
 		in >>sJunk;
 	}
 	in >> params.adapteff;
+	while (sJunk!="AdaptWITCH"){
+		in >>sJunk;
+	}
+	in >> params.adaptWITCH;
 	while (sJunk!="Embedding"){
 		in >>sJunk;
 	}
@@ -1020,19 +1024,22 @@ void RICEEconAgent::computeAdaptation(double* tatm){
 			traj.adapt[t] = pow(params.miu_ad * pow(traj.act[t], params.rho_ad) + \
 				(1 - params.miu_ad) * pow(traj.ac[t], params.rho_ad), 
 				1.0 / params.rho_ad);
-			double omega_witch = params.witch_w4 + params.witch_w1 * tatm[t] +
-					params.witch_w2 * pow(tatm[t], params.witch_w3);
-				// traj.rd[t] = std::max(0.0, 1.0 - t/57.0)*
-				// 	( traj.damages[t] - 
-				// 	params.adapteff * traj.ygross[t] * 
-				// 	omega_witch / (1.0 + omega_witch) *
-				// 	traj.adapt[t] / (1.0 + traj.adapt[t]) ) + 
-				// 	std::max(0.0, std::min(1.0, t/57.0)) * 
-				// 	traj.damages[t] * 
-				// 	( 1.0 - params.adapteff * traj.adapt[t] / (1.0 + traj.adapt[t]));
-			traj.rd[t] = traj.damages[t] * 
-				( 1.0 - params.adapteff * traj.adapt[t] / (1.0 + traj.adapt[t]));
-
+			if (params.adaptWITCH == 1){
+				traj.omega_witch = params.witch_w4 + params.witch_w1 * tatm[t] +
+								params.witch_w2 * pow(tatm[t], params.witch_w3);
+				traj.rd[t] = std::max(0.0, 1.0 - t/57.0)*
+					( traj.damages[t] - 
+					params.adapteff * traj.ygross[t] * 
+					traj.omega_witch / (1.0 + traj.omega_witch) *
+					traj.adapt[t] / (1.0 + traj.adapt[t]) ) + 
+					std::max(0.0, std::min(1.0, t/57.0)) * 
+					traj.damages[t] * 
+					( 1.0 - params.adapteff * traj.adapt[t] / (1.0 + traj.adapt[t]));
+			}
+			else{
+				traj.rd[t] = traj.damages[t] * 
+					( 1.0 - params.adapteff * traj.adapt[t] / (1.0 + traj.adapt[t]));
+			}
 			// update adaptation stocks (capital and specific capacity)
 			traj.sad[t+1] = traj.sad[t] * (1 - params.dk_adsad) + \
 				traj.ia[t] * traj.ygross[t];

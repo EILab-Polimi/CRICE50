@@ -66,6 +66,7 @@ struct RICEEconAgentParams{
 	ElandType elandType;
 	DecisionMakers DMType;
 	Adaptation adaptType;
+	int adaptWITCH;
 	Embedding embedding;
 	GCFSimType GCFSim;
 	int t_min_miu;
@@ -162,6 +163,7 @@ struct RICEEconAgentTraj{
 	double* adcosts;	
 	double* gcfFlux;
 	double* alpha_gcf;
+	double omega_witch;
 };
 
 struct EconAgentPolicy{

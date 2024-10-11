@@ -13,4 +13,5 @@ max_miu_up		1.20		(maximum possible value for emission control rate)
 t_max_miu		2200 		(first year where miu = max_miu_up is possible)
 Adaptation		ON			(ON / OFF)
 AdaptEff		1.0
+AdaptWITCH      0           (Time-varying constraints on adaptation potential based on WITCH model)
 Embedding		YES			(YES/NO)

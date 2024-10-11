@@ -2,7 +2,8 @@ horizon			58
 tstep			5
 carbon_model	FAIR		#	(WITCH / DICE / FAIR)	
 climate_model	FAIR		#(WITCH / DICE / GEOFFROY)
-objectives		6
+objectives		1
 robustness 		0
 writefile		1
-simScenarios	BENCHMARK		(ALL to simulate over all scenarios, anything else will simulate the scenario set in EconAgentSettings)
+simScenarios	ALL		(ALL to simulate over all scenarios, anything else will simulate the scenario set in EconAgentSettings)
+climateUnc      0       (set 1 to include sampling of climate uncertainty, 0 to use central AR6 values of ECS and TCR)
