@@ -42,9 +42,9 @@ The `src` folder contains the source files for the simulator.
 - `RICE.cpp` and the header file describe the RICE model object functions
 - `RICEMain.cpp` is the main file
 
-# Simulate no-policy
+# Simulate the no-policy case
 
-To simulate a no-policy scenario:
+To simulate the benchmark scenario assuming no-policy:
 1) open the terminal in the main folder `/CRICE50`
 2) type:
  ```bash
