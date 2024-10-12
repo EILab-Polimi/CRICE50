@@ -31,7 +31,7 @@ done
 
 # Optimization
 
-if [$optimization = true] then
+if [ "$optimization" = true]; then
 	for SEED in $(seq 1 $NSEEDS)
 	do
 		OUTFILE=./opt/BorgOutput/${NAMEFILE}_${SEED}.out
@@ -44,7 +44,7 @@ fi
 
 # Post-processing of the optimization output
 
-if [ $postprocessing = true] then
+if [ "$postprocessing" = true ]; then
 	MYPATH="$(pwd)/BorgOutput/"
 	FILENAME=optRICE50
 	START_COLUMN=$((${NVAR}+1))
