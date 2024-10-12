@@ -4,6 +4,6 @@ prstp			0.015
 ineqav			0.5
 RPCutoffMetric	MEDIAN		(MEAN / MEDIAN)
 utility 		COOP		(COOP / NON-COOP)
-DecisionMakers	INPUT_POLICY			(BAU / INPUT_STATIC / INPUT_POLICY)
+DecisionMakers	BAU			(BAU / INPUT_STATIC / INPUT_POLICY)
 GCFSim 			YES
 GCFType			MIT
