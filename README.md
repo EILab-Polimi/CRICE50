@@ -22,20 +22,25 @@ The script used for optimization and postprocessing of obtained policy parametri
 
 
 The `settings` folder contains settings and parameters for the simulation:
-	- Parameters:
-		- Region specific adaptation parameters (original files and their application to 57 regions): `AdaptCoeffOrigADRICE.txt`, `AdaptCoeffOrigADWITCH.txt`, `AdaptCoeffOrigED57.txt`
-		- General adaptation parameters: `AdaptParams.txt`
-		- Climate and carbon model parameters: `DICEcarbonParams.txt`, `DICEclimateParams.txt`, `FAIRCarbonParams.txt`, `FAIRforcothSSP2.txt`, `GeoffroyClimateParams.txt`
-		- Damages parameters: `DamagesCoeffWITCH.txt`, `comega_neg.csv`, 
+- Parameters:
+	- Region specific adaptation parameters (original files and their application to 57 regions): `AdaptCoeffOrigADRICE.txt`, `AdaptCoeffOrigADWITCH.txt`, `AdaptCoeffOrigED57.txt`
+	- General adaptation parameters: `AdaptParams.txt`
+	- Climate and carbon model parameters: `DICEcarbonParams.txt`, `DICEclimateParams.txt`, `FAIRCarbonParams.txt`, `FAIRforcothSSP2.txt`, `GeoffroyClimateParams.txt`
+	- Damages parameters: `DamagesCoeffWITCH.txt`, `comega_neg.csv`, 
 		`comega_pos.csv`, together with the python script to prepare them `prepare_comega.py`
-	- Settings:
-		- General settings: `generalSettings.txt`
-		- Global economic settings: `globalEconParams.txt`
-		- Regional economic setttings: `EconAgentParams.txt`
-		- Agent policy settings: `settingsAgentPolicy.txt`
+- Settings:
+	- General settings: `generalSettings.txt`
+	- Global economic settings: `globalEconParams.txt`
+	- Regional economic setttings: `EconAgentParams.txt`
+	- Agent policy settings: `settingsAgentPolicy.txt`
 
 
-The 'src' folder contains the source files for the simulator.
+The `src` folder contains the source files for the simulator.
+- `carbon` contains the carbon component (`Carbon.capp` and corresponding header file)
+- `climate` contains the temperature component (`Climate.cpp` and corresponding header file)
+- `econ` contains the economic component (global economy `Econ.cpp` and regions/agents `EconAgent.cpp` and corresponding header files)
+- `RICE.cpp` and the header file describe the RICE model object functions
+- `RICEMain.cpp` is the main file
 
 # Simulate no-policy
 
@@ -44,57 +49,3 @@ To simulate a no-policy scenario:
 	make
 2) type 
 	./RICE50++
-
-Simulation and optimization settings are defined in the folder
-
-	settings:
-		generalSettings.txt: horizon, (tstep), carbon_model, climate_model
-		globalEconParams.txt: nagents, elasmu, prstp, ineqav, RPCutoffMetric, utility
-		EconAgentParams.txt: gama, dk, dela0, deland, ssp, damages, RPCutoffInd, TempLimit, Eland, DecisionMakersType, max_miu
-settings for DICE carbon and climate models are in the folder
-	
-	settings:
-		DICEcarbonParams.txt: DICE carbon module parameters from DICE2016
-		DICEclimateParams.txt: DICE climate module parameters from DICE2016
-Parameters for WITCH carbon and climate models are in the folder
-
-	data_climate_witch:
-		tempc.csv
-		cmphi.csv
-		rfc.csv
-		wcum_emi0.csv
-		oghg_coeff.csv
-
-specific settings and variables for the economic agents are read from different folders:
-
-	settings:
-		globalEconParams.txt
-		EconAgentParams.txt
-
-	data_baseline:
-		ssp_cintensity.csv
-		ssp_pop.csv
-		ssp_tfp.csv
-		ssp_ykali.csv
-
-	data_climate_regional:
-		climate_region_coef.csv
-
-	data_economy:
-		k0.csv
-		s0.csv
-
-	data_land_use:
-		etree_bau.csv
-		etree_opt.csv
-
-	data_macc:
-		mx_multiplier.csv
-		macc_coeffs.csv
-
-
-To run:
-1) type "make"
-2) type "./RICE50++"
-
-An output file is produced: simulationOutput.txt
