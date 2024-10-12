@@ -46,6 +46,6 @@ The `src` folder contains the source files for the simulator.
 
 To simulate a no-policy scenario:
 1) type 
-	make
+	```make```
 2) type 
-	./RICE50++
+	```./RICE50++```
