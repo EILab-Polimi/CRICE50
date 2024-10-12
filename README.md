@@ -45,8 +45,12 @@ The `src` folder contains the source files for the simulator.
 # Simulate no-policy
 
 To simulate a no-policy scenario:
-1) open the terminal in the main folder
+1) open the terminal in the main folder `/CRICE50`
 2) type:
- ```make```
+ ```bash
+ make
+ ```
 3) type :
-```./RICE50++```
+```bash
+./RICE50++
+```
