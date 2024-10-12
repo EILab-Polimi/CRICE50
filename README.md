@@ -8,11 +8,32 @@ This model version is used to perform cooperative welfare optimization deciding 
 
 # Contents
 
-The data needed to populate the model are contained in the 'data_ed57' folder.
+The data needed to populate the model is contained in the `data_ed57` folder, divided into categories by subfolders:
+- `data_baseline`: baseline socio economic drivers
+- `data_climate_regional`: regional climate downscaling
+- `data_climate_witch`: data for the WITCH climate model
+- `data_coacch`: COACCH damage functions
+- `data_economy`: initial capital stock and savings rate
+- `data_land_use`: land-use data
+- `data_macc`: marginal abatement cost curves
+- `regions_mapping`: converting regions to ISO codes
 
-The 'opt' folder contains the script used for optimization and postprocessing of solutions obtained.
+The script used for optimization and postprocessing of obtained policy parametrizations (`runBorgRICE50.sh`) is available inside the `opt` folder.
 
-The 'settings' folder contains settings and parameters for the simulation.
+
+The `settings` folder contains settings and parameters for the simulation:
+	- Parameters:
+		- Region specific adaptation parameters (original files and their application to 57 regions): `AdaptCoeffOrigADRICE.txt`, `AdaptCoeffOrigADWITCH.txt`, `AdaptCoeffOrigED57.txt`
+		- General adaptation parameters: `AdaptParams.txt`
+		- Climate and carbon model parameters: `DICEcarbonParams.txt`, `DICEclimateParams.txt`, `FAIRCarbonParams.txt`, `FAIRforcothSSP2.txt`, `GeoffroyClimateParams.txt`
+		- Damages parameters: `DamagesCoeffWITCH.txt`, `comega_neg.csv`, 
+		`comega_pos.csv`, together with the python script to prepare them `prepare_comega.py`
+	- Settings:
+		- General settings: `generalSettings.txt`
+		- Global economic settings: `globalEconParams.txt`
+		- Regional economic setttings: `EconAgentParams.txt`
+		- Agent policy settings: `settingsAgentPolicy.txt`
+
 
 The 'src' folder contains the source files for the simulator.
 
