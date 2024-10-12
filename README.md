@@ -48,7 +48,7 @@ To simulate a no-policy scenario:
 1) open the terminal in the main folder `/CRICE50`
 2) type:
  ```bash
- make
+ make clean && make
  ```
 3) type :
 ```bash
