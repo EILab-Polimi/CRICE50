@@ -59,5 +59,7 @@ You should be able to read the value of scaled welfare (-1.18443e-06) when simul
 # System requirements 
 
 This software has been tested on MacOS 13.3 using Apple clang version 14.0.3 (clang-1403.0.22.14.1) and on Ubuntu 20.04.3 LTS (GNU/Linux 5.4.0-182-generic x86_64) using g++ (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0.
+
 It requires the MOEAFramework available at https://moeaframework.org/ .
+
 For the policy optimization, Borg MOEA is required. This is available at http://borgmoea.org/ .
