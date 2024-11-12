@@ -309,7 +309,7 @@ void RICE::simulateUnc(double* objs){
 					net.push_back(econ->computeNET());	
 					// write simulation output if required
 					if (writefile == 1){
-						std::__fs::filesystem::create_directories("./SimOutput/");
+						std::fs::filesystem::create_directories("./SimOutput/");
 						std::string filename = "./SimOutput/";
 						filename.append("Sol");
 						filename.append("_SSP").append(std::to_string(ssp));
