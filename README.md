@@ -46,11 +46,18 @@ The `src` folder contains the source files for the simulator.
 
 To simulate the benchmark scenario assuming no-policy:
 1) open the terminal in the main folder `/CRICE50`
-2) type:
+2) compile the source code into binaries typing:
  ```bash
  make clean && make
  ```
-3) type :
+3) run the executable to simulate the BAU scenario typing :
 ```bash
 ./RICE50++
 ```
+You should be able to read the value of scaled welfare (-1.18443e-06) when simulating the BAU scenario along with the time elapsed ( a few seconds).
+
+# System requirements 
+
+This software has been tested on MacOS 13.3 using Apple clang version 14.0.3 (clang-1403.0.22.14.1) and on Ubuntu 20.04.3 LTS (GNU/Linux 5.4.0-182-generic x86_64) using g++ (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0.
+It requires the MOEAFramework available at https://moeaframework.org/ .
+For the policy optimization, Borg MOEA is required. This is available at http://borgmoea.org/ .
