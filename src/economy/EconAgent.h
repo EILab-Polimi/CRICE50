@@ -86,7 +86,8 @@ struct RICEEconAgentParams{
 	double beta_bhm_lrdr_2;
 	double beta_djo_r;
 	double beta_djo_p;
-	double beta_k;
+	double beta_kpos;
+	double beta_kneg;
 	double dk_adsad;
 	double dk_adsac;
 	double rho_ad;

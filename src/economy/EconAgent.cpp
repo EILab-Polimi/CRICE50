@@ -289,7 +289,8 @@ void RICEEconAgent::readParams(){
 	params.beta_bhm_lrdr_2 = -0.000022;
 	params.beta_djo_r = 0.00261;
 	params.beta_djo_p = 0.00261 - 0.01655;
-	params.beta_k = -0.0586;
+	params.beta_kpos = -0.0586;
+	params.beta_kneg = -0.0520;
 	// read params COACCH
 	in.open("./data_ed57/data_coacch/comega.csv", std::ios_base::in);
 	if (!in){
@@ -1272,18 +1273,32 @@ void RICEEconAgent::computeDamages(double* RPCutoff, double* tatm){
 		}
 		else if (params.damagesType == KAHN){
 			//KAHN
-			double tatm_mavg = 0.0;
-			for (int tidx=0; tidx<6; tidx++){
+			double tatm_mavg_t_1 = 0.0;
+			for (int tidx=1; tidx<7; tidx++){
 				if (t-tidx < 0){
-					tatm_mavg += params.base_tatm;				
+					tatm_mavg_t_1 += params.base_tatm;				
 				}
 				else{
-					tatm_mavg += traj.tatm_local[t-tidx];								
+					tatm_mavg_t_1 += traj.tatm_local[t-tidx];								
 				}
 			}
-			tatm_mavg = tatm_mavg/6.0;
-			traj.impact[t] = params.beta_k * 
-				(traj.tatm_local[t] - tatm_mavg); 
+			double tatm_mavg_t_2 = 0.0;
+			for (int tidx=2; tidx<8; tidx++){
+				if (t-tidx < 0){
+					tatm_mavg_t_2 += params.base_tatm;				
+				}
+				else{
+					tatm_mavg_t_2 += traj.tatm_local[t-tidx];								
+				}
+			}
+			tatm_mavg_t_1 = tatm_mavg_t_1/6.0;
+			tatm_mavg_t_2 = tatm_mavg_t_2/6.0;
+			double delta_temp_trend = 
+				(traj.tatm_local[t] - tatm_mavg_t_1) - 
+				(traj.tatm_local[std::max(t - 1, 0)] - tatm_mavg_t_2);
+			traj.impact[t] = 
+				std::max(0.0, delta_temp_trend) * params.beta_kpos - 
+				std::min(0.0, delta_temp_trend) * params.beta_kneg ; 
 		}
 		else if (params.damagesType == KALKUHL){
 			//KALKUHL
