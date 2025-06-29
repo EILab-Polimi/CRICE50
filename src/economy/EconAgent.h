@@ -68,6 +68,7 @@ struct RICEEconAgentParams{
 	Adaptation adaptType;
 	int adaptWITCH;
 	Embedding embedding;
+	double abatecost_factor;
 	GCFSimType GCFSim;
 	int t_min_miu;
 	int t_max_miu;

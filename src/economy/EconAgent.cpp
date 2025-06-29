@@ -223,6 +223,10 @@ void RICEEconAgent::readParams(){
 	}
 	in >> line;
 	params.embedding = stringToEmbedding(line);
+	while (sJunk!="MitCostFactor"){
+		in >>sJunk;
+	}
+	in >> params.abatecost_factor;
 	in.close();
 
 	in.open("./settings/globalEconParams.txt", std::ios_base::in);
@@ -962,7 +966,7 @@ void RICEEconAgent::nextStep(double* tatm, double* RPCutoff){
 	computeAdaptation(tatm);
 
 	// compute abatecost
-	traj.abatecost[t] = traj.mx[t] *
+	traj.abatecost[t] = params.abatecost_factor * traj.mx[t] *
 		( (traj.ax[t] * pow(traj.miu[t],2) / 2) + 
 			(traj.bx[t] * pow(traj.miu[t],5) / 5)) *
 			traj.eind_bau[ssp][t] / 1000.0;

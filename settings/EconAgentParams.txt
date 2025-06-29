@@ -15,3 +15,4 @@ Adaptation		ON			(ON / OFF)
 AdaptEff		1.0
 AdaptWITCH      0           (Time-varying constraints on adaptation potential based on WITCH model)
 Embedding		YES			(YES/NO)
+MitCostFactor	1.0         (Sensitivity cost factor for mitigation costs uncertainty)
